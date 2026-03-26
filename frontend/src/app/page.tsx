@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import LoginForm from '@/components/auth/LoginForm';
+import { useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { useAuth } from '@/hooks/useAuth';
 import { Spinner } from '@/components/ui';
 
-export default function Home() {
+const LoginForm = dynamic(() => import('@/components/auth/LoginForm'), { ssr: false });
+
+function HomeContent() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
@@ -29,12 +31,24 @@ export default function Home() {
   }
 
   if (user) {
-    return null; // Will redirect
+    return null;
   }
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <LoginForm role="student" />
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Spinner size="lg" />
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

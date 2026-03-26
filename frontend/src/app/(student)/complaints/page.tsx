@@ -150,7 +150,7 @@ export default function ComplaintsPage() {
             </div>
           ) : complaints.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
-              No complaints submitted yet. Click "New Complaint" to submit one.
+              No complaints submitted yet. Click &quot;New Complaint&quot; to submit one.
             </div>
           ) : (
             <div className="divide-y divide-gray-200">

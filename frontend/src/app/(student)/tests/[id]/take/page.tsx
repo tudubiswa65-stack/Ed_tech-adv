@@ -194,13 +194,6 @@ export default function TakeTestPage() {
                         ? 'text-white'
                         : 'bg-gray-100 text-gray-600'
                     }`}
-                    style={
-                      isCurrent
-                        ? { ringColor: 'var(--color-primary)' }
-                        : isAnswered && !isMarked
-                        ? { backgroundColor: 'var(--color-primary)' }
-                        : {}
-                    }
                   >
                     {index + 1}
                   </button>

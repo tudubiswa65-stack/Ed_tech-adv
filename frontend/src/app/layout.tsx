@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, Poppins } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/context/ToastContext';
+import { AuthProvider } from '@/hooks/useAuth';
 import Toast from '@/components/ui/Toast';
 import { instituteConfig } from '@/config/institute.config';
 
@@ -40,8 +41,10 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <ToastProvider>
-          {children}
-          <Toast />
+          <AuthProvider>
+            {children}
+            <Toast />
+          </AuthProvider>
         </ToastProvider>
       </body>
     </html>

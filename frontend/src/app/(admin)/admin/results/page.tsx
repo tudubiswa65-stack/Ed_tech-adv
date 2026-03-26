@@ -239,70 +239,48 @@ export default function ResultsPage() {
             ) : (
               <>
                 <Table
-                  headers={[
-                    'Student',
-                    'Roll No.',
-                    'Test',
-                    'Score',
-                    'Percentage',
-                    'Status',
-                    'Time Taken',
-                    'Submitted',
-                    'Actions'
+                  columns={[
+                    { key: 'student', label: 'Student', render: (result: Result) => (
+                      <div>
+                        <div className="font-medium">{result.students?.name || 'N/A'}</div>
+                        <div className="text-sm text-gray-500">{result.students?.email}</div>
+                      </div>
+                    )},
+                    { key: 'rollno', label: 'Roll No.', render: (result: Result) => result.students?.roll_number || 'N/A' },
+                    { key: 'test', label: 'Test', render: (result: Result) => result.tests?.title || 'N/A' },
+                    { key: 'score', label: 'Score', render: (result: Result) => `${result.score} / ${result.total_marks}` },
+                    { key: 'percentage', label: 'Percentage', render: (result: Result) => `${result.percentage?.toFixed(1)}%` },
+                    { key: 'status', label: 'Status', render: (result: Result) => (
+                      <Badge variant={result.status === 'passed' ? 'success' : 'danger'}>
+                        {result.status}
+                      </Badge>
+                    )},
+                    { key: 'timeTaken', label: 'Time Taken', render: (result: Result) => result.time_taken_seconds ? formatTime(result.time_taken_seconds) : 'N/A' },
+                    { key: 'submitted', label: 'Submitted', render: (result: Result) => result.submitted_at ? formatDate(result.submitted_at) : 'N/A' },
+                    { key: 'actions', label: 'Actions', render: (result: Result) => (
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => router.push(`/admin/results/${result.id}`)}
+                        >
+                          View
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => router.push(`/admin/results/analytics/test/${result.tests?.id}`)}
+                        >
+                          Analytics
+                        </Button>
+                      </div>
+                    )}
                   ]}
-                >
-                  {results.map(result => (
-                    <tr key={result.id} className="border-b hover:bg-gray-50">
-                      <td className="px-4 py-3">
-                        <div>
-                          <div className="font-medium">{result.students?.name || 'N/A'}</div>
-                          <div className="text-sm text-gray-500">{result.students?.email}</div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        {result.students?.roll_number || 'N/A'}
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        {result.tests?.title || 'N/A'}
-                      </td>
-                      <td className="px-4 py-3 text-sm font-medium">
-                        {result.score} / {result.total_marks}
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        {result.percentage?.toFixed(1)}%
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge variant={result.status === 'passed' ? 'success' : 'danger'}>
-                          {result.status}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        {result.time_taken_seconds ? formatTime(result.time_taken_seconds) : 'N/A'}
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        {result.submitted_at ? formatDate(result.submitted_at) : 'N/A'}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => router.push(`/admin/results/${result.id}`)}
-                          >
-                            View
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => router.push(`/admin/results/analytics/test/${result.tests?.id}`)}
-                          >
-                            Analytics
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </Table>
+                  data={results}
+                  loading={loading}
+                  emptyMessage="No results found"
+                  onRowClick={(result) => router.push(`/admin/results/${result.id}`)}
+                />
 
                 {/* Pagination */}
                 {totalPages > 1 && (

@@ -315,7 +315,7 @@ export default function MaterialsPage() {
         ) : materials.length === 0 ? (
           <Card>
             <div className="p-8 text-center text-gray-500">
-              No study materials found. Click "Add Material" to create one.
+              No study materials found. Click &quot;Add Material&quot; to create one.
             </div>
           </Card>
         ) : (
