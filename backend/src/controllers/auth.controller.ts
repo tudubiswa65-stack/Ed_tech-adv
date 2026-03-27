@@ -54,9 +54,9 @@ export const adminLogin = async (req: LoginRequest, res: Response): Promise<void
 
     // Generate JWT
     const token = jwt.sign(
-      { id: admin.id, email: admin.email, role: 'admin' },
+      { id: admin.id, email: admin.email, role: 'admin' as const },
       JWT_SECRET || 'dev-secret-do-not-use-in-production',
-      { expiresIn: JWT_EXPIRY }
+      { expiresIn: JWT_EXPIRY } as any
     );
 
     // Set httpOnly cookie
@@ -121,9 +121,9 @@ export const studentLogin = async (req: LoginRequest, res: Response): Promise<vo
 
     // Generate JWT
     const token = jwt.sign(
-      { id: student.id, email: student.email, role: 'student' },
+      { id: student.id, email: student.email, role: 'student' as const },
       JWT_SECRET || 'dev-secret-do-not-use-in-production',
-      { expiresIn: JWT_EXPIRY }
+      { expiresIn: JWT_EXPIRY } as any
     );
 
     // Set httpOnly cookie

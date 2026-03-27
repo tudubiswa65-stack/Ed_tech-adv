@@ -39,11 +39,11 @@ export function startEmailWorker() {
     }
   });
 
-  emailQueue.on('completed', (job) => {
+  emailQueue.on('completed', (job: Job<EmailJobData>) => {
     console.log(`[EmailWorker] Job ${job.id} completed successfully`);
   });
 
-  emailQueue.on('failed', (job, err) => {
+  emailQueue.on('failed', (job: Job<EmailJobData> | undefined, err: Error) => {
     console.error(`[EmailWorker] Job ${job?.id} failed:`, err.message);
   });
 

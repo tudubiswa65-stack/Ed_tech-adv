@@ -82,11 +82,11 @@ export function startNotificationWorker() {
     }
   });
 
-  notificationQueue.on('completed', (job) => {
+  notificationQueue.on('completed', (job: Job<NotificationJobData>) => {
     console.log(`[NotificationWorker] Job ${job.id} completed successfully`);
   });
 
-  notificationQueue.on('failed', (job, err) => {
+  notificationQueue.on('failed', (job: Job<NotificationJobData> | undefined, err: Error) => {
     console.error(`[NotificationWorker] Job ${job?.id} failed:`, err.message);
   });
 

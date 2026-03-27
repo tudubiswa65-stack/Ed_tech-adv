@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
+import { JWTPayload } from '../../types';
 
 interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    role: string;
-    instituteId: string;
+  user?: JWTPayload;
+  cookies: {
+    token?: string;
+    [key: string]: any;
   };
 }
 
