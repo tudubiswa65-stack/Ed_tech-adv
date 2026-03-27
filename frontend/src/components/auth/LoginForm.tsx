@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Button from '@/components/ui/Button';
@@ -24,64 +24,101 @@ export default function LoginForm({ role, onSuccess }: LoginFormProps) {
   const config = useInstitute();
   const router = useRouter();
 
+  // DEBUG: Log component mount
+  console.log('[LoginForm] >>> STEP 0: Component rendered, role:', role);
+
   const handleSubmit = async (e: React.FormEvent) => {
-    console.log('[LoginForm] handleSubmit called');
+    console.log('[LoginForm] STEP 1: handleSubmit called');
     e.preventDefault();
+    console.log('[LoginForm] STEP 2: Prevented default, checking state...');
     setError('');
     setLoading(true);
+    console.log('[LoginForm] STEP 2b: Cleared error, set loading=true');
 
     try {
-      console.log('[LoginForm] Calling login with', { email: email?.substring(0, 3) + '***', role });
-      await login(email, password, role);
-      console.log('[LoginForm] Login succeeded, redirecting...');
+      console.log('[LoginForm] STEP 3: About to call login() with', { 
+        email: email?.substring(0, 3) + '***', 
+        role,
+        hasLoginFunction: typeof login === 'function'
+      });
+      
+      // CRITICAL: Add try-catch to see exactly where it fails
+      try {
+        console.log('[LoginForm] STEP 3b: Entering login() call...');
+        await login(email, password, role);
+        console.log('[LoginForm] STEP 4: login() returned successfully');
+      } catch (loginErr: any) {
+        console.error('[LoginForm] STEP 4b: login() threw error:', loginErr);
+        console.error('[LoginForm] STEP 4c: Error details:', {
+          message: loginErr?.message,
+          response: loginErr?.response?.data,
+          status: loginErr?.response?.status,
+          isAxiosError: axios.isAxiosError(loginErr)
+        });
+        throw loginErr; // Re-throw to be caught by outer catch
+      }
+      
+      console.log('[LoginForm] STEP 5: Login succeeded, redirecting...');
       if (onSuccess) {
+        console.log('[LoginForm] STEP 5b: Calling onSuccess callback');
         onSuccess();
       } else {
+        console.log('[LoginForm] STEP 5c: Pushing router to:', role === 'admin' ? '/admin' : '/dashboard');
         router.push(role === 'admin' ? '/admin' : '/dashboard');
       }
     } catch (err: any) {
-      console.error('[LoginForm] Login error:', err);
+      console.error('[LoginForm] STEP 6: Caught error in outer catch block:', err);
+      console.error('[LoginForm] STEP 6b: Full error object:', err);
 
       let errorMessage = 'Login failed. Please try again.';
+      console.log('[LoginForm] STEP 6c: Processing error type...');
 
       // Handle different types of errors
       if (axios.isAxiosError(err)) {
+        console.log('[LoginForm] STEP 6d: Detected axios error');
         if (err.response) {
           // Server responded with error status
-          console.error('[LoginForm] Server error:', {
+          console.error('[LoginForm] STEP 6e: Server error:', {
             status: err.response.status,
             data: err.response.data
           });
           errorMessage = err.response.data?.error || err.response.data?.message || `Server error (${err.response.status})`;
         } else if (err.request) {
           // Request was made but no response received
-          console.error('[LoginForm] No response received:', err.message);
+          console.error('[LoginForm] STEP 6f: No response received:', err.message);
           errorMessage = 'No response from server. Please check your connection and try again.';
         } else {
           // Error in setting up the request
-          console.error('[LoginForm] Request setup error:', err.message);
+          console.error('[LoginForm] STEP 6g: Request setup error:', err.message);
           errorMessage = `Request error: ${err.message}`;
         }
 
         // Specific error codes
         if (err.code === 'ECONNREFUSED') {
+          console.log('[LoginForm] STEP 6h: ECONNREFUSED detected');
           errorMessage = 'Connection refused. Is the backend server running?';
         } else if (err.code === 'ENOTFOUND') {
+          console.log('[LoginForm] STEP 6i: ENOTFOUND detected');
           errorMessage = 'Server not found. Please check API URL configuration.';
         } else if (err.code === 'ETIMEDOUT') {
+          console.log('[LoginForm] STEP 6j: ETIMEDOUT detected');
           errorMessage = 'Connection timed out. Please try again.';
         }
       } else {
         // Non-Axios error
-        console.error('[LoginForm] Non-Axios error:', err);
+        console.error('[LoginForm] STEP 6k: Non-Axios error:', err);
         errorMessage = err.message || 'An unexpected error occurred.';
       }
 
+      console.log('[LoginForm] STEP 6l: Setting error message:', errorMessage);
       setError(errorMessage);
     } finally {
+      console.log('[LoginForm] STEP 7: Finally block, setting loading=false');
       setLoading(false);
     }
   };
+
+  console.log('[LoginForm] >>> STEP 8: Render complete, returning JSX');
 
   return (
     <div className="w-full max-w-md mx-auto">
