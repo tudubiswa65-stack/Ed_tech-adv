@@ -140,11 +140,11 @@ export function startTestAutoSubmitWorker() {
     }
   });
 
-  testAutoSubmitQueue.on('completed', (job) => {
+  testAutoSubmitQueue.on('completed', (job: Job<TestAutoSubmitJobData>) => {
     console.log(`[TestAutoSubmitWorker] Job ${job.id} completed successfully`);
   });
 
-  testAutoSubmitQueue.on('failed', (job, err) => {
+  testAutoSubmitQueue.on('failed', (job: Job<TestAutoSubmitJobData> | undefined, err: Error) => {
     console.error(`[TestAutoSubmitWorker] Job ${job?.id} failed:`, err.message);
   });
 

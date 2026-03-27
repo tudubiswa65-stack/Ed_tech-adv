@@ -1,8 +1,10 @@
+export type UserRole = 'student' | 'admin' | 'super_admin';
+
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'admin' | 'student';
+  role: UserRole;
   avatar_url?: string;
 }
 
@@ -18,11 +20,18 @@ export interface StudentUser extends User {
 export interface JWTPayload {
   id: string;
   email: string;
-  role: 'admin' | 'student';
+  role: UserRole;
+  instituteId?: string;
   iat?: number;
   exp?: number;
 }
 
-export interface AuthRequest extends Express.Request {
+import { Request } from 'express';
+
+export interface AuthRequest extends Request {
   user?: JWTPayload;
+  cookies: {
+    token?: string;
+    [key: string]: any;
+  };
 }

@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
+import { JWTPayload } from '../../types';
 
 interface StudentRequest extends Request {
-  user?: {
-    id: string;
-    role: string;
+  user?: JWTPayload;
+  cookies: {
+    token?: string;
+    [key: string]: any;
   };
 }
 
@@ -148,7 +150,7 @@ export const getTestDetails = async (req: StudentRequest, res: Response): Promis
 
     res.json({
       ...test,
-      course_name: test.courses?.name,
+      course_name: (test.courses as any)?.[0]?.name,
       question_count: questionCount || 0,
       has_submitted: !!result,
       assignment_status: assignment.status,

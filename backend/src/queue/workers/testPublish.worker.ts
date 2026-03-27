@@ -83,11 +83,11 @@ export function startTestPublishWorker() {
     }
   });
 
-  testPublishQueue.on('completed', (job) => {
+  testPublishQueue.on('completed', (job: Job<TestPublishJobData>) => {
     console.log(`[TestPublishWorker] Job ${job.id} completed successfully`);
   });
 
-  testPublishQueue.on('failed', (job, err) => {
+  testPublishQueue.on('failed', (job: Job<TestPublishJobData> | undefined, err: Error) => {
     console.error(`[TestPublishWorker] Job ${job?.id} failed:`, err.message);
   });
 
