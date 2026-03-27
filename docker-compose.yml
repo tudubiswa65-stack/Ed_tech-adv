@@ -63,12 +63,17 @@ services:
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_BASE_URL=http://localhost:3000
-        - NEXT_PUBLIC_API_URL=http://localhost:4000
+        - NEXT_PUBLIC_API_URL=/api
     container_name: edtech_frontend
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - NEXT_PUBLIC_API_URL=http://localhost:4000
+      # BACKEND_URL is a server-side variable used by next.config.js rewrites
+      # to proxy /api/* requests from the browser to the Express backend.
+      # It must use the internal Docker network hostname so the Next.js
+      # process (inside the container) can reach the backend container.
+      - BACKEND_URL=http://backend:4000
+      - NEXT_PUBLIC_API_URL=/api
     ports:
       - '3000:3000'
     depends_on:

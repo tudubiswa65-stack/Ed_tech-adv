@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+// In production the Next.js server proxies /api/* to the backend via the
+// rewrites configured in next.config.js.  The browser therefore only ever
+// makes same-origin requests, which avoids CORS and mixed-content issues.
+// NEXT_PUBLIC_API_URL can still be overridden explicitly (e.g. for local
+// development without the proxy), but the default is now the relative path.
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 // Paths that are themselves login pages — the 401 interceptor must not redirect
 // here, otherwise refreshUser() on mount would trigger an infinite reload loop.
@@ -11,7 +16,7 @@ console.log('[ApiClient] STEP Xb: NEXT_PUBLIC_API_URL env var:', process.env.NEX
 
 // Validate API_URL at runtime
 if (!process.env.NEXT_PUBLIC_API_URL) {
-  console.warn('[ApiClient] WARNING: NEXT_PUBLIC_API_URL not set, falling back to:', API_URL);
+  console.warn('[ApiClient] NEXT_PUBLIC_API_URL not set, using default:', API_URL, '(requests will be routed through the Next.js /api proxy)');
 }
 
 if (typeof window !== 'undefined') {
