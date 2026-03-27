@@ -14,7 +14,20 @@ const nextConfig = {
   // production where the frontend is served over HTTPS and the backend lives on
   // a separate domain.
   async rewrites() {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
+    let backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
+
+    // In production, Railway (and most PaaS providers) enforce HTTPS and will
+    // issue a 301 redirect for plain-HTTP requests.  A 301 causes HTTP clients
+    // to follow the redirect with GET, which turns a POST into a GET and breaks
+    // login routes.  Coerce any http:// backend URL to https:// in production
+    // so that the proxy never sends a plain-HTTP request in the first place.
+    if (process.env.NODE_ENV === 'production' && backendUrl.startsWith('http://')) {
+      console.warn(
+        '[next.config.js] BACKEND_URL is using HTTP in production — coercing to HTTPS to prevent 301 redirect issues. Set BACKEND_URL=https://... to suppress this warning.'
+      );
+      backendUrl = backendUrl.replace('http://', 'https://');
+    }
+
     return [
       {
         source: '/api/:path*',
