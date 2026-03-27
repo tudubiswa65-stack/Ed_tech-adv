@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import StudentLayout from '@/components/layout/StudentLayout';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Card, Button, Badge, Spinner, Modal } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
@@ -48,29 +47,24 @@ export default function TestDetailPage() {
 
   if (loading) {
     return (
-      <StudentLayout title="Test Details">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Spinner size="lg" />
-        </div>
-      </StudentLayout>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Spinner size="lg" />
+      </div>
     );
   }
 
   if (!test) {
     return (
-      <StudentLayout title="Test Not Found">
-        <PageWrapper title="Test Not Found">
-          <Card>
-            <p className="text-center text-gray-500 py-8">This test could not be found.</p>
-          </Card>
-        </PageWrapper>
-      </StudentLayout>
+      <PageWrapper title="Test Not Found">
+        <Card>
+          <p className="text-center text-gray-500 py-8">This test could not be found.</p>
+        </Card>
+      </PageWrapper>
     );
   }
 
   return (
-    <StudentLayout title={test.title}>
-      <PageWrapper title={test.title}>
+    <PageWrapper title={test.title}>
         <Card className="max-w-2xl mx-auto">
           <div className="text-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">{test.title}</h2>
@@ -147,6 +141,5 @@ export default function TestDetailPage() {
           </div>
         </Modal>
       </PageWrapper>
-    </StudentLayout>
   );
 }

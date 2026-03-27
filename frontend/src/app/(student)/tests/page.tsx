@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import StudentLayout from '@/components/layout/StudentLayout';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Card, Button, Badge, Spinner } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
@@ -36,11 +35,9 @@ export default function StudentTestsPage() {
 
   if (loading) {
     return (
-      <StudentLayout title="My Tests">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Spinner size="lg" />
-        </div>
-      </StudentLayout>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Spinner size="lg" />
+      </div>
     );
   }
 
@@ -53,8 +50,7 @@ export default function StudentTestsPage() {
   const currentTests = tests[activeTab];
 
   return (
-    <StudentLayout title="My Tests">
-      <PageWrapper title="My Tests">
+    <PageWrapper title="My Tests">
         {/* Tabs */}
         <div className="flex space-x-2 mb-6 border-b border-gray-200">
           {tabs.map((tab) => (
@@ -141,6 +137,5 @@ export default function StudentTestsPage() {
           </div>
         )}
       </PageWrapper>
-    </StudentLayout>
   );
 }

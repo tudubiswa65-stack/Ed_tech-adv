@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import StudentLayout from '@/components/layout/StudentLayout';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Card, Button, Badge, Spinner } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
@@ -48,17 +47,14 @@ export default function StudentDashboard() {
 
   if (loading) {
     return (
-      <StudentLayout title="Dashboard">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Spinner size="lg" />
-        </div>
-      </StudentLayout>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Spinner size="lg" />
+      </div>
     );
   }
 
   return (
-    <StudentLayout title="Dashboard">
-      <PageWrapper title={`${getGreeting()}!`}>
+    <PageWrapper title={`${getGreeting()}!`}>
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <Card>
@@ -174,6 +170,5 @@ export default function StudentDashboard() {
           </Card>
         </div>
       </PageWrapper>
-    </StudentLayout>
   );
 }
