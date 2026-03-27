@@ -217,7 +217,7 @@ export default function NotificationsPage() {
               </div>
             ) : notifications.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
-                No notifications found. Click "Create Notification" to add one.
+                No notifications found. Click &quot;Create Notification&quot; to add one.
               </div>
             ) : (
               notifications.map(notification => (

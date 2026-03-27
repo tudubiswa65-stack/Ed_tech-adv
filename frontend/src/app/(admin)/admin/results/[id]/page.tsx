@@ -260,7 +260,7 @@ export default function ResultDetailPage() {
                     {question.type === 'shortAnswer' && (
                       <div className="space-y-2">
                         <div>
-                          <span className="text-sm text-gray-500">Student's Answer:</span>
+                          <span className="text-sm text-gray-500">Student&apos;s Answer:</span>
                           <p className="mt-1 p-2 bg-white rounded border">
                             {answer?.text || 'No answer provided'}
                           </p>

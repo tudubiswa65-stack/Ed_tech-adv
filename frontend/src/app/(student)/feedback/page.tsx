@@ -145,7 +145,7 @@ export default function FeedbackPage() {
               </div>
             ) : feedbackHistory.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
-                No feedback submitted yet. We'd love to hear from you!
+                No feedback submitted yet. We&apos;d love to hear from you!
               </div>
             ) : (
               <div className="space-y-4">
