@@ -26,49 +26,70 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  console.log('[AuthProvider] Initializing AuthProvider');
+  console.log('[AuthProvider] STEP A: Initializing AuthProvider');
 
   const refreshUser = useCallback(async () => {
-    console.log('[AuthProvider] refreshUser called');
+    console.log('[AuthProvider] STEP B: refreshUser called');
     try {
       const response = await apiClient.get('/auth/me');
-      console.log('[AuthProvider] User authenticated', { user: response.data.user });
+      console.log('[AuthProvider] STEP C: User authenticated', { user: response.data.user });
       setUser(response.data.user);
     } catch (error) {
-      console.log('[AuthProvider] No authenticated user found', error);
+      console.log('[AuthProvider] STEP D: No authenticated user found', error);
       setUser(null);
     } finally {
+      console.log('[AuthProvider] STEP E: refreshUser complete, setting isLoading=false');
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    console.log('[AuthProvider] Mounting - checking authentication status');
+    console.log('[AuthProvider] STEP F: Mounting effect - checking authentication status');
     refreshUser();
   }, [refreshUser]);
 
   const login = async (email: string, password: string, role: 'admin' | 'student') => {
-    console.log('[useAuth] Login attempt started', { email: email?.substring(0, 3) + '***', role });
+    console.log('[useAuth] STEP 1: Login function entered', { 
+      email: email?.substring(0, 3) + '***', 
+      role,
+      hasApiClient: typeof apiClient !== 'undefined'
+    });
     try {
       const endpoint = role === 'admin' ? '/auth/admin/login' : '/auth/student/login';
-      console.log('[useAuth] Calling API endpoint:', endpoint);
+      console.log('[useAuth] STEP 2: Endpoint determined:', endpoint);
+      console.log('[useAuth] STEP 3: About to call apiClient.post', { 
+        fullUrl: `${apiClient.defaults.baseURL}${endpoint}`,
+        baseURL: apiClient.defaults.baseURL
+      });
+      
+      // CRITICAL: Add immediate logging after the call
       const response = await apiClient.post(endpoint, { email, password });
-      console.log('[useAuth] Login successful', { user: response.data.user });
+      console.log('[useAuth] STEP 4: apiClient.post() returned', { 
+        status: response.status,
+        hasData: !!response.data,
+        user: response.data?.user 
+      });
+      console.log('[useAuth] STEP 5: Login successful, setting user state');
       setUser(response.data.user);
-    } catch (error) {
-      console.error('[useAuth] Login failed', error);
+      console.log('[useAuth] STEP 6: Login function complete');
+    } catch (error: any) {
+      console.error('[useAuth] STEP 7: Login failed with error:', error);
+      console.error('[useAuth] STEP 7b: Error type:', typeof error);
+      console.error('[useAuth] STEP 7c: Is axios error:', error?.constructor?.name);
+      console.error('[useAuth] STEP 7d: Error message:', error?.message);
+      console.error('[useAuth] STEP 7e: Error response:', error?.response?.data);
       throw error;
     }
   };
 
   const logout = async () => {
-    console.log('[useAuth] logout called');
+    console.log('[useAuth] STEP X: logout called');
     await apiClient.post('/auth/logout');
     setUser(null);
-    console.log('[useAuth] logout completed');
+    console.log('[useAuth] STEP Y: logout completed');
   };
 
-  console.log('[AuthProvider] Rendering with state:', { user, isLoading });
+  console.log('[AuthProvider] STEP Z: Rendering with state:', { user: !!user, isLoading });
 
   return (
     <AuthContext.Provider value={{ user, isLoading, login, logout, refreshUser }}>
