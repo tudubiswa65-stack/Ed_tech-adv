@@ -56,6 +56,7 @@ export const getNotifications = async (req: AuthRequest, res: Response) => {
 // Create notification
 export const createNotification = async (req: AuthRequest, res: Response) => {
   try {
+    console.log("REQ BODY:", req.body);
     const instituteId = req.user?.instituteId;
     const adminId = req.user?.id;
     const { title, message, type, targetAudience, actionUrl, scheduledAt } = req.body;
