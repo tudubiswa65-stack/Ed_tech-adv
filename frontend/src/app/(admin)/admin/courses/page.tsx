@@ -48,8 +48,8 @@ export default function CoursesPage() {
   const fetchCourses = async () => {
     setLoading(true);
     try {
-      const response = await apiClient.get('/admin/courses');
-      setCourses(response.data || []);
+      const response = await apiClient.get<{ courses: Course[] }>('/admin/courses');
+      setCourses(response.data.courses || []);
     } catch (error) {
       console.error('Failed to fetch courses:', error);
       toast.error('Failed to load courses');
