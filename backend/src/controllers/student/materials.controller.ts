@@ -39,8 +39,11 @@ export const getStudyMaterials = async (req: AuthRequest, res: Response) => {
           )
         )
       `)
-      .eq('institute_id', instituteId)
       .eq('is_published', true);
+
+    if (instituteId) {
+      query = query.eq('institute_id', instituteId);
+    }
 
     if (subjectId) {
       query = query.eq('subject_id', subjectId);
@@ -74,7 +77,7 @@ export const getMaterialById = async (req: AuthRequest, res: Response) => {
     const studentId = req.user?.id;
     const instituteId = req.user?.instituteId;
 
-    const { data, error } = await supabaseAdmin
+    let byIdQuery = supabaseAdmin
       .from('study_materials')
       .select(`
         id,
@@ -91,9 +94,11 @@ export const getMaterialById = async (req: AuthRequest, res: Response) => {
         )
       `)
       .eq('id', id)
-      .eq('institute_id', instituteId)
-      .eq('is_published', true)
-      .single();
+      .eq('is_published', true);
+    if (instituteId) {
+      byIdQuery = byIdQuery.eq('institute_id', instituteId);
+    }
+    const { data, error } = await byIdQuery.single();
 
     if (error) {
       return res.status(404).json({ error: 'Material not found' });
@@ -103,7 +108,6 @@ export const getMaterialById = async (req: AuthRequest, res: Response) => {
     await supabaseAdmin.from('material_views').insert({
       material_id: id,
       student_id: studentId,
-      institute_id: instituteId
     });
 
     res.json(data);
@@ -119,7 +123,7 @@ export const getMaterialsBySubject = async (req: AuthRequest, res: Response) => 
     const { subjectId } = req.params;
     const instituteId = req.user?.instituteId;
 
-    const { data, error } = await supabaseAdmin
+    let subjectMatsQuery = supabaseAdmin
       .from('study_materials')
       .select(`
         id,
@@ -131,9 +135,12 @@ export const getMaterialsBySubject = async (req: AuthRequest, res: Response) => 
         created_at
       `)
       .eq('subject_id', subjectId)
-      .eq('institute_id', instituteId)
-      .eq('is_published', true)
-      .order('created_at', { ascending: false });
+      .eq('is_published', true);
+    if (instituteId) {
+      subjectMatsQuery = subjectMatsQuery.eq('institute_id', instituteId);
+    }
+    subjectMatsQuery = subjectMatsQuery.order('created_at', { ascending: false });
+    const { data, error } = await subjectMatsQuery;
 
     if (error) {
       return res.status(400).json({ error: error.message });
@@ -150,7 +157,6 @@ export const getMaterialsBySubject = async (req: AuthRequest, res: Response) => 
 export const getRecentlyViewed = async (req: AuthRequest, res: Response) => {
   try {
     const studentId = req.user?.id;
-    const instituteId = req.user?.instituteId;
 
     const { data, error } = await supabaseAdmin
       .from('material_views')
@@ -166,7 +172,6 @@ export const getRecentlyViewed = async (req: AuthRequest, res: Response) => {
         )
       `)
       .eq('student_id', studentId)
-      .eq('institute_id', instituteId)
       .order('viewed_at', { ascending: false })
       .limit(10);
 
@@ -188,7 +193,6 @@ export const getRecentlyViewed = async (req: AuthRequest, res: Response) => {
 export const getMySubjects = async (req: AuthRequest, res: Response) => {
   try {
     const studentId = req.user?.id;
-    const instituteId = req.user?.instituteId;
 
     // Get subjects from assigned tests
     const { data, error } = await supabaseAdmin
@@ -207,8 +211,7 @@ export const getMySubjects = async (req: AuthRequest, res: Response) => {
           )
         )
       `)
-      .eq('student_id', studentId)
-      .eq('institute_id', instituteId);
+      .eq('student_id', studentId);
 
     if (error) {
       return res.status(400).json({ error: error.message });
