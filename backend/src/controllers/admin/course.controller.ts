@@ -54,7 +54,7 @@ export const getCourses = async (req: Request, res: Response): Promise<void> => 
       })
     );
 
-    res.json(coursesWithCounts);
+    res.json({ courses: coursesWithCounts });
   } catch (error) {
     console.error('Get courses error:', error);
     res.status(500).json({ error: 'Internal server error' });
