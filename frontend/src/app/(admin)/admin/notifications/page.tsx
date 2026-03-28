@@ -76,14 +76,16 @@ export default function NotificationsPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      await apiClient.post('/admin/notifications', {
+      const payload = {
         title: formData.title,
         message: formData.message,
         type: formData.type,
         targetAudience: formData.targetAudience,
         actionUrl: formData.actionUrl || undefined,
         scheduledAt: formData.scheduledAt || undefined
-      });
+      };
+      console.log("Payload:", payload);
+      await apiClient.post('/admin/notifications', payload);
 
       setShowModal(false);
       resetForm();
