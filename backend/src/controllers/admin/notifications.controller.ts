@@ -9,6 +9,17 @@ interface AuthRequest extends Request {
   };
 }
 
+// Maps the new target_audience values to the legacy target_type column's allowed values.
+// target_type only accepts 'all' | 'course' | 'student'; 'students' and 'admins' both
+// map to 'all' for backward compatibility with the original schema constraint.
+const TARGET_TYPE_MAP: Record<string, string> = {
+  all: 'all',
+  students: 'all',
+  admins: 'all',
+  course: 'course',
+  student: 'student',
+};
+
 
 // Get all notifications
 export const getNotifications = async (req: AuthRequest, res: Response) => {
@@ -20,8 +31,12 @@ export const getNotifications = async (req: AuthRequest, res: Response) => {
 
     let query = supabaseAdmin
       .from('notifications')
-      .select('*', { count: 'exact' })
-      .eq('institute_id', instituteId);
+      .select('*', { count: 'exact' });
+
+    // Only filter by institute_id when it is available (single-tenant setups omit it)
+    if (instituteId) {
+      query = query.eq('institute_id', instituteId);
+    }
 
     if (type) {
       query = query.eq('type', type);
@@ -89,6 +104,9 @@ export const createNotification = async (req: AuthRequest, res: Response) => {
       ? targetAudience 
       : (VALID_TARGET_TYPES.includes(targetType) ? targetType : 'all');
 
+    // Map the new target_audience values to the legacy target_type column's valid values.
+    const resolvedTargetType = TARGET_TYPE_MAP[resolvedAudience] ?? 'all';
+
     const { data, error } = await supabaseAdmin
       .from('notifications')
       .insert({
@@ -96,12 +114,12 @@ export const createNotification = async (req: AuthRequest, res: Response) => {
         message,
         type: resolvedType,
         target_audience: resolvedAudience,
-        target_type: resolvedAudience, // Also set original column for compatibility
+        target_type: resolvedTargetType,
         action_url: actionUrl || null,
         scheduled_at: scheduledAt || null,
         // Set sent_at for immediate visibility - allows students to see notifications right away
         sent_at: scheduledAt ? null : new Date().toISOString(),
-        institute_id: instituteId,
+        institute_id: instituteId || null,
         created_by: adminId
       })
       .select()
@@ -114,10 +132,10 @@ export const createNotification = async (req: AuthRequest, res: Response) => {
         message,
         type: resolvedType,
         target_audience: resolvedAudience,
-        target_type: resolvedAudience,
+        target_type: resolvedTargetType,
         action_url: actionUrl,
         scheduled_at: scheduledAt,
-        institute_id: instituteId,
+        institute_id: instituteId || null,
         created_by: adminId
       }));
       return res.status(400).json({ error: error.message });
@@ -145,13 +163,14 @@ export const updateNotification = async (req: AuthRequest, res: Response) => {
     if (actionUrl !== undefined) updateData.action_url = actionUrl;
     if (scheduledAt !== undefined) updateData.scheduled_at = scheduledAt;
 
-    const { data, error } = await supabaseAdmin
+    let updateNotifQuery = supabaseAdmin
       .from('notifications')
       .update(updateData)
-      .eq('id', id)
-      .eq('institute_id', instituteId)
-      .select()
-      .single();
+      .eq('id', id);
+    if (instituteId) {
+      updateNotifQuery = updateNotifQuery.eq('institute_id', instituteId);
+    }
+    const { data, error } = await updateNotifQuery.select().single();
 
     if (error) {
       return res.status(400).json({ error: error.message });
@@ -170,11 +189,14 @@ export const deleteNotification = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const instituteId = req.user?.instituteId;
 
-    const { error } = await supabaseAdmin
+    let deleteNotifQuery = supabaseAdmin
       .from('notifications')
       .delete()
-      .eq('id', id)
-      .eq('institute_id', instituteId);
+      .eq('id', id);
+    if (instituteId) {
+      deleteNotifQuery = deleteNotifQuery.eq('institute_id', instituteId);
+    }
+    const { error } = await deleteNotifQuery;
 
     if (error) {
       return res.status(400).json({ error: error.message });
@@ -194,12 +216,14 @@ export const broadcastNotification = async (req: AuthRequest, res: Response) => 
     const instituteId = req.user?.instituteId;
 
     // Get the notification
-    const { data: notification, error: fetchError } = await supabaseAdmin
+    let broadcastFetchQuery = supabaseAdmin
       .from('notifications')
       .select('*')
-      .eq('id', id)
-      .eq('institute_id', instituteId)
-      .single();
+      .eq('id', id);
+    if (instituteId) {
+      broadcastFetchQuery = broadcastFetchQuery.eq('institute_id', instituteId);
+    }
+    const { data: notification, error: fetchError } = await broadcastFetchQuery.single();
 
     if (fetchError || !notification) {
       return res.status(404).json({ error: 'Notification not found' });
@@ -412,7 +436,7 @@ export const getFeedback = async (req: AuthRequest, res: Response) => {
 
     const offset = (Number(page) - 1) * Number(limit);
 
-    let query = supabaseAdmin
+    let feedbackQuery = supabaseAdmin
       .from('feedback')
       .select(`
         id,
@@ -427,20 +451,23 @@ export const getFeedback = async (req: AuthRequest, res: Response) => {
           email,
           roll_number
         )
-      `, { count: 'exact' })
-      .eq('institute_id', instituteId);
+      `, { count: 'exact' });
+
+    if (instituteId) {
+      feedbackQuery = feedbackQuery.eq('institute_id', instituteId);
+    }
 
     if (type) {
-      query = query.eq('type', type);
+      feedbackQuery = feedbackQuery.eq('type', type);
     }
     if (rating) {
-      query = query.eq('rating', rating);
+      feedbackQuery = feedbackQuery.eq('rating', rating);
     }
 
-    query = query.order('created_at', { ascending: false });
-    query = query.range(offset, offset + Number(limit) - 1);
+    feedbackQuery = feedbackQuery.order('created_at', { ascending: false });
+    feedbackQuery = feedbackQuery.range(offset, offset + Number(limit) - 1);
 
-    const { data, error, count } = await query;
+    const { data, error, count } = await feedbackQuery;
 
     if (error) {
       return res.status(400).json({ error: error.message });
@@ -466,10 +493,13 @@ export const getFeedbackStats = async (req: AuthRequest, res: Response) => {
   try {
     const instituteId = req.user?.instituteId;
 
-    const { data, error } = await supabaseAdmin
+    let feedbackStatsQuery = supabaseAdmin
       .from('feedback')
-      .select('rating, type')
-      .eq('institute_id', instituteId);
+      .select('rating, type');
+    if (instituteId) {
+      feedbackStatsQuery = feedbackStatsQuery.eq('institute_id', instituteId);
+    }
+    const { data, error } = await feedbackStatsQuery;
 
     if (error) {
       return res.status(400).json({ error: error.message });

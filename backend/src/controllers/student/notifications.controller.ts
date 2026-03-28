@@ -21,12 +21,26 @@ export const getNotifications = async (req: AuthRequest, res: Response) => {
     let query = supabaseAdmin
       .from('notifications')
       .select('*', { count: 'exact' })
-      .eq('institute_id', instituteId)
-      .or(`target_audience.eq.all,target_audience.eq.students`)
-      .or(`target_type.eq.all,target_type.eq.course,target_type.eq.student`);
+      // Filter to notifications targeting students or all users.
+      // Use a single .or() so the conditions are OR-ed, not AND-ed.
+      .or('target_audience.eq.all,target_audience.eq.students');
 
-    if (unreadOnly === 'true') {
-      query = query.not('id', 'in', `(SELECT notification_id FROM notification_reads WHERE student_id = '${studentId}')`);
+    // Only filter by institute_id when available (single-tenant setups omit it)
+    if (instituteId) {
+      query = query.eq('institute_id', instituteId);
+    }
+
+    if (unreadOnly === 'true' && studentId) {
+      // Fetch the IDs of notifications already read by this student
+      const { data: readRows } = await supabaseAdmin
+        .from('notification_reads')
+        .select('notification_id')
+        .eq('student_id', studentId);
+
+      const readIds = readRows?.map((r) => r.notification_id) ?? [];
+      if (readIds.length > 0) {
+        query = query.not('id', 'in', readIds);
+      }
     }
 
     query = query.order('created_at', { ascending: false });
@@ -102,12 +116,14 @@ export const markAllAsRead = async (req: AuthRequest, res: Response) => {
     const instituteId = req.user?.instituteId;
 
     // Get all unread notifications
-    const { data: notifications } = await supabaseAdmin
+    let allQuery = supabaseAdmin
       .from('notifications')
       .select('id')
-      .eq('institute_id', instituteId)
-      .or(`target_audience.eq.all,target_audience.eq.students`)
-      .or(`target_type.eq.all,target_type.eq.course,target_type.eq.student`);
+      .or('target_audience.eq.all,target_audience.eq.students');
+    if (instituteId) {
+      allQuery = allQuery.eq('institute_id', instituteId);
+    }
+    const { data: notifications } = await allQuery;
 
     if (!notifications || notifications.length === 0) {
       return res.json({ message: 'No notifications to mark' });
@@ -140,18 +156,23 @@ export const getUnreadCount = async (req: AuthRequest, res: Response) => {
     const studentId = req.user?.id;
     const instituteId = req.user?.instituteId;
 
-    const { count: total } = await supabaseAdmin
+    let totalQuery = supabaseAdmin
       .from('notifications')
       .select('*', { count: 'exact', head: true })
-      .eq('institute_id', instituteId)
-      .or(`target_audience.eq.all,target_audience.eq.students`)
-      .or(`target_type.eq.all,target_type.eq.course,target_type.eq.student`);
+      .or('target_audience.eq.all,target_audience.eq.students');
+    if (instituteId) {
+      totalQuery = totalQuery.eq('institute_id', instituteId);
+    }
+    const { count: total } = await totalQuery;
 
-    const { count: read } = await supabaseAdmin
+    let readQuery = supabaseAdmin
       .from('notification_reads')
       .select('*', { count: 'exact', head: true })
-      .eq('student_id', studentId)
-      .eq('institute_id', instituteId);
+      .eq('student_id', studentId);
+    if (instituteId) {
+      readQuery = readQuery.eq('institute_id', instituteId);
+    }
+    const { count: read } = await readQuery;
 
     res.json({ unreadCount: (total || 0) - (read || 0) });
   } catch (error) {
