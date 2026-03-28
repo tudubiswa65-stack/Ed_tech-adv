@@ -29,7 +29,8 @@ export default function TestDetailPage() {
     const fetchTest = async () => {
       try {
         const response = await apiClient.get(`/student/tests/${params.id}`);
-        setTest(response.data);
+        const responseData = (response.data as any)?.success ? (response.data as any).data : response.data;
+        setTest(responseData);
       } catch (error) {
         console.error('Failed to fetch test:', error);
       } finally {

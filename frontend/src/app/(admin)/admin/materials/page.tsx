@@ -111,7 +111,7 @@ export default function MaterialsPage() {
 
       const response = await apiClient.get<MaterialsResponse>(`/admin/materials?${params}`);
       setMaterials(response.data.materials || []);
-      setTotalPages(response.data.pagination.totalPages);
+      setTotalPages(response.data.pagination?.totalPages ?? 1);
     } catch (error) {
       console.error('Error fetching materials:', error);
     } finally {

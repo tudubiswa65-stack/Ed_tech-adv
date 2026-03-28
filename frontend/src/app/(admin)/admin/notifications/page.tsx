@@ -63,8 +63,9 @@ export default function NotificationsPage() {
       if (filters.targetAudience) params.append('targetAudience', filters.targetAudience);
 
       const response = await apiClient.get<NotificationsResponse>(`/admin/notifications?${params}`);
-      setNotifications(response.data.notifications || []);
-      setTotalPages(response.data.pagination.totalPages);
+      const responseData = (response.data as any)?.success ? (response.data as any).data : response.data;
+      setNotifications(responseData?.notifications || []);
+      setTotalPages(responseData?.pagination?.totalPages ?? 1);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {

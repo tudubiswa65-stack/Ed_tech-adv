@@ -36,8 +36,9 @@ export default function TakeTestPage() {
     const startTest = async () => {
       try {
         const response = await apiClient.post(`/student/tests/${params.id}/start`);
-        setQuestions(response.data.questions);
-        setTestId(response.data.test_id);
+        const responseData = (response.data as any)?.success ? (response.data as any).data : response.data;
+        setQuestions(responseData.questions);
+        setTestId(responseData.test_id);
         // Set timer (assuming 60 mins default)
         setTimeLeft(60 * 60); // in seconds
       } catch (error: any) {
@@ -116,7 +117,8 @@ export default function TakeTestPage() {
         time_taken_secs: 60 * 60 - timeLeft,
       });
 
-      router.push(`/tests/${testId}/result?resultId=${response.data.result.id}`);
+      const responseData = (response.data as any)?.success ? (response.data as any).data : response.data;
+      router.push(`/tests/${testId}/result?resultId=${responseData.result.id}`);
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to submit test');
     } finally {

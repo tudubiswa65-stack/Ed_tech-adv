@@ -24,7 +24,7 @@ interface Result {
     title: string;
     total_marks: number;
     passing_marks: number;
-    duration_minutes: number;
+    time_limit_mins: number;
     questions: Question[];
   };
 }
@@ -59,7 +59,8 @@ export default function ResultDetailPage() {
   const fetchResult = async () => {
     try {
       const response = await apiClient.get(`/student/results/${resultId}`);
-      setResult(response.data);
+      const responseData = (response.data as any)?.success ? (response.data as any).data : response.data;
+      setResult(responseData);
     } catch (error) {
       console.error('Error fetching result:', error);
       alert('Failed to load result');
