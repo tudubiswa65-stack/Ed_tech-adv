@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { createHmac, createHash, timingSafeEqual } from 'crypto';
+import { createHmac, createHash, timingSafeEqual, randomBytes } from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { AuthRequest } from '../../types';
 import supabaseAdmin from '../../db/supabaseAdmin';
@@ -102,7 +102,7 @@ export const recordPayment = async (req: AuthRequest, res: Response): Promise<vo
     }
 
     const timestamp = new Date().toISOString();
-    const txId = (transaction_id as string | undefined) || `TXN-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+    const txId = (transaction_id as string | undefined) || `TXN-${Date.now()}-${randomBytes(8).toString('hex')}`;
     const receiptSignature = generateReceiptSignature(student_id as string, parsedAmount, txId, timestamp);
     const receiptNumber = generateReceiptNumber(student_id as string, timestamp);
 
