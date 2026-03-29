@@ -465,106 +465,181 @@ class MockSupabaseClient {
 }
 
 /**
- * Create a mock Supabase query result with .select(), .eq(), etc. chainable API
+ * Create a chainable mock query builder for a given table.
+ *
+ * This replaces the old createMockQuery which was one level of nesting too
+ * deep (it returned `{ from: fn }` instead of `{ select, eq, insert, … }`),
+ * causing every real-Supabase-style chain to throw a TypeError and the
+ * login endpoint to return 500 instead of the expected result.
+ *
+ * It also fixes the inability to chain multiple .eq() calls (the old
+ * implementation returned `{ single, then }` after the first .eq(), with no
+ * further .eq() method – the admin login uses two: email + is_active).
  */
-function createMockQuery(tableName: string, filters: any[] = []): any {
-  // This creates an object that can be chained like: .from('table').select().eq('field', 'value')
-  const mockClient = new MockSupabaseClient();
-  
-  // Return a thenable that simulates the query execution
+function createTableQuery(
+  tableName: string,
+  filters: Array<{ field: string; operator: string; value: any }> = [],
+  orderBy?: { field: string; ascending: boolean },
+  limitCount?: number
+): any {
+  const executeSelect = () =>
+    executeMockQuery(tableName, filters, orderBy, limitCount);
+
+  const addFilter = (field: string, operator: string, value: any) =>
+    createTableQuery(
+      tableName,
+      [...filters, { field, operator, value }],
+      orderBy,
+      limitCount
+    );
+
+  // Build the update sub-chain (accumulates its own eq filters before execute)
+  const buildUpdateChain = (
+    updateData: any,
+    updateFilters: Array<{ field: string; operator: string; value: any }>
+  ): any => {
+    const executeUpdate = () => {
+      const tableData: any[] = mockStorage[tableName] || [];
+      const updated: any[] = [];
+      tableData.forEach((row, index) => {
+        const matches =
+          updateFilters.length === 0 ||
+          updateFilters.every((f) => row[f.field] === f.value);
+        if (matches) {
+          tableData[index] = {
+            ...row,
+            ...updateData,
+            updated_at: new Date().toISOString(),
+          };
+          updated.push(tableData[index]);
+        }
+      });
+      console.log(
+        `[SAFE_MODE:DB] Update: ${tableName} - updated ${updated.length} records`
+      );
+      return updated;
+    };
+
+    return {
+      eq: (field: string, value: any) =>
+        buildUpdateChain(updateData, [
+          ...updateFilters,
+          { field, operator: 'eq', value },
+        ]),
+      select: (_fields?: string) => ({
+        single: async () => {
+          const updated = executeUpdate();
+          return { data: updated[0] ?? null, error: null };
+        },
+        then: (resolve: any) =>
+          Promise.resolve({ data: executeUpdate(), error: null }).then(resolve),
+      }),
+      then: (resolve: any) =>
+        Promise.resolve({ data: executeUpdate(), error: null }).then(resolve),
+    };
+  };
+
+  // Build the delete sub-chain
+  const buildDeleteChain = (
+    deleteFilters: Array<{ field: string; operator: string; value: any }>
+  ): any => ({
+    eq: (field: string, value: any) =>
+      buildDeleteChain([
+        ...deleteFilters,
+        { field, operator: 'eq', value },
+      ]),
+    then: (resolve: any) => {
+      const tableData: any[] = mockStorage[tableName] || [];
+      const initialLength = tableData.length;
+      mockStorage[tableName] = tableData.filter((row) =>
+        deleteFilters.length === 0
+          ? false // delete nothing if no filters provided
+          : !deleteFilters.every((f) => row[f.field] === f.value)
+      );
+      console.log(
+        `[SAFE_MODE:DB] Delete: ${tableName} - removed ${initialLength - mockStorage[tableName].length} records`
+      );
+      return Promise.resolve({ data: null, error: null }).then(resolve);
+    },
+  });
+
   return {
-    from: (table: string) => ({
-      select: (fields?: string) => ({
-        eq: (field: string, value: any) => ({
-          single: () => Promise.resolve({ 
-            data: getMockSingleResult(table, field, value), 
-            error: null 
+    // .select() just returns the same builder (field selection is ignored in mock)
+    select: (_fields?: string) =>
+      createTableQuery(tableName, filters, orderBy, limitCount),
+
+    // Filter methods – each returns a NEW builder with the filter appended
+    eq:    (field: string, value: any) => addFilter(field, 'eq',    value),
+    neq:   (field: string, value: any) => addFilter(field, 'neq',   value),
+    gt:    (field: string, value: any) => addFilter(field, 'gt',    value),
+    gte:   (field: string, value: any) => addFilter(field, 'gte',   value),
+    lt:    (field: string, value: any) => addFilter(field, 'lt',    value),
+    lte:   (field: string, value: any) => addFilter(field, 'lte',   value),
+    like:  (field: string, value: any) => addFilter(field, 'like',  value),
+    ilike: (field: string, value: any) => addFilter(field, 'ilike', value),
+    in:    (field: string, values: any[]) => addFilter(field, 'in', values),
+    is:    (field: string, value: any) => addFilter(field, 'is',    value),
+
+    order: (field: string, options?: { ascending: boolean }) =>
+      createTableQuery(tableName, filters, {
+        field,
+        ascending: options?.ascending ?? true,
+      }, limitCount),
+
+    limit: (count: number) =>
+      createTableQuery(tableName, filters, orderBy, count),
+
+    range: (from: number, to: number) =>
+      createTableQuery(tableName, filters, orderBy, to - from + 1),
+
+    // Execute as single-row query
+    single: async () => {
+      const result = executeSelect();
+      if (!result.data || result.data.length === 0) {
+        return {
+          data: null,
+          error: { message: 'No rows found', code: 'PGRST116' },
+        };
+      }
+      return { data: result.data[0], error: null };
+    },
+
+    // INSERT – returns a sub-chain with .select().single() / direct await
+    insert: (data: any) => {
+      const isBatch = Array.isArray(data);
+      const records: any[] = isBatch ? data : [data];
+      return {
+        select: (_fields?: string) => ({
+          single: async () => ({
+            data: insertMockData(tableName, records[0]),
+            error: null,
           }),
-          then: (onFulfilled: any) => {
-            const result = executeMockQuery(table, [{ field, operator: 'eq', value }]);
-            return onFulfilled(result);
-          },
+          then: (resolve: any) =>
+            Promise.resolve({
+              data: records.map((r) => insertMockData(tableName, r)),
+              error: null,
+            }).then(resolve),
         }),
-        neq: (field: string, value: any) => ({
-          then: (onFulfilled: any) => {
-            const result = executeMockQuery(table, [{ field, operator: 'neq', value }]);
-            return onFulfilled(result);
-          },
-        }),
-        in: (field: string, values: any[]) => ({
-          then: (onFulfilled: any) => {
-            const result = executeMockQuery(table, [{ field, operator: 'in', value: values }]);
-            return onFulfilled(result);
-          },
-        }),
-        is: (field: string, value: any) => ({
-          then: (onFulfilled: any) => {
-            const result = executeMockQuery(table, [{ field, operator: 'is', value }]);
-            return onFulfilled(result);
-          },
-        }),
-        order: (field: string, options?: { ascending: boolean }) => ({
-          then: (onFulfilled: any) => {
-            const result = executeMockQuery(table, [], { field, ascending: options?.ascending ?? true });
-            return onFulfilled(result);
-          },
-        }),
-        limit: (count: number) => ({
-          then: (onFulfilled: any) => {
-            const result = executeMockQuery(table, [], undefined, count);
-            return onFulfilled(result);
-          },
-        }),
-        then: (onFulfilled: any) => {
-          const result = executeMockQuery(table, []);
-          return onFulfilled(result);
+        then: (resolve: any) => {
+          const inserted = records.map((r) => insertMockData(tableName, r));
+          // Match real Supabase: single-record insert returns one object; batch returns array
+          return Promise.resolve({
+            data: isBatch ? inserted : inserted[0],
+            error: null,
+          }).then(resolve);
         },
-      }),
-      insert: (data: any) => ({
-        select: () => ({
-          single: () => Promise.resolve({ 
-            data: insertMockData(table, data), 
-            error: null 
-          }),
-          then: (onFulfilled: any) => {
-            return onFulfilled({ 
-              data: [insertMockData(table, data)], 
-              error: null 
-            });
-          },
-        }),
-        then: (onFulfilled: any) => {
-          return onFulfilled({ 
-            data: [insertMockData(table, data)], 
-            error: null 
-          });
-        },
-      }),
-      update: (data: any) => ({
-        eq: (field: string, value: any) => ({
-          then: (onFulfilled: any) => {
-            const result = updateMockData(table, field, value, data);
-            return onFulfilled({ data: result, error: null });
-          },
-        }),
-        then: (onFulfilled: any) => {
-          const result = updateMockData(table, '', null, data);
-          return onFulfilled({ data: result, error: null });
-        },
-      }),
-      delete: () => ({
-        eq: (field: string, value: any) => ({
-          then: (onFulfilled: any) => {
-            deleteMockData(table, field, value);
-            return onFulfilled({ data: null, error: null });
-          },
-        }),
-      }),
-      then: (onFulfilled: any) => {
-        const result = executeMockQuery(table, []);
-        return onFulfilled(result);
-      },
-    }),
+      };
+    },
+
+    // UPDATE – returns a sub-chain with .eq() / .select().single() / direct await
+    update: (data: any) => buildUpdateChain(data, []),
+
+    // DELETE – returns a sub-chain with .eq() / direct await
+    delete: () => buildDeleteChain([]),
+
+    // Make the builder itself thenable so `await .from('t').select()` works
+    then: (resolve: any, reject?: any) =>
+      Promise.resolve(executeSelect()).then(resolve, reject),
   };
 }
 
@@ -768,7 +843,7 @@ function deleteMockData(tableName: string, filterField: string, filterValue: any
 initializeMockStorage();
 
 export const mockSupabase = {
-  from: (tableName: string) => createMockQuery(tableName),
+  from: (tableName: string) => createTableQuery(tableName),
 };
 
 export default mockSupabase;
