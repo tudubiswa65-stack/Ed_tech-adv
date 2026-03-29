@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { supabaseAdmin } from '../db/supabaseAdmin';
 import config from '../config/env';
+import { isStudentActive, resolveStudentStatus } from '../utils/studentStatus';
 
 // Use JWT secret from centralized config
 const JWT_SECRET = config.jwtSecret;
@@ -106,16 +107,26 @@ export const studentLogin = async (req: LoginRequest, res: Response): Promise<vo
       return;
     }
 
-    // Fetch student by email
+    // Fetch student by email – check both status (new) and is_active (legacy)
     const { data: student, error } = await supabaseAdmin
       .from('students')
       .select('*')
       .eq('email', email)
-      .eq('is_active', true)
       .single();
 
     if (error || !student) {
       res.status(401).json({ success: false, error: 'Invalid credentials' });
+      return;
+    }
+
+    // Support both new 'status' column and legacy 'is_active' boolean
+    if (!isStudentActive(student)) {
+      const effectiveStatus = resolveStudentStatus(student);
+      const message =
+        effectiveStatus === 'SUSPENDED'
+          ? 'Your account has been suspended. Please contact your institution.'
+          : 'Your account is inactive. Please contact your institution.';
+      res.status(403).json({ success: false, error: message });
       return;
     }
 

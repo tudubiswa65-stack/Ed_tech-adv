@@ -2,11 +2,13 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { AuthRequest, JWTPayload, UserRole } from '../types';
 import config from '../config/env';
+import { supabaseAdmin } from '../db/supabaseAdmin';
+import { isStudentActive, resolveStudentStatus } from '../utils/studentStatus';
 
 // Use JWT secret from centralized config
 const JWT_SECRET = config.jwtSecret;
 
-export const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction): void => {
+export const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     // Get token from cookie
     const token = req.cookies?.token;
@@ -15,7 +17,7 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
       path: req.path,
       method: req.method,
       hasCookieToken: !!token,
-      cookieTokenPrefix: token?.substring(0, 20) + '...',
+      cookieTokenPrefix: token ? token.substring(0, 20) + '...' : 'none',
       allCookies: Object.keys(req.cookies || {})
     });
 
@@ -33,6 +35,33 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
       userRole: decoded.role,
       userEmail: decoded.email
     });
+
+    // For students: enforce real-time status check on every request
+    // This ensures that when an admin deactivates/suspends a student,
+    // the effect is immediate even for already-logged-in students.
+    if (decoded.role === 'student') {
+      const { data: student, error } = await supabaseAdmin
+        .from('students')
+        .select('id, status, is_active')
+        .eq('id', decoded.id)
+        .single();
+
+      if (error || !student) {
+        res.status(401).json({ error: 'Account not found' });
+        return;
+      }
+
+      // Support both new 'status' column and legacy 'is_active' boolean
+      if (!isStudentActive(student)) {
+        const effectiveStatus = resolveStudentStatus(student);
+        const message =
+          effectiveStatus === 'SUSPENDED'
+            ? 'Your account has been suspended. Please contact your institution.'
+            : 'Your account is inactive. Please contact your institution.';
+        res.status(403).json({ error: message, code: 'ACCOUNT_INACTIVE' });
+        return;
+      }
+    }
 
     // Attach user to request
     req.user = decoded;
