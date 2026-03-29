@@ -67,9 +67,10 @@ export default function AdminAttendancePage() {
   const fetchStudents = async (branchId: string) => {
     try {
       const response = await apiClient.get(`/admin/students?branch_id=${branchId}`);
-      setStudents(response.data.students || []);
+      const responseData = response.data?.success ? response.data.data : response.data;
+      setStudents(responseData?.students || []);
       const initialMarkData: Record<string, string> = {};
-      response.data.students?.forEach((s: Student) => {
+      responseData?.students?.forEach((s: Student) => {
         initialMarkData[s.id] = 'present';
       });
       setMarkData(initialMarkData);

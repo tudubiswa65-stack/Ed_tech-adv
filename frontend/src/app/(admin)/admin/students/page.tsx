@@ -69,8 +69,9 @@ export default function StudentsPage() {
       });
 
       const response = await apiClient.get(`/admin/students?${params}`);
-      setStudents(response.data.students || []);
-      setTotal(response.data.total || 0);
+      const responseData = response.data?.success ? response.data.data : response.data;
+      setStudents(responseData?.students || []);
+      setTotal(responseData?.total || 0);
     } catch (error) {
       console.error('Failed to fetch students:', error);
       toast.error('Failed to load students');

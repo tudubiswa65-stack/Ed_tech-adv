@@ -24,7 +24,7 @@ interface Result {
     title: string;
     total_marks: number;
     passing_marks: number;
-    duration_minutes: number;
+    time_limit_mins: number;
     questions: Question[];
   };
   students: {

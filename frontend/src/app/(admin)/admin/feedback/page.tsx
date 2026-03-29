@@ -65,8 +65,9 @@ export default function FeedbackPage() {
       if (filters.rating) params.append('rating', filters.rating);
 
       const response = await apiClient.get<FeedbackResponse>(`/admin/notifications/feedback?${params}`);
-      setFeedback(response.data.feedback || []);
-      setTotalPages(response.data.pagination.totalPages);
+      const responseData = (response.data as any)?.success ? (response.data as any).data : response.data;
+      setFeedback(responseData?.feedback || []);
+      setTotalPages(responseData?.pagination?.totalPages ?? 1);
     } catch (error) {
       console.error('Error fetching feedback:', error);
     } finally {
@@ -77,7 +78,8 @@ export default function FeedbackPage() {
   const fetchStats = async () => {
     try {
       const response = await apiClient.get('/admin/notifications/feedback/stats');
-      setStats(response.data);
+      const responseData = (response.data as any)?.success ? (response.data as any).data : response.data;
+      setStats(responseData);
     } catch (error) {
       console.error('Error fetching feedback stats:', error);
     }

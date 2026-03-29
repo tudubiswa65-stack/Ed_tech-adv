@@ -60,7 +60,8 @@ export default function AdminPaymentsPage() {
   const fetchStudents = async () => {
     try {
       const response = await apiClient.get('/admin/students?limit=100');
-      setStudents(response.data.students || []);
+      const responseData = response.data?.success ? response.data.data : response.data;
+      setStudents(responseData?.students || []);
     } catch (error) {
       toast.error('Failed to load students');
     }

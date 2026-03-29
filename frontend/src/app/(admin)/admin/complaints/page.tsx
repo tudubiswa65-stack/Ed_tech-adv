@@ -75,8 +75,9 @@ export default function ComplaintsPage() {
       if (filters.category) params.append('category', filters.category);
 
       const response = await apiClient.get<ComplaintsResponse>(`/admin/notifications/complaints?${params}`);
-      setComplaints(response.data.complaints || []);
-      setTotalPages(response.data.pagination.totalPages);
+      const responseData = (response.data as any)?.success ? (response.data as any).data : response.data;
+      setComplaints(responseData?.complaints || []);
+      setTotalPages(responseData?.pagination?.totalPages ?? 1);
     } catch (error) {
       console.error('Error fetching complaints:', error);
     } finally {
@@ -87,8 +88,9 @@ export default function ComplaintsPage() {
   const viewComplaint = async (id: string) => {
     try {
       const response = await apiClient.get(`/admin/notifications/complaints/${id}`);
-      setSelectedComplaint(response.data);
-      setReplyStatus(response.data.status);
+      const responseData = (response.data as any)?.success ? (response.data as any).data : response.data;
+      setSelectedComplaint(responseData);
+      setReplyStatus(responseData?.status);
       setShowDetailModal(true);
     } catch (error) {
       console.error('Error fetching complaint:', error);

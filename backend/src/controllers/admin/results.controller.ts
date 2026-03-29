@@ -112,7 +112,7 @@ export const getResultById = async (req: AuthRequest, res: Response) => {
           title,
           total_marks,
           passing_marks,
-          duration_minutes,
+          time_limit_mins,
           questions
         ),
         students (
