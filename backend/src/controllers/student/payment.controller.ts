@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { AuthRequest } from '../../types';
-import supabaseAdmin from '../../db/supabaseAdmin';
+import { supabaseAdmin } from '../../db/supabaseAdmin';
 
 export const getMyPayments = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -12,10 +12,14 @@ export const getMyPayments = async (req: AuthRequest, res: Response): Promise<vo
       .eq('student_id', student_id)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      res.status(400).json({ success: false, error: error.message });
+      return;
+    }
 
-    res.json({ data });
+    res.json({ success: true, data: data || [] });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    console.error('Get my payments error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };

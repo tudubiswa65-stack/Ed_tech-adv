@@ -155,7 +155,7 @@ export const getTestDetails = async (req: StudentRequest, res: Response): Promis
       success: true,
       data: {
         ...test,
-        course_name: (test.courses as any)?.[0]?.name,
+        course_name: (test.courses as any)?.name,
         question_count: questionCount || 0,
         has_submitted: !!result,
         assignment_status: assignment.status,

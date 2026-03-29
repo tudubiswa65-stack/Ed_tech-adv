@@ -1,17 +1,12 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
-
-interface StudentRequest extends Request {
-  user?: {
-    id: string;
-    role: string;
-  };
-}
+import { AuthRequest } from '../../types';
 
 // Get student dashboard data
-export const getStudentDashboard = async (req: StudentRequest, res: Response): Promise<void> => {
+export const getStudentDashboard = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const studentId = req.user?.id;
+    const instituteId = req.user?.instituteId;
 
     if (!studentId) {
       res.status(401).json({ success: false, error: 'Unauthorized' });
@@ -21,31 +16,18 @@ export const getStudentDashboard = async (req: StudentRequest, res: Response): P
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const weekFromNow = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const weekFromNow = new Date(today);
     weekFromNow.setDate(weekFromNow.getDate() + 7);
 
-    // Get today's assigned tests (due today, not submitted)
-    const { data: todayTests } = await supabaseAdmin
+    // Get today's assigned tests (scheduled for today, pending)
+    let todayTestsQuery = supabaseAdmin
       .from('test_assignments')
       .select(`
         id,
-        tests (
-          id,
-          title,
-          time_limit_mins,
-          courses (name)
-        )
-      `)
-      .eq('student_id', studentId)
-      .eq('status', 'pending')
-      .gte('created_at', today.toISOString());
-
-    // Get upcoming tests (next 7 days, scheduled)
-    const { data: upcomingTests } = await supabaseAdmin
-      .from('test_assignments')
-      .select(`
-        id,
-        tests (
+        tests!inner (
           id,
           title,
           time_limit_mins,
@@ -56,11 +38,41 @@ export const getStudentDashboard = async (req: StudentRequest, res: Response): P
       .eq('student_id', studentId)
       .eq('status', 'pending')
       .gte('tests.scheduled_at', today.toISOString())
+      .lt('tests.scheduled_at', tomorrow.toISOString());
+
+    if (instituteId) {
+      todayTestsQuery = todayTestsQuery.eq('tests.institute_id', instituteId);
+    }
+
+    const { data: todayTests } = await todayTestsQuery;
+
+    // Get upcoming tests (next 7 days, scheduled, pending)
+    let upcomingTestsQuery = supabaseAdmin
+      .from('test_assignments')
+      .select(`
+        id,
+        tests!inner (
+          id,
+          title,
+          time_limit_mins,
+          scheduled_at,
+          courses (name)
+        )
+      `)
+      .eq('student_id', studentId)
+      .eq('status', 'pending')
+      .gte('tests.scheduled_at', tomorrow.toISOString())
       .lte('tests.scheduled_at', weekFromNow.toISOString())
       .limit(5);
 
+    if (instituteId) {
+      upcomingTestsQuery = upcomingTestsQuery.eq('tests.institute_id', instituteId);
+    }
+
+    const { data: upcomingTests } = await upcomingTestsQuery;
+
     // Get last 3 results - use correct field names
-    const { data: recentResults } = await supabaseAdmin
+    let recentResultsQuery = supabaseAdmin
       .from('results')
       .select(`
         id,
@@ -74,42 +86,63 @@ export const getStudentDashboard = async (req: StudentRequest, res: Response): P
       .order('submitted_at', { ascending: false })
       .limit(3);
 
+    if (instituteId) {
+      recentResultsQuery = recentResultsQuery.eq('institute_id', instituteId);
+    }
+
+    const { data: recentResults } = await recentResultsQuery;
+
+    // Get stats from students view for streak
+    let studentStatsQuery = supabaseAdmin
+      .from('students')
+      .select('current_streak')
+      .eq('id', studentId);
+
+    if (instituteId) {
+      studentStatsQuery = studentStatsQuery.eq('institute_id', instituteId);
+    }
+
+    const { data: studentStats } = await studentStatsQuery.single();
+
     // Get stats
-    const { count: totalTests } = await supabaseAdmin
+    let totalTestsQuery = supabaseAdmin
       .from('results')
       .select('*', { count: 'exact', head: true })
       .eq('student_id', studentId);
 
-    const { data: avgScoreData } = await supabaseAdmin
+    if (instituteId) {
+      totalTestsQuery = totalTestsQuery.eq('institute_id', instituteId);
+    }
+
+    const { count: totalTests } = await totalTestsQuery;
+
+    let avgScoreQuery = supabaseAdmin
       .from('results')
       .select('percentage')
       .eq('student_id', studentId);
+
+    if (instituteId) {
+      avgScoreQuery = avgScoreQuery.eq('institute_id', instituteId);
+    }
+
+    const { data: avgScoreData } = await avgScoreQuery;
 
     const avgScore = avgScoreData && avgScoreData.length > 0
       ? avgScoreData.reduce((sum, r) => sum + (r.percentage || 0), 0) / avgScoreData.length
       : 0;
 
-    const { data: bestScoreData } = await supabaseAdmin
+    let bestScoreQuery = supabaseAdmin
       .from('results')
       .select('percentage')
       .eq('student_id', studentId)
       .order('percentage', { ascending: false })
       .limit(1);
 
-    // Calculate streak (consecutive days with submissions)
-    const { data: allResults } = await supabaseAdmin
-      .from('results')
-      .select('submitted_at')
-      .eq('student_id', studentId)
-      .order('submitted_at', { ascending: false });
-
-    let streak = 0;
-    if (allResults && allResults.length > 0) {
-      const uniqueDays = new Set(
-        allResults.map((r) => new Date(r.submitted_at).toDateString())
-      );
-      streak = uniqueDays.size;
+    if (instituteId) {
+      bestScoreQuery = bestScoreQuery.eq('institute_id', instituteId);
     }
+
+    const { data: bestScoreData } = await bestScoreQuery;
 
     res.json({
       success: true,
@@ -121,7 +154,7 @@ export const getStudentDashboard = async (req: StudentRequest, res: Response): P
           totalTests: totalTests || 0,
           avgScore: Math.round(avgScore * 10) / 10,
           bestScore: bestScoreData?.[0]?.percentage || 0,
-          streak,
+          streak: studentStats?.current_streak || 0,
         },
       },
     });

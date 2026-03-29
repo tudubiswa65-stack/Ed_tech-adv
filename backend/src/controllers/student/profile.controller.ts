@@ -35,13 +35,13 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
       .single();
 
     if (error) {
-      return res.status(404).json({ error: 'Profile not found' });
+      return res.status(404).json({ success: false, error: 'Profile not found' });
     }
 
-    res.json(data);
+    res.json({ success: true, data });
   } catch (error) {
     console.error('Get profile error:', error);
-    res.status(500).json({ error: 'Failed to fetch profile' });
+    res.status(500).json({ success: false, error: 'Failed to fetch profile' });
   }
 };
 
@@ -66,13 +66,13 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       .single();
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({ success: false, error: error.message });
     }
 
-    res.json(data);
+    res.json({ success: true, data });
   } catch (error) {
     console.error('Update profile error:', error);
-    res.status(500).json({ error: 'Failed to update profile' });
+    res.status(500).json({ success: false, error: 'Failed to update profile' });
   }
 };
 
@@ -83,11 +83,11 @@ export const changePassword = async (req: AuthRequest, res: Response) => {
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ error: 'Current and new passwords are required' });
+      return res.status(400).json({ success: false, error: 'Current and new passwords are required' });
     }
 
     if (newPassword.length < 8) {
-      return res.status(400).json({ error: 'New password must be at least 8 characters' });
+      return res.status(400).json({ success: false, error: 'New password must be at least 8 characters' });
     }
 
     // Get current password hash
@@ -98,14 +98,14 @@ export const changePassword = async (req: AuthRequest, res: Response) => {
       .single();
 
     if (fetchError || !student) {
-      return res.status(404).json({ error: 'Student not found' });
+      return res.status(404).json({ success: false, error: 'Student not found' });
     }
 
     // Verify current password
     const isValid = await bcrypt.compare(currentPassword, student.password_hash);
 
     if (!isValid) {
-      return res.status(401).json({ error: 'Current password is incorrect' });
+      return res.status(401).json({ success: false, error: 'Current password is incorrect' });
     }
 
     // Hash new password
@@ -117,13 +117,13 @@ export const changePassword = async (req: AuthRequest, res: Response) => {
       .eq('id', studentId);
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({ success: false, error: error.message });
     }
 
-    res.json({ message: 'Password changed successfully' });
+    res.json({ success: true, message: 'Password changed successfully' });
   } catch (error) {
     console.error('Change password error:', error);
-    res.status(500).json({ error: 'Failed to change password' });
+    res.status(500).json({ success: false, error: 'Failed to change password' });
   }
 };
 
@@ -144,13 +144,13 @@ export const getActivity = async (req: AuthRequest, res: Response) => {
       .limit(Number(limit));
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({ success: false, error: error.message });
     }
 
-    res.json(data);
+    res.json({ success: true, data: data || [] });
   } catch (error) {
     console.error('Get activity error:', error);
-    res.status(500).json({ error: 'Failed to fetch activity' });
+    res.status(500).json({ success: false, error: 'Failed to fetch activity' });
   }
 };
 
@@ -161,7 +161,7 @@ export const deleteAccount = async (req: AuthRequest, res: Response) => {
     const { password } = req.body;
 
     if (!password) {
-      return res.status(400).json({ error: 'Password is required to delete account' });
+      return res.status(400).json({ success: false, error: 'Password is required to delete account' });
     }
 
     // Verify password
@@ -172,13 +172,13 @@ export const deleteAccount = async (req: AuthRequest, res: Response) => {
       .single();
 
     if (fetchError || !student) {
-      return res.status(404).json({ error: 'Student not found' });
+      return res.status(404).json({ success: false, error: 'Student not found' });
     }
 
     const isValid = await bcrypt.compare(password, student.password_hash);
 
     if (!isValid) {
-      return res.status(401).json({ error: 'Incorrect password' });
+      return res.status(401).json({ success: false, error: 'Incorrect password' });
     }
 
     // Soft delete by deactivating
@@ -188,13 +188,13 @@ export const deleteAccount = async (req: AuthRequest, res: Response) => {
       .eq('id', studentId);
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({ success: false, error: error.message });
     }
 
-    res.json({ message: 'Account deleted successfully' });
+    res.json({ success: true, message: 'Account deleted successfully' });
   } catch (error) {
     console.error('Delete account error:', error);
-    res.status(500).json({ error: 'Failed to delete account' });
+    res.status(500).json({ success: false, error: 'Failed to delete account' });
   }
 };
 
@@ -213,10 +213,10 @@ export const getNotificationPreferences = async (req: AuthRequest, res: Response
     };
 
     // Could be stored in a separate table, returning defaults for now
-    res.json(defaultPrefs);
+    res.json({ success: true, data: defaultPrefs });
   } catch (error) {
     console.error('Get notification preferences error:', error);
-    res.status(500).json({ error: 'Failed to fetch preferences' });
+    res.status(500).json({ success: false, error: 'Failed to fetch preferences' });
   }
 };
 
@@ -227,9 +227,19 @@ export const updateNotificationPreferences = async (req: AuthRequest, res: Respo
     const prefs = req.body;
 
     // Could store in a separate table, for now just acknowledge
-    res.json({ message: 'Preferences updated', preferences: prefs });
+    res.json({ success: true, message: 'Preferences updated', data: prefs });
   } catch (error) {
     console.error('Update notification preferences error:', error);
-    res.status(500).json({ error: 'Failed to update preferences' });
+    res.status(500).json({ success: false, error: 'Failed to update preferences' });
   }
+};
+
+export default {
+  getProfile,
+  updateProfile,
+  changePassword,
+  getActivity,
+  deleteAccount,
+  getNotificationPreferences,
+  updateNotificationPreferences,
 };

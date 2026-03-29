@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { AuthRequest } from '../../types';
-import supabaseAdmin from '../../db/supabaseAdmin';
+import { supabaseAdmin } from '../../db/supabaseAdmin';
 
 export const getStreakInfo = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -12,11 +12,15 @@ export const getStreakInfo = async (req: AuthRequest, res: Response): Promise<vo
       .eq('id', student_id)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      res.status(400).json({ success: false, error: error.message });
+      return;
+    }
 
-    res.json({ data: student });
+    res.json({ success: true, data: student });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    console.error('Get streak info error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };
 
@@ -31,13 +35,16 @@ export const updateStreak = async (req: AuthRequest, res: Response): Promise<voi
       .eq('id', student_id)
       .single();
 
-    if (fetchError) throw fetchError;
+    if (fetchError) {
+      res.status(400).json({ success: false, error: fetchError.message });
+      return;
+    }
 
     let { current_streak, max_streak, last_activity_date } = student;
     
     if (last_activity_date === today) {
       // Already updated today
-      res.json({ data: student });
+      res.json({ success: true, data: student });
       return;
     }
 
@@ -66,10 +73,19 @@ export const updateStreak = async (req: AuthRequest, res: Response): Promise<voi
       .select()
       .single();
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      res.status(400).json({ success: false, error: updateError.message });
+      return;
+    }
 
-    res.json({ data });
+    res.json({ success: true, data });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    console.error('Update streak error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
+};
+
+export default {
+  getStreakInfo,
+  updateStreak,
 };
