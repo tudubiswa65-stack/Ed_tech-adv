@@ -60,13 +60,13 @@ export const getStudyMaterials = async (req: AuthRequest, res: Response) => {
     const { data, error } = await query;
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({ success: false, error: error.message });
     }
 
-    res.json(data);
+    res.json({ success: true, data: data || [] });
   } catch (error) {
     console.error('Get study materials error:', error);
-    res.status(500).json({ error: 'Failed to fetch study materials' });
+    res.status(500).json({ success: false, error: 'Failed to fetch study materials' });
   }
 };
 
@@ -101,7 +101,7 @@ export const getMaterialById = async (req: AuthRequest, res: Response) => {
     const { data, error } = await byIdQuery.single();
 
     if (error) {
-      return res.status(404).json({ error: 'Material not found' });
+      return res.status(404).json({ success: false, error: 'Material not found' });
     }
 
     // Log material view
@@ -110,10 +110,10 @@ export const getMaterialById = async (req: AuthRequest, res: Response) => {
       student_id: studentId,
     });
 
-    res.json(data);
+    res.json({ success: true, data });
   } catch (error) {
     console.error('Get material error:', error);
-    res.status(500).json({ error: 'Failed to fetch material' });
+    res.status(500).json({ success: false, error: 'Failed to fetch material' });
   }
 };
 
@@ -143,13 +143,13 @@ export const getMaterialsBySubject = async (req: AuthRequest, res: Response) => 
     const { data, error } = await subjectMatsQuery;
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({ success: false, error: error.message });
     }
 
-    res.json(data);
+    res.json({ success: true, data: data || [] });
   } catch (error) {
     console.error('Get materials by subject error:', error);
-    res.status(500).json({ error: 'Failed to fetch materials' });
+    res.status(500).json({ success: false, error: 'Failed to fetch materials' });
   }
 };
 
@@ -176,16 +176,18 @@ export const getRecentlyViewed = async (req: AuthRequest, res: Response) => {
       .limit(10);
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({ success: false, error: error.message });
     }
 
-    res.json(data?.map(v => ({
+    const formattedData = data?.map(v => ({
       ...v.study_materials,
       viewedAt: v.viewed_at
-    })));
+    })) || [];
+
+    res.json({ success: true, data: formattedData });
   } catch (error) {
     console.error('Get recently viewed error:', error);
-    res.status(500).json({ error: 'Failed to fetch recently viewed' });
+    res.status(500).json({ success: false, error: 'Failed to fetch recently viewed' });
   }
 };
 
@@ -214,7 +216,7 @@ export const getMySubjects = async (req: AuthRequest, res: Response) => {
       .eq('student_id', studentId);
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({ success: false, error: error.message });
     }
 
     // Deduplicate subjects
@@ -226,9 +228,17 @@ export const getMySubjects = async (req: AuthRequest, res: Response) => {
       }
     });
 
-    res.json(Array.from(subjectsMap.values()));
+    res.json({ success: true, data: Array.from(subjectsMap.values()) });
   } catch (error) {
     console.error('Get my subjects error:', error);
-    res.status(500).json({ error: 'Failed to fetch subjects' });
+    res.status(500).json({ success: false, error: 'Failed to fetch subjects' });
   }
+};
+
+export default {
+  getStudyMaterials,
+  getMaterialById,
+  getMaterialsBySubject,
+  getRecentlyViewed,
+  getMySubjects,
 };
