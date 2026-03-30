@@ -29,7 +29,7 @@ const adminNavItems: NavItem[] = [
 ];
 
 const studentNavItems: NavItem[] = [
-  { label: 'Dashboard', href: '/dashboard', icon: 'dashboard' },
+  { label: 'Profile', href: '/dashboard', icon: 'profile' },
   { label: 'My Tests', href: '/tests', icon: 'tests' },
   { label: 'Results', href: '/results', icon: 'results' },
   { label: 'Attendance', href: '/attendance', icon: 'attendance' },
@@ -40,7 +40,6 @@ const studentNavItems: NavItem[] = [
   { label: 'Notifications', href: '/notifications', icon: 'notifications' },
   { label: 'Complaints', href: '/complaints', icon: 'complaints', feature: 'complaints' },
   { label: 'Feedback', href: '/feedback', icon: 'feedback', feature: 'feedback' },
-  { label: 'Profile', href: '/profile', icon: 'profile' },
 ];
 
 interface SidebarProps {

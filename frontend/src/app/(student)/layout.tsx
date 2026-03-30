@@ -8,14 +8,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { Spinner } from '@/components/ui';
 
 const STATIC_TITLES: Record<string, string> = {
-  '/dashboard': 'Dashboard',
+  '/dashboard': 'My Profile',
   '/tests': 'My Tests',
   '/courses': 'Courses',
   '/materials': 'Study Materials',
   '/notifications': 'Notifications',
   '/complaints': 'Complaints',
   '/feedback': 'Feedback',
-  '/profile': 'My Profile',
   '/results': 'My Results',
 };
 
