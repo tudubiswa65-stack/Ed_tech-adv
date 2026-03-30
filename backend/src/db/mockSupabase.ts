@@ -698,6 +698,16 @@ function initializeMockStorage(): void {
       updated_at: new Date().toISOString(),
     },
   ];
+
+  // The unified users table mirrors both admins and students so that
+  // controllers that query .from('users') directly work correctly.
+  mockStorage['users'] = [
+    ...mockStorage['admins'],
+    {
+      ...mockStorage['students'][0],
+      role: 'student',
+    },
+  ];
   
   // Initialize empty tables
   const tables = [

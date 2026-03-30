@@ -51,11 +51,14 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
     // For students: enforce real-time status check on every request
     // This ensures that when an admin deactivates/suspends a student,
     // the effect is immediate even for already-logged-in students.
+    // We query the users table directly to avoid "permission denied for
+    // view students" errors from the backward-compat view.
     if (decoded.role === 'student') {
       const { data: student, error } = await supabaseAdmin
-        .from('students')
+        .from('users')
         .select('id, status, is_active')
         .eq('id', decoded.id)
+        .eq('role', 'student')
         .single();
 
       if (error || !student) {
