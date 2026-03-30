@@ -1,0 +1,235 @@
+import { Response } from 'express';
+import { supabaseAdmin } from '../../db/supabaseAdmin';
+import { AuthRequest } from '../../types';
+
+export const getAllNotifications = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      search = '',
+      branch_id,
+      priority,
+      category
+    } = req.query;
+
+    let query = supabaseAdmin
+      .from('notifications')
+      .select(`
+        *,
+        branches (
+          id,
+          name
+        ),
+        admins (
+          id,
+          name
+        )
+      `, { count: 'exact' });
+
+    // Apply filters
+    if (branch_id) {
+      query = query.eq('branch_id', branch_id);
+    }
+
+    if (priority) {
+      query = query.eq('priority', priority);
+    }
+
+    if (category) {
+      query = query.eq('category', category);
+    }
+
+    if (search) {
+      query = query.or(`title.ilike.%${search}%,message.ilike.%${search}%`);
+    }
+
+    const from = ((parseInt(page as string) - 1) * parseInt(limit as string));
+    const to = from + parseInt(limit as string) - 1;
+
+    const { data, error, count } = await query
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (error) {
+      console.error('Error fetching notifications:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch notifications' });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: data || [],
+      pagination: {
+        page: parseInt(page as string),
+        limit: parseInt(limit as string),
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / parseInt(limit as string))
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch notifications' });
+  }
+};
+
+export const createNotification = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const {
+      title,
+      message,
+      target,
+      priority = 'medium',
+      category,
+      branch_id,
+      scheduled_at,
+      action_url
+    } = req.body;
+
+    if (!title || !message || !target) {
+      res.status(400).json({ success: false, error: 'Title, message, and target are required' });
+      return;
+    }
+
+    const adminId = req.user?.id;
+
+    const { data: notification, error } = await supabaseAdmin
+      .from('notifications')
+      .insert({
+        title,
+        message,
+        target,
+        priority,
+        category,
+        branch_id,
+        scheduled_at,
+        action_url,
+        created_by: adminId
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating notification:', error);
+      res.status(500).json({ success: false, error: 'Failed to create notification' });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: notification,
+      message: 'Notification created successfully'
+    });
+  } catch (error) {
+    console.error('Error creating notification:', error);
+    res.status(500).json({ success: false, error: 'Failed to create notification' });
+  }
+};
+
+export const updateNotification = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const {
+      title,
+      message,
+      target,
+      priority,
+      category,
+      branch_id,
+      scheduled_at,
+      action_url
+    } = req.body;
+
+    const updateData: any = {
+      updated_at: new Date().toISOString()
+    };
+
+    if (title) updateData.title = title;
+    if (message) updateData.message = message;
+    if (target) updateData.target = target;
+    if (priority) updateData.priority = priority;
+    if (category) updateData.category = category;
+    if (branch_id !== undefined) updateData.branch_id = branch_id;
+    if (scheduled_at !== undefined) updateData.scheduled_at = scheduled_at;
+    if (action_url !== undefined) updateData.action_url = action_url;
+
+    const { data: notification, error } = await supabaseAdmin
+      .from('notifications')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating notification:', error);
+      res.status(500).json({ success: false, error: 'Failed to update notification' });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: notification,
+      message: 'Notification updated successfully'
+    });
+  } catch (error) {
+    console.error('Error updating notification:', error);
+    res.status(500).json({ success: false, error: 'Failed to update notification' });
+  }
+};
+
+export const deleteNotification = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const { error } = await supabaseAdmin
+      .from('notifications')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting notification:', error);
+      res.status(500).json({ success: false, error: 'Failed to delete notification' });
+      return;
+    }
+
+    res.json({
+      success: true,
+      message: 'Notification deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting notification:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete notification' });
+  }
+};
+
+export const getNotificationStats = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { data: notifications } = await supabaseAdmin
+      .from('notifications')
+      .select('priority, category, created_at, scheduled_at');
+
+    const total = notifications?.length || 0;
+    const highPriority = notifications?.filter(n => n.priority === 'high' || n.priority === 'urgent').length || 0;
+    const scheduled = notifications?.filter(n => n.scheduled_at && new Date(n.scheduled_at) > new Date()).length || 0;
+
+    // Category breakdown
+    const categoryBreakdown = notifications?.reduce((acc, n) => {
+      const cat = n.category || 'other';
+      acc[cat] = (acc[cat] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>) || {};
+
+    res.json({
+      success: true,
+      data: {
+        total,
+        highPriority,
+        scheduled,
+        categoryBreakdown
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching notification stats:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch notification stats' });
+  }
+};
