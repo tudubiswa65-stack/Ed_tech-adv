@@ -142,7 +142,7 @@ export default function PaymentsPage() {
       key: 'amount',
       header: 'Amount',
       render: (row: Payment) => (
-        <span className="font-semibold">₹{Number(row.amount).toLocaleString()}</span>
+        <span className="font-semibold">{row.currency || '₹'}{Number(row.amount).toLocaleString()}</span>
       ),
     },
     {

@@ -116,7 +116,7 @@ export default function ComplaintsPage() {
       resolved: 'bg-green-100 text-green-700',
       overridden: 'bg-purple-100 text-purple-700',
     };
-    return <span className={`px-2 py-1 text-xs font-medium rounded-full ${map[status] || 'bg-gray-100 text-gray-600'}`}>{status.replace('_', ' ')}</span>;
+    return <span className={`px-2 py-1 text-xs font-medium rounded-full ${map[status] || 'bg-gray-100 text-gray-600'}`}>{status.replace(/_/g, ' ')}</span>;
   };
 
   const columns = [

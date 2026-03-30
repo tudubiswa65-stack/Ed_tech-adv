@@ -84,7 +84,8 @@ export default function AuditLogsPage() {
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `audit-logs-${new Date().toISOString().split('T')[0]}.csv`);
+      const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      link.setAttribute('download', `audit-logs_${dateStr}.csv`);
       document.body.appendChild(link);
       link.click();
       link.remove();
