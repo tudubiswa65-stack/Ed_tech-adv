@@ -1,7 +1,7 @@
 'use client';
 
 import {
-  BarChart,
+  BarChart as RechartsBarChart,
   Bar,
   LineChart as RechartsLineChart,
   Line,
@@ -28,13 +28,13 @@ const COLORS = ['#10b981', '#f59e0b', '#ef4444', '#6366f1', '#ec4899'];
 export function BarChart({ data, xKey, yKey, color = '#6366f1' }: ChartProps) {
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={data}>
+      <RechartsBarChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey={xKey} />
         <YAxis />
         <Tooltip />
         <Bar dataKey={yKey} fill={color} />
-      </BarChart>
+      </RechartsBarChart>
     </ResponsiveContainer>
   );
 }
