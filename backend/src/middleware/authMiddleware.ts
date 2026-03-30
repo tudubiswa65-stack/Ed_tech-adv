@@ -104,8 +104,23 @@ export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction
     return;
   }
 
-  if (req.user.role !== 'admin' && req.user.role !== 'super_admin') {
+  if (req.user.role !== 'admin' && req.user.role !== 'super_admin' && req.user.role !== 'branch_admin') {
     res.status(403).json({ error: 'Admin access required' });
+    return;
+  }
+
+  next();
+};
+
+// Helper to require super admin role
+export const requireSuperAdmin = (req: AuthRequest, res: Response, next: NextFunction): void => {
+  if (!req.user) {
+    res.status(401).json({ error: 'Authentication required' });
+    return;
+  }
+
+  if (req.user.role !== 'super_admin') {
+    res.status(403).json({ error: 'Super admin access required' });
     return;
   }
 

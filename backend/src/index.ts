@@ -10,6 +10,7 @@ import cookieParser from 'cookie-parser';
 // Import routes
 import authRoutes from './routes/auth.routes';
 import adminRoutes from './routes/admin.routes';
+import superAdminRoutes from './routes/superAdmin.routes';
 import courseRoutes from './routes/course.routes';
 import testRoutes from './routes/test.routes';
 import studentRoutes from './routes/student.routes';
@@ -53,6 +54,7 @@ app.get('/api/health', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/admin/courses', courseRoutes);
 app.use('/api/admin/tests', testRoutes);
 app.use('/api/admin/results', resultsRoutes);
