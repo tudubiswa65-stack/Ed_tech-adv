@@ -36,14 +36,17 @@ export const adminLogin = async (req: LoginRequest, res: Response): Promise<void
       return;
     }
 
-    // Fetch admin by email – do NOT filter on is_active here so that
-    // admins whose is_active column is NULL (e.g. created before the
-    // column was added) are not silently rejected with "Invalid credentials".
+    // Fetch admin by email from the users table directly.
+    // Querying the underlying table avoids "permission denied for view admins"
+    // errors that can occur when the backward-compat view lacks explicit GRANTs.
+    // We filter on the admin roles here to ensure non-admin users cannot log
+    // in through this endpoint.
     console.log(`[Auth] Admin login attempt: ${email}`);
     const { data: admin, error } = await supabaseAdmin
-      .from('admins')
+      .from('users')
       .select('*')
       .eq('email', email)
+      .in('role', ['admin', 'super_admin', 'branch_admin'])
       .single();
 
     if (error && error.code !== 'PGRST116') {
@@ -94,7 +97,7 @@ export const adminLogin = async (req: LoginRequest, res: Response): Promise<void
 
     // Update last login
     await supabaseAdmin
-      .from('admins')
+      .from('users')
       .update({ last_login: new Date().toISOString() })
       .eq('id', admin.id);
 
@@ -162,12 +165,17 @@ export const studentLogin = async (req: LoginRequest, res: Response): Promise<vo
       return;
     }
 
-    // Fetch student by email – check both status (new) and is_active (legacy)
+    // Fetch student by email from the users table directly.
+    // Querying the underlying table avoids "permission denied for view students"
+    // errors that can occur when the backward-compat view lacks explicit GRANTs.
+    // We filter on role = 'student' to ensure only student accounts can log in
+    // through this endpoint.
     console.log(`[Auth] Student login attempt: ${email}`);
     const { data: student, error } = await supabaseAdmin
-      .from('students')
+      .from('users')
       .select('*')
       .eq('email', email)
+      .eq('role', 'student')
       .single();
 
     if (error && error.code !== 'PGRST116') {
@@ -222,7 +230,7 @@ export const studentLogin = async (req: LoginRequest, res: Response): Promise<vo
 
     // Update last login
     await supabaseAdmin
-      .from('students')
+      .from('users')
       .update({ last_login: new Date().toISOString() })
       .eq('id', student.id);
 
@@ -314,9 +322,10 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
     let userData;
     if (user.role === 'admin' || user.role === 'super_admin' || user.role === 'branch_admin') {
       const { data, error } = await supabaseAdmin
-        .from('admins')
+        .from('users')
         .select('id, name, email, role, avatar_url')
         .eq('id', user.id)
+        .in('role', ['admin', 'super_admin', 'branch_admin'])
         .single();
 
       if (error || !data) {
@@ -326,16 +335,17 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
       userData = data;
     } else {
       const { data, error } = await supabaseAdmin
-        .from('students')
-        .select('id, name, email, course_id, avatar_url')
+        .from('users')
+        .select('id, name, email, role, course_id, avatar_url')
         .eq('id', user.id)
+        .eq('role', 'student')
         .single();
 
       if (error || !data) {
         res.status(404).json({ success: false, error: 'User not found' });
         return;
       }
-      userData = { ...data, role: 'student' };
+      userData = data;
     }
 
     res.json({ success: true, data: { user: userData } });
