@@ -1,8 +1,6 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
 import { parseCSV, validateCSVStructure } from '../../utils/csvParser';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse');
 import mammoth from 'mammoth';
 
 interface TestRequest extends Request {
@@ -442,8 +440,10 @@ export const bulkUploadQuestions = async (req: Request, res: Response): Promise<
     // ── PDF ─────────────────────────────────────────────────────────────────
     else if (mimeType === 'application/pdf' || originalName.endsWith('.pdf')) {
       try {
-        const pdfData = await pdfParse(file.buffer);
-        parsedQuestions = parseQuestionsFromText(pdfData.text);
+        const { PDFParse } = await import('pdf-parse');
+        const parser = new PDFParse({ data: file.buffer });
+        const textResult = await parser.getText();
+        parsedQuestions = parseQuestionsFromText(textResult.text);
         if (parsedQuestions.length === 0) {
           res.status(400).json({
             error: 'No questions could be extracted from the PDF. Please ensure questions follow the expected format: numbered questions with A/B/C/D options and an "Answer: X" line.',
