@@ -9,9 +9,8 @@ export const getDashboardStats = async (req: AuthRequest, res: Response): Promis
       .select('id');
 
     const { data: students } = await supabaseAdmin
-      .from('users')
-      .select('id')
-      .eq('role', 'student');
+      .from('students')
+      .select('id');
 
     const { data: payments } = await supabaseAdmin
       .from('payments')
@@ -59,9 +58,8 @@ export const getStudentGrowth = async (req: AuthRequest, res: Response): Promise
     if (error) {
       // Fallback query if RPC doesn't exist
       const { data: students } = await supabaseAdmin
-        .from('users')
+        .from('students')
         .select('created_at')
-        .eq('role', 'student')
         .order('created_at', { ascending: true });
 
       const monthlyGrowth = students?.reduce((acc, student) => {
@@ -173,22 +171,51 @@ export const getPerformanceAnalytics = async (req: AuthRequest, res: Response): 
 export const getTopBranches = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { limit = 10 } = req.query;
+    const limitNum = parseInt(limit as string);
 
     const { data, error } = await supabaseAdmin
       .from('branch_statistics')
       .select('*')
       .order('total_students', { ascending: false })
-      .limit(parseInt(limit as string));
+      .limit(limitNum);
 
-    if (error) {
-      console.error('Error fetching top branches:', error);
-      res.status(500).json({ success: false, error: 'Failed to fetch top branches' });
+    if (!error && data) {
+      res.json({ success: true, data });
       return;
     }
 
-    res.json({ success: true, data: data || [] });
+    // Fallback: query branches directly and compute student counts
+    const { data: branches, error: branchError } = await supabaseAdmin
+      .from('branches')
+      .select('id, name, location, is_active');
+
+    if (branchError || !branches) {
+      console.error('Error fetching branches (fallback):', branchError);
+      res.json({ success: true, data: [] });
+      return;
+    }
+
+    // Count students per branch
+    const branchesWithCounts = await Promise.all(
+      branches.map(async (branch) => {
+        const { count } = await supabaseAdmin
+          .from('students')
+          .select('id', { count: 'exact', head: true })
+          .eq('branch_id', branch.id);
+        return {
+          ...branch,
+          active_students: count ?? 0,
+          total_students: count ?? 0,
+        };
+      })
+    );
+
+    // Sort by student count descending and apply limit
+    branchesWithCounts.sort((a, b) => b.total_students - a.total_students);
+
+    res.json({ success: true, data: branchesWithCounts.slice(0, limitNum) });
   } catch (error) {
     console.error('Error fetching top branches:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch top branches' });
+    res.json({ success: true, data: [] });
   }
 };

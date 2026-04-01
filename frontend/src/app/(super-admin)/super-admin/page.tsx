@@ -28,7 +28,7 @@ export default function SuperAdminDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const [statsRes, growthRes, revenueRes, attendanceRes, branchesRes] = await Promise.all([
+      const [statsRes, growthRes, revenueRes, attendanceRes, branchesRes] = await Promise.allSettled([
         apiClient.get('/super-admin/dashboard/stats'),
         apiClient.get('/super-admin/dashboard/student-growth'),
         apiClient.get('/super-admin/dashboard/revenue'),
@@ -36,11 +36,11 @@ export default function SuperAdminDashboard() {
         apiClient.get('/super-admin/dashboard/top-branches'),
       ]);
 
-      if (statsRes.data.success) setStats(statsRes.data.data);
-      if (growthRes.data.success) setStudentGrowth(growthRes.data.data);
-      if (revenueRes.data.success) setRevenueData(revenueRes.data.data);
-      if (attendanceRes.data.success) setAttendanceData(attendanceRes.data.data);
-      if (branchesRes.data.success) setTopBranches(branchesRes.data.data);
+      if (statsRes.status === 'fulfilled' && statsRes.value.data.success) setStats(statsRes.value.data.data);
+      if (growthRes.status === 'fulfilled' && growthRes.value.data.success) setStudentGrowth(growthRes.value.data.data);
+      if (revenueRes.status === 'fulfilled' && revenueRes.value.data.success) setRevenueData(revenueRes.value.data.data);
+      if (attendanceRes.status === 'fulfilled' && attendanceRes.value.data.success) setAttendanceData(attendanceRes.value.data.data);
+      if (branchesRes.status === 'fulfilled' && branchesRes.value.data.success) setTopBranches(branchesRes.value.data.data);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
