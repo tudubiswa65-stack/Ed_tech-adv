@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import axios from 'axios';
+import { isAxiosError } from 'axios';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { useAuth } from '@/hooks/useAuth';
@@ -55,7 +55,7 @@ export default function LoginForm({ role, onSuccess }: LoginFormProps) {
           message: loginErr?.message,
           response: loginErr?.response?.data,
           status: loginErr?.response?.status,
-          isAxiosError: axios.isAxiosError(loginErr)
+          isAxiosError: isAxiosError(loginErr)
         });
         throw loginErr; // Re-throw to be caught by outer catch
       }
@@ -82,7 +82,7 @@ export default function LoginForm({ role, onSuccess }: LoginFormProps) {
       console.log('[LoginForm] STEP 6c: Processing error type...');
 
       // Handle different types of errors
-      if (axios.isAxiosError(err)) {
+      if (isAxiosError(err)) {
         console.log('[LoginForm] STEP 6d: Detected axios error');
         if (err.response) {
           // Server responded with error status

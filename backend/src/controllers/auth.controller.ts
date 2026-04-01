@@ -26,6 +26,42 @@ interface LoginRequest extends Request {
   };
 }
 
+/**
+ * Build cookie options that work correctly on Railway (or any deployment where
+ * HTTPS is terminated by a proxy before reaching the Node process).
+ *
+ * Railway always serves traffic over HTTPS, but `NODE_ENV` might not be
+ * `'production'` in every environment. We therefore also inspect the
+ * `X-Forwarded-Proto` header (set by Railway's proxy layer) to determine
+ * whether the connection is secure.
+ *
+ * Rules:
+ *   - `secure: true`  when NODE_ENV=production OR X-Forwarded-Proto=https
+ *   - `sameSite: 'none'` only when `secure: true` (required by the spec)
+ *   - `sameSite: 'lax'`  in plain-HTTP development environments
+ */
+function buildCookieOptions(req: Request): {
+  httpOnly: boolean;
+  secure: boolean;
+  sameSite: 'lax' | 'none';
+  maxAge: number;
+  path: string;
+} {
+  const isProductionEnv = process.env.NODE_ENV === 'production';
+  const isHttps =
+    isProductionEnv ||
+    req.secure ||
+    req.headers['x-forwarded-proto'] === 'https';
+
+  return {
+    httpOnly: true,
+    secure: isHttps,
+    sameSite: isHttps ? 'none' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    path: '/',
+  };
+}
+
 // Admin Login
 export const adminLogin = async (req: LoginRequest, res: Response): Promise<void> => {
   try {
@@ -117,18 +153,10 @@ export const adminLogin = async (req: LoginRequest, res: Response): Promise<void
       { expiresIn: JWT_EXPIRY } as jwt.SignOptions
     );
 
-    // Determine cookie options based on environment
-    const isProduction = process.env.NODE_ENV === 'production';
-    const cookieOptions = {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: (isProduction ? 'none' : 'lax') as 'lax' | 'none',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: '/',
-    };
+    // Determine cookie options based on environment / transport security
+    const cookieOptions = buildCookieOptions(req);
 
     console.log('[Auth] Admin login successful - setting cookie with options:', {
-      isProduction,
       secure: cookieOptions.secure,
       sameSite: cookieOptions.sameSite,
       tokenPrefix: token.substring(0, 20) + '...'
@@ -241,18 +269,10 @@ export const studentLogin = async (req: LoginRequest, res: Response): Promise<vo
       { expiresIn: JWT_EXPIRY } as jwt.SignOptions
     );
 
-    // Determine cookie options based on environment
-    const isProduction = process.env.NODE_ENV === 'production';
-    const cookieOptions = {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: (isProduction ? 'none' : 'lax') as 'lax' | 'none',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: '/',
-    };
+    // Determine cookie options based on environment / transport security
+    const cookieOptions = buildCookieOptions(req);
 
     console.log('[Auth] Student login successful - setting cookie with options:', {
-      isProduction,
       secure: cookieOptions.secure,
       sameSite: cookieOptions.sameSite,
       tokenPrefix: token.substring(0, 20) + '...'
@@ -282,17 +302,10 @@ export const studentLogin = async (req: LoginRequest, res: Response): Promise<vo
 
 // Logout
 export const logout = (req: Request, res: Response): void => {
-  // Determine cookie options based on environment (must match login)
-  const isProduction = process.env.NODE_ENV === 'production';
-  const cookieOptions = {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: (isProduction ? 'none' : 'lax') as 'lax' | 'none',
-    path: '/',
-  };
+  // Cookie options must match those used at login time
+  const cookieOptions = buildCookieOptions(req);
 
   console.log('[Auth] Logout - clearing cookie with options:', {
-    isProduction,
     secure: cookieOptions.secure,
     sameSite: cookieOptions.sameSite,
   });
