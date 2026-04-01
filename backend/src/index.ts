@@ -76,45 +76,47 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
-// Start server
-const server = app.listen(config.port, () => {
-  console.log(`\n🚀 Server running on port ${config.port}`);
+// Start server only when not running under a test runner
+if (process.env.NODE_ENV !== 'test') {
+  const server = app.listen(config.port, () => {
+    console.log(`\n🚀 Server running on port ${config.port}`);
 
-  // Start queue workers if not in SAFE MODE and Redis is configured
-  if (!SAFE_MODE && config.redisHost) {
-    console.log('[Server] Starting queue workers...');
-    startAllWorkers();
-  } else if (SAFE_MODE) {
-    console.log('[Server] Queue workers running in mock mode (SAFE MODE)');
-  } else {
-    console.log('[Server] Redis not configured, skipping queue workers');
-  }
-});
-
-// Graceful shutdown
-async function gracefulShutdown(signal: string) {
-  console.log(`\n[Server] ${signal} received, shutting down gracefully...`);
-
-  // Stop accepting new connections
-  server.close(() => {
-    console.log('[Server] HTTP server closed');
+    // Start queue workers if not in SAFE MODE and Redis is configured
+    if (!SAFE_MODE && config.redisHost) {
+      console.log('[Server] Starting queue workers...');
+      startAllWorkers();
+    } else if (SAFE_MODE) {
+      console.log('[Server] Queue workers running in mock mode (SAFE MODE)');
+    } else {
+      console.log('[Server] Redis not configured, skipping queue workers');
+    }
   });
 
-  // Stop queue workers
-  if (!SAFE_MODE && config.redisHost) {
-    await stopAllWorkers();
-    await closeQueues();
-  } else if (SAFE_MODE) {
-    console.log('[Server] Closing mock queues...');
-    await closeQueues();
+  // Graceful shutdown
+  async function gracefulShutdown(signal: string) {
+    console.log(`\n[Server] ${signal} received, shutting down gracefully...`);
+
+    // Stop accepting new connections
+    server.close(() => {
+      console.log('[Server] HTTP server closed');
+    });
+
+    // Stop queue workers
+    if (!SAFE_MODE && config.redisHost) {
+      await stopAllWorkers();
+      await closeQueues();
+    } else if (SAFE_MODE) {
+      console.log('[Server] Closing mock queues...');
+      await closeQueues();
+    }
+
+    console.log('[Server] Graceful shutdown complete');
+    process.exit(0);
   }
 
-  console.log('[Server] Graceful shutdown complete');
-  process.exit(0);
+  // Handle shutdown signals
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 }
-
-// Handle shutdown signals
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 export default app;
