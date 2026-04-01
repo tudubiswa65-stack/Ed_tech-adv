@@ -16,30 +16,34 @@ export const getAllComplaints = async (req: AuthRequest, res: Response): Promise
     let query = supabaseAdmin
       .from('complaints')
       .select(`
-        *,
-        students!inner (
+        id,
+        title,
+        description,
+        category,
+        status,
+        priority,
+        created_at,
+        updated_at,
+        students (
           id,
           name,
           email,
-          branch_id
-        ),
-        branches (
-          id,
-          name
+          branch_id,
+          branches (
+            id,
+            name
+          )
         ),
         complaint_replies (
           id,
           message,
-          replied_by,
+          sender_id,
+          sender_role,
           created_at
         )
       `, { count: 'exact' });
 
     // Apply filters
-    if (branch_id) {
-      query = query.eq('branch_id', branch_id);
-    }
-
     if (status) {
       query = query.eq('status', status);
     }
@@ -48,8 +52,13 @@ export const getAllComplaints = async (req: AuthRequest, res: Response): Promise
       query = query.eq('priority', priority);
     }
 
+    // Filter through the student's branch when a branch_id is specified
+    if (branch_id) {
+      query = query.eq('students.branch_id', branch_id as string);
+    }
+
     if (search) {
-      query = query.or(`subject.ilike.%${search}%,message.ilike.%${search}%,students.name.ilike.%${search}%`);
+      query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
     }
 
     const from = ((parseInt(page as string) - 1) * parseInt(limit as string));
@@ -65,9 +74,17 @@ export const getAllComplaints = async (req: AuthRequest, res: Response): Promise
       return;
     }
 
+    // Transform to flat shape expected by the frontend
+    const transformedData = (data || []).map((complaint: any) => ({
+      ...complaint,
+      subject: complaint.title,
+      student_name: complaint.students?.name,
+      branch_name: complaint.students?.branches?.name,
+    }));
+
     res.json({
       success: true,
-      data: data || [],
+      data: transformedData,
       pagination: {
         page: parseInt(page as string),
         limit: parseInt(limit as string),
@@ -237,7 +254,7 @@ export const getComplaintStats = async (req: AuthRequest, res: Response): Promis
       data: {
         total,
         open,
-        inProgress,
+        in_progress: inProgress,
         resolved,
         highPriority,
         mediumPriority,

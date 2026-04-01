@@ -172,10 +172,11 @@ router.get('/notifications/stats', requireSuperAdmin, getNotificationStats);
 // COMPLAINTS ENDPOINTS
 // ═══════════════════════════════════════════════════════════
 router.get('/complaints', requireSuperAdmin, getAllComplaints);
+// stats must come before /:id so Express does not treat 'stats' as an id
+router.get('/complaints/stats', requireSuperAdmin, getComplaintStats);
 router.get('/complaints/:id', requireSuperAdmin, getComplaintById);
 router.put('/complaints/:id/resolve', requireSuperAdmin, resolveComplaint);
 router.put('/complaints/:id/override', requireSuperAdmin, overrideBranchAdmin);
-router.get('/complaints/stats', requireSuperAdmin, getComplaintStats);
 
 // ═══════════════════════════════════════════════════════════
 // FEEDBACK ENDPOINTS
