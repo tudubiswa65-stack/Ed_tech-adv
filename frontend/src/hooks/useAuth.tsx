@@ -72,8 +72,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('[useAuth] STEP 5: Login successful, setting user state');
       const loggedInUser = response.data.data?.user ?? null;
       setUser(loggedInUser);
-      console.log('[useAuth] STEP 6: Login function complete');
-      return loggedInUser;
+
+      // Verify the session cookie is usable by calling /auth/me.
+      // This guards against the case where the cookie is set in the login
+      // response but not correctly stored or forwarded by the browser/proxy,
+      // which would cause a redirect loop after the page navigates.
+      console.log('[useAuth] STEP 5b: Verifying session via /auth/me');
+      try {
+        const meResponse = await apiClient.get('/auth/me');
+        const verifiedUser = meResponse.data.data?.user ?? null;
+        console.log('[useAuth] STEP 5c: Session verified', { user: verifiedUser });
+        setUser(verifiedUser);
+        console.log('[useAuth] STEP 5d: Login function complete');
+        return verifiedUser;
+      } catch (meError) {
+        console.warn('[useAuth] STEP 5e: Session verification failed after login', meError);
+        // Fall back to the user data from the login response so the caller
+        // can still redirect; the session might still work for the redirect
+        // target's own /auth/me check.
+        console.log('[useAuth] STEP 5f: Login function complete (session verification skipped)');
+        return loggedInUser;
+      }
     } catch (error: any) {
       console.error('[useAuth] STEP 7: Login failed with error:', error);
       console.error('[useAuth] STEP 7b: Error type:', typeof error);

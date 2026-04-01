@@ -68,6 +68,10 @@ export interface AppConfig {
   jwtExpiresIn: string;
 
   // Frontend
+  // FRONTEND_URL is the canonical env var on the backend for the frontend
+  // origin. NEXT_PUBLIC_BASE_URL is kept as a legacy fallback so that
+  // existing Railway deployments that only set NEXT_PUBLIC_BASE_URL continue
+  // to work without changes.
   frontendUrl: string;
 
   // Feature flags
@@ -114,8 +118,8 @@ const config: AppConfig = {
   jwtSecret: process.env.JWT_SECRET || (SAFE_MODE ? 'dev-secret-fallback' : ''),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   
-  // Frontend
-  frontendUrl: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',
+  // Frontend — FRONTEND_URL is preferred; NEXT_PUBLIC_BASE_URL is legacy fallback
+  frontendUrl: process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',
   
   // Feature flags
   enableRegistration: process.env.ENABLE_REGISTRATION === 'true',

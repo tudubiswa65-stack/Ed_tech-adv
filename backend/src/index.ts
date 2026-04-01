@@ -30,11 +30,17 @@ app.set('trust proxy', 1);
 
 // Middleware
 app.use(helmet());
+
+// CORS — the frontend origin must exactly match (including protocol).
+// In Railway deployments FRONTEND_URL (or legacy NEXT_PUBLIC_BASE_URL) should
+// be set to the full frontend URL, e.g. https://my-app.railway.app
+console.log('[CORS] Configured frontend origin:', config.frontendUrl);
 app.use(cors({
   origin: config.frontendUrl,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+  exposedHeaders: ['Set-Cookie'],
 }));
 app.use(morgan('combined'));
 app.use(express.json({ limit: '50mb' }));
