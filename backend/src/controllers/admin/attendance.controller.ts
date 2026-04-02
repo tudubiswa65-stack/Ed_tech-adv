@@ -1,16 +1,22 @@
 import { Response } from 'express';
 import { AuthRequest } from '../../types';
 import supabaseAdmin from '../../db/supabaseAdmin';
+import { getUserBranchId } from '../../utils/branchFilter';
 
 export const getAttendance = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { date, student_id, branch_id, course_id } = req.query;
-    
+    const { date, student_id, course_id } = req.query;
+
+    // branch_admin is restricted to their own branch
+    const adminBranchId = req.user ? getUserBranchId(req.user) : null;
+    const requestedBranchId = req.query.branch_id as string | undefined;
+    const effectiveBranchId = adminBranchId ?? requestedBranchId;
+
     let query = supabaseAdmin.from('attendance').select('*, students(name)');
 
     if (date) query = query.eq('date', date);
     if (student_id) query = query.eq('student_id', student_id);
-    if (branch_id) query = query.eq('branch_id', branch_id);
+    if (effectiveBranchId) query = query.eq('branch_id', effectiveBranchId);
     if (course_id) query = query.eq('course_id', course_id);
 
     const { data, error } = await query.order('date', { ascending: false });
@@ -29,7 +35,12 @@ export const getAttendance = async (req: AuthRequest, res: Response): Promise<vo
  */
 export const getStudentsForAttendance = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { course_id, branch_id, date } = req.query;
+    const { course_id, date } = req.query;
+
+    // branch_admin is restricted to their own branch
+    const adminBranchId = req.user ? getUserBranchId(req.user) : null;
+    const requestedBranchId = req.query.branch_id as string | undefined;
+    const effectiveBranchId = adminBranchId ?? requestedBranchId;
 
     // Build the query for active students (supports both new status and legacy is_active)
     let query = supabaseAdmin
@@ -42,8 +53,8 @@ export const getStudentsForAttendance = async (req: AuthRequest, res: Response):
       query = query.eq('course_id', course_id);
     }
 
-    if (branch_id) {
-      query = query.eq('branch_id', branch_id);
+    if (effectiveBranchId) {
+      query = query.eq('branch_id', effectiveBranchId);
     }
 
     // Order by name for consistent display
@@ -66,8 +77,8 @@ export const getStudentsForAttendance = async (req: AuthRequest, res: Response):
         attendanceQuery = attendanceQuery.eq('course_id', course_id);
       }
 
-      if (branch_id) {
-        attendanceQuery = attendanceQuery.eq('branch_id', branch_id);
+      if (effectiveBranchId) {
+        attendanceQuery = attendanceQuery.eq('branch_id', effectiveBranchId);
       }
 
       const { data: existingAttendance } = await attendanceQuery;
@@ -96,7 +107,7 @@ export const getStudentsForAttendance = async (req: AuthRequest, res: Response):
       meta: {
         total: enrichedStudents.length,
         course_id: course_id || null,
-        branch_id: branch_id || null,
+        branch_id: effectiveBranchId || null,
         date: date || null,
         already_marked: enrichedStudents.filter((s: any) => s.attendance_status !== null).length,
       }
@@ -112,9 +123,12 @@ export const markAttendance = async (req: AuthRequest, res: Response): Promise<v
     const { records } = req.body; // Array of { student_id, branch_id, course_id, date, status }
 
     const admin_id = req.user?.id;
+    const adminBranchId = req.user ? getUserBranchId(req.user) : null;
 
     const formattedRecords = records.map((record: any) => ({
       ...record,
+      // branch_admin: override branch_id with their own to prevent cross-branch writes
+      ...(adminBranchId ? { branch_id: adminBranchId } : {}),
       recorded_by: admin_id,
     }));
 
@@ -135,6 +149,22 @@ export const updateAttendance = async (req: AuthRequest, res: Response): Promise
   try {
     const { id } = req.params;
     const updates = req.body;
+
+    // branch_admin may only update attendance records belonging to their branch
+    const adminBranchId = req.user ? getUserBranchId(req.user) : null;
+    if (adminBranchId) {
+      const { data: existing } = await supabaseAdmin
+        .from('attendance')
+        .select('branch_id')
+        .eq('id', id)
+        .single();
+      if (!existing || existing.branch_id !== adminBranchId) {
+        res.status(403).json({ error: 'Access denied: attendance record belongs to a different branch' });
+        return;
+      }
+      // Prevent changing the branch_id
+      delete updates.branch_id;
+    }
 
     const { data, error } = await supabaseAdmin
       .from('attendance')
