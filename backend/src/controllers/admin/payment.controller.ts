@@ -60,7 +60,7 @@ export const getPayments = async (req: AuthRequest, res: Response): Promise<void
     const { student_id, status } = req.query;
 
     // branch_admin is restricted to their own branch
-    const adminBranchId = req.user ? getUserBranchId(req.user) : null;
+    const adminBranchId = getUserBranchId(req.user);
     const requestedBranchId = req.query.branch_id as string | undefined;
     const effectiveBranchId = adminBranchId ?? requestedBranchId;
 
@@ -96,7 +96,7 @@ export const recordPayment = async (req: AuthRequest, res: Response): Promise<vo
     } = req.body;
 
     // branch_admin: force branch_id to their own branch; prevent cross-branch payment recording
-    const adminBranchId = req.user ? getUserBranchId(req.user) : null;
+    const adminBranchId = getUserBranchId(req.user);
     const branch_id = adminBranchId ?? req.body.branch_id;
 
     if (!student_id || amount === undefined || !payment_method) {

@@ -34,7 +34,7 @@ export const getStudents = async (req: AuthRequest, res: Response): Promise<void
 
     // branch_admin is restricted to their own branch; super_admin/admin may
     // optionally filter by a branch_id supplied as a query parameter.
-    const adminBranchId = req.user ? getUserBranchId(req.user) : null;
+    const adminBranchId = getUserBranchId(req.user);
     const requestedBranchId = req.query.branch_id as string | undefined;
     const effectiveBranchId = adminBranchId ?? requestedBranchId ?? undefined;
 
@@ -98,7 +98,7 @@ export const createStudent = async (req: AuthRequest, res: Response): Promise<vo
     }
 
     // branch_admin can only create students in their own branch
-    const adminBranchId = req.user ? getUserBranchId(req.user) : null;
+    const adminBranchId = getUserBranchId(req.user);
     if (adminBranchId) {
       branch_id = adminBranchId;
     }
@@ -320,7 +320,7 @@ export const updateStudent = async (req: AuthRequest, res: Response): Promise<vo
     const { name, email, course_id, branch_id, status, is_active, password } = req.body;
 
     // branch_admin may only update students in their own branch
-    const adminBranchId = req.user ? getUserBranchId(req.user) : null;
+    const adminBranchId = getUserBranchId(req.user);
     if (adminBranchId) {
       const { data: existing } = await supabaseAdmin
         .from('students')
@@ -392,7 +392,7 @@ export const getStudentById = async (req: AuthRequest, res: Response): Promise<v
     }
 
     // branch_admin may only access students belonging to their own branch
-    const adminBranchId = req.user ? getUserBranchId(req.user) : null;
+    const adminBranchId = getUserBranchId(req.user);
     if (adminBranchId && data.branch_id !== adminBranchId) {
       res.status(403).json({ success: false, error: 'Access denied: student belongs to a different branch' });
       return;
@@ -411,7 +411,7 @@ export const deleteStudent = async (req: AuthRequest, res: Response): Promise<vo
     const { id } = req.params;
 
     // branch_admin may only delete students in their own branch
-    const adminBranchId = req.user ? getUserBranchId(req.user) : null;
+    const adminBranchId = getUserBranchId(req.user);
     if (adminBranchId) {
       const { data: existing } = await supabaseAdmin
         .from('students')

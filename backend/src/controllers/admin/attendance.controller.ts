@@ -8,7 +8,7 @@ export const getAttendance = async (req: AuthRequest, res: Response): Promise<vo
     const { date, student_id, course_id } = req.query;
 
     // branch_admin is restricted to their own branch
-    const adminBranchId = req.user ? getUserBranchId(req.user) : null;
+    const adminBranchId = getUserBranchId(req.user);
     const requestedBranchId = req.query.branch_id as string | undefined;
     const effectiveBranchId = adminBranchId ?? requestedBranchId;
 
@@ -38,7 +38,7 @@ export const getStudentsForAttendance = async (req: AuthRequest, res: Response):
     const { course_id, date } = req.query;
 
     // branch_admin is restricted to their own branch
-    const adminBranchId = req.user ? getUserBranchId(req.user) : null;
+    const adminBranchId = getUserBranchId(req.user);
     const requestedBranchId = req.query.branch_id as string | undefined;
     const effectiveBranchId = adminBranchId ?? requestedBranchId;
 
@@ -123,7 +123,7 @@ export const markAttendance = async (req: AuthRequest, res: Response): Promise<v
     const { records } = req.body; // Array of { student_id, branch_id, course_id, date, status }
 
     const admin_id = req.user?.id;
-    const adminBranchId = req.user ? getUserBranchId(req.user) : null;
+    const adminBranchId = getUserBranchId(req.user);
 
     const formattedRecords = records.map((record: any) => ({
       ...record,
@@ -151,7 +151,7 @@ export const updateAttendance = async (req: AuthRequest, res: Response): Promise
     const updates = req.body;
 
     // branch_admin may only update attendance records belonging to their branch
-    const adminBranchId = req.user ? getUserBranchId(req.user) : null;
+    const adminBranchId = getUserBranchId(req.user);
     if (adminBranchId) {
       const { data: existing } = await supabaseAdmin
         .from('attendance')

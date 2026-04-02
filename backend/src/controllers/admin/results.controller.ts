@@ -9,7 +9,7 @@ import { getUserBranchId } from '../../utils/branchFilter';
  * Returns an empty array when the branch has no students (results should be empty).
  */
 async function getBranchStudentIds(req: AuthRequest): Promise<string[] | null> {
-  const branchId = req.user ? getUserBranchId(req.user) : null;
+  const branchId = getUserBranchId(req.user);
   if (!branchId) return null;
 
   const { data } = await supabaseAdmin
@@ -159,7 +159,7 @@ export const getResultById = async (req: AuthRequest, res: Response) => {
     }
 
     // branch_admin may only access results for students in their own branch
-    const adminBranchId = req.user ? getUserBranchId(req.user) : null;
+    const adminBranchId = getUserBranchId(req.user);
     if (adminBranchId) {
       const studentBranchId = (data.students as any)?.branch_id;
       if (studentBranchId !== adminBranchId) {
@@ -208,13 +208,27 @@ export const getTestAnalytics = async (req: AuthRequest, res: Response) => {
       `)
       .eq('test_id', testId);
 
-    if (branchStudentIds !== null) {
-      if (branchStudentIds.length === 0) {
-        // Branch has no students — return empty analytics
-        return res.json({ test, totalAttempts: 0, passedAttempts: 0, failedAttempts: 0, averageScore: 0, averagePercentage: 0, averageTime: 0, fastestTime: 0, slowestTime: 0, medianPercentage: 0, stdDeviation: 0, topPerformers: [], questionStats: [] });
+      if (branchStudentIds !== null) {
+        if (branchStudentIds.length === 0) {
+          // Branch has no students — return empty analytics
+          return res.json({
+            test,
+            totalAttempts: 0,
+            passedAttempts: 0,
+            failedAttempts: 0,
+            averageScore: 0,
+            averagePercentage: 0,
+            averageTime: 0,
+            fastestTime: 0,
+            slowestTime: 0,
+            medianPercentage: 0,
+            stdDeviation: 0,
+            topPerformers: [],
+            questionStats: [],
+          });
+        }
+        resultsQuery = resultsQuery.in('student_id', branchStudentIds);
       }
-      resultsQuery = resultsQuery.in('student_id', branchStudentIds);
-    }
 
     const { data: results, error: resultsError } = await resultsQuery;
 

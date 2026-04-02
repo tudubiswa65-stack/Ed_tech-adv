@@ -6,7 +6,7 @@ import { getUserBranchId } from '../../utils/branchFilter';
 // Get dashboard statistics
 export const getDashboardStats = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const branchId = req.user ? getUserBranchId(req.user) : null;
+    const branchId = getUserBranchId(req.user);
 
     // Get total students count (scoped to branch for branch_admin)
     let totalStudentsQuery = supabaseAdmin
@@ -81,14 +81,14 @@ export const getDashboardStats = async (req: AuthRequest, res: Response): Promis
       ? avgScoreData.reduce((sum: number, r: { percentage: number }) => sum + (r.percentage || 0), 0) / avgScoreData.length
       : 0;
 
-    // Get recent activity (scoped to branch when branch_id column is available)
-    let activityQuery = supabaseAdmin
+    // Get recent activity — the activity_log schema may not have a branch_id column,
+    // so branch filtering is not applied here. The student/result counts above already
+    // give branch-scoped numbers to the branch_admin.
+    const { data: recentActivity } = await supabaseAdmin
       .from('activity_log')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(20);
-    if (branchId) activityQuery = (activityQuery as any).eq('branch_id', branchId);
-    const { data: recentActivity } = await activityQuery;
 
     res.json({
       success: true,

@@ -5,7 +5,7 @@ import { getUserBranchId } from '../../utils/branchFilter';
 
 export const getBranches = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const branchId = req.user ? getUserBranchId(req.user) : null;
+    const branchId = getUserBranchId(req.user);
 
     let query = supabaseAdmin
       .from('branches')
@@ -59,7 +59,7 @@ export const createBranch = async (req: AuthRequest, res: Response): Promise<voi
 export const updateBranch = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const branchId = req.user ? getUserBranchId(req.user) : null;
+    const branchId = getUserBranchId(req.user);
 
     // branch_admin can only update their own branch
     if (branchId && branchId !== id) {
