@@ -52,38 +52,39 @@ export const getAllBranches = async (req: AuthRequest, res: Response): Promise<v
 
     const branchIds = branches.map((b: any) => b.id);
 
-    // Fetch total and active student counts per branch in parallel
-    const [{ data: allStudents }, { data: activeStudents }, { data: payments }] = await Promise.all([
+    // Fetch student counts and completed payments per branch in parallel
+    const [studentsResult, paymentsResult] = await Promise.all([
       supabaseAdmin
         .from('users')
-        .select('branch_id')
+        .select('branch_id, status')
         .eq('role', 'student')
-        .in('branch_id', branchIds),
-      supabaseAdmin
-        .from('users')
-        .select('branch_id')
-        .eq('role', 'student')
-        .eq('status', 'ACTIVE')
         .in('branch_id', branchIds),
       supabaseAdmin
         .from('payments')
-        .select('branch_id, amount, status')
+        .select('branch_id, amount')
         .eq('status', 'completed')
         .in('branch_id', branchIds),
     ]);
 
-    // Build lookup maps
+    if (studentsResult.error) {
+      console.error('Error fetching student stats for branches:', studentsResult.error);
+    }
+    if (paymentsResult.error) {
+      console.error('Error fetching payment stats for branches:', paymentsResult.error);
+    }
+
+    // Build lookup maps — count total and active students in a single pass
     const totalStudentsMap: Record<string, number> = {};
     const activeStudentsMap: Record<string, number> = {};
     const revenueMap: Record<string, number> = {};
 
-    for (const s of allStudents || []) {
+    for (const s of studentsResult.data || []) {
       totalStudentsMap[s.branch_id] = (totalStudentsMap[s.branch_id] || 0) + 1;
+      if (s.status === 'ACTIVE') {
+        activeStudentsMap[s.branch_id] = (activeStudentsMap[s.branch_id] || 0) + 1;
+      }
     }
-    for (const s of activeStudents || []) {
-      activeStudentsMap[s.branch_id] = (activeStudentsMap[s.branch_id] || 0) + 1;
-    }
-    for (const p of payments || []) {
+    for (const p of paymentsResult.data || []) {
       revenueMap[p.branch_id] = (revenueMap[p.branch_id] || 0) + (p.amount || 0);
     }
 
