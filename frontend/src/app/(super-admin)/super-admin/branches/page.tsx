@@ -113,14 +113,14 @@ export default function BranchesPage() {
       header: 'Active Students',
       render: (row: Branch) => (
         <span className="px-2 py-1 text-sm font-medium text-green-700 bg-green-100 rounded-full">
-          {row.active_students}
+          {row.active_students ?? 0}
         </span>
       ),
     },
     {
       key: 'total_revenue',
       header: 'Revenue',
-      render: (row: Branch) => `$${row.total_revenue.toLocaleString()}`,
+      render: (row: Branch) => `$${(row.total_revenue ?? 0).toLocaleString()}`,
     },
     {
       key: 'status',

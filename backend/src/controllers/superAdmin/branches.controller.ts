@@ -34,9 +34,69 @@ export const getAllBranches = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
+    const branches = data || [];
+
+    if (branches.length === 0) {
+      res.json({
+        success: true,
+        data: [],
+        pagination: {
+          page: parseInt(page as string),
+          limit: parseInt(limit as string),
+          total: count || 0,
+          totalPages: Math.ceil((count || 0) / parseInt(limit as string))
+        }
+      });
+      return;
+    }
+
+    const branchIds = branches.map((b: any) => b.id);
+
+    // Fetch total and active student counts per branch in parallel
+    const [{ data: allStudents }, { data: activeStudents }, { data: payments }] = await Promise.all([
+      supabaseAdmin
+        .from('users')
+        .select('branch_id')
+        .eq('role', 'student')
+        .in('branch_id', branchIds),
+      supabaseAdmin
+        .from('users')
+        .select('branch_id')
+        .eq('role', 'student')
+        .eq('status', 'ACTIVE')
+        .in('branch_id', branchIds),
+      supabaseAdmin
+        .from('payments')
+        .select('branch_id, amount, status')
+        .eq('status', 'completed')
+        .in('branch_id', branchIds),
+    ]);
+
+    // Build lookup maps
+    const totalStudentsMap: Record<string, number> = {};
+    const activeStudentsMap: Record<string, number> = {};
+    const revenueMap: Record<string, number> = {};
+
+    for (const s of allStudents || []) {
+      totalStudentsMap[s.branch_id] = (totalStudentsMap[s.branch_id] || 0) + 1;
+    }
+    for (const s of activeStudents || []) {
+      activeStudentsMap[s.branch_id] = (activeStudentsMap[s.branch_id] || 0) + 1;
+    }
+    for (const p of payments || []) {
+      revenueMap[p.branch_id] = (revenueMap[p.branch_id] || 0) + (p.amount || 0);
+    }
+
+    const enrichedBranches = branches.map((b: any) => ({
+      ...b,
+      total_students: totalStudentsMap[b.id] || 0,
+      active_students: activeStudentsMap[b.id] || 0,
+      total_revenue: revenueMap[b.id] || 0,
+    }));
+
     res.json({
       success: true,
-      data: data || [],
+      data: enrichedBranches,
       pagination: {
         page: parseInt(page as string),
         limit: parseInt(limit as string),
