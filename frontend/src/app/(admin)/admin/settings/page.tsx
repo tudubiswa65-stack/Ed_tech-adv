@@ -8,6 +8,7 @@ import Input from '@/components/ui/Input';
 import Spinner from '@/components/ui/Spinner';
 import PageWrapper from '@/components/layout/PageWrapper';
 import Switch from '@/components/ui/Switch';
+import { useAuth } from '@/hooks/useAuth';
 
 interface InstituteConfig {
   id: string;
@@ -44,9 +45,12 @@ interface Settings {
 }
 
 export default function SettingsPage() {
+  const { user } = useAuth();
+  const isBranchAdmin = user?.role === 'branch_admin';
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('institute');
+  const [activeTab, setActiveTab] = useState(isBranchAdmin ? 'security' : 'institute');
   const [instituteConfig, setInstituteConfig] = useState<InstituteConfig | null>(null);
   const [settings, setSettings] = useState<Settings>({
     emailNotifications: true,
@@ -65,22 +69,30 @@ export default function SettingsPage() {
   const [newAdmin, setNewAdmin] = useState({ name: '', email: '', password: '', role: 'admin' });
 
   useEffect(() => {
+    if (isBranchAdmin) {
+      setActiveTab('security');
+    }
+  }, [isBranchAdmin]);
+
+  useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [configRes, settingsRes, adminsRes] = await Promise.all([
-        apiClient.get('/admin/settings/institute'),
-        apiClient.get('/admin/settings'),
-        apiClient.get('/admin/settings/admins')
-      ]);
-      setInstituteConfig(configRes.data);
-      if (settingsRes.data) {
-        setSettings(prev => ({ ...prev, ...settingsRes.data }));
+      if (!isBranchAdmin) {
+        const [configRes, settingsRes, adminsRes] = await Promise.all([
+          apiClient.get('/admin/settings/institute'),
+          apiClient.get('/admin/settings'),
+          apiClient.get('/admin/settings/admins')
+        ]);
+        setInstituteConfig(configRes.data);
+        if (settingsRes.data) {
+          setSettings(prev => ({ ...prev, ...settingsRes.data }));
+        }
+        setAdmins(adminsRes.data || []);
       }
-      setAdmins(adminsRes.data || []);
     } catch (error) {
       console.error('Error fetching settings:', error);
     } finally {
@@ -199,11 +211,11 @@ export default function SettingsPage() {
         <div className="border-b border-gray-200">
           <nav className="flex gap-8">
             {[
-              { id: 'institute', label: 'Institute' },
-              { id: 'features', label: 'Features' },
-              { id: 'security', label: 'Security' },
-              { id: 'admins', label: 'Admin Users' }
-            ].map(tab => (
+              { id: 'institute', label: 'Institute', adminOnly: true },
+              { id: 'features', label: 'Features', adminOnly: true },
+              { id: 'security', label: 'Security', adminOnly: false },
+              { id: 'admins', label: 'Admin Users', adminOnly: true }
+            ].filter(tab => !tab.adminOnly || !isBranchAdmin).map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
