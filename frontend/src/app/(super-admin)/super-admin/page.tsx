@@ -108,14 +108,16 @@ export default function SuperAdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Student Growth Chart */}
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold mb-4">Student Growth</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">Student Growth</h3>
+          <p className="text-sm text-gray-500 mb-4">New enrolments over the last 12 months</p>
           <LineChart data={studentGrowth} xKey="month" yKey="count" color="#10b981" />
         </div>
 
         {/* Revenue Chart */}
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold mb-4">Revenue Analytics</h3>
-          <BarChart data={revenueData} xKey="month" yKey="revenue" color="#6366f1" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">Revenue Analytics</h3>
+          <p className="text-sm text-gray-500 mb-4">Monthly completed payments (last 12 months)</p>
+          <BarChart data={revenueData} xKey="month" yKey="revenue" color="#6366f1" currency={true} />
         </div>
       </div>
 
@@ -123,13 +125,15 @@ export default function SuperAdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Attendance Chart */}
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold mb-4">Attendance Overview</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">Attendance Overview</h3>
+          <p className="text-sm text-gray-500 mb-4">Attendance breakdown across all branches</p>
           <PieChart data={attendanceData} />
         </div>
 
         {/* Top Branches */}
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold mb-4">Top Performing Branches</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">Top Performing Branches</h3>
+          <p className="text-sm text-gray-500 mb-4">Ranked by number of active students</p>
           <div className="space-y-3">
             {topBranches.slice(0, 5).map((branch) => (
               <div key={branch.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
