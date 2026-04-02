@@ -99,6 +99,18 @@ import {
   exportAuditLogs
 } from '../controllers/superAdmin/audit.controller';
 
+// Permissions controllers
+import {
+  getBranchAdminPermissions,
+  updateBranchAdminPermissions,
+  enableAllPermissions,
+  disableAllPermissions,
+  getBranchPermissions,
+  updateBranchPermissions,
+  enableBranchPermissions,
+  disableBranchPermissions,
+} from '../controllers/superAdmin/permissions.controller';
+
 const router = Router();
 
 // Apply authentication to all routes
@@ -202,5 +214,21 @@ router.post('/settings/reset', requireSuperAdmin, resetSettings);
 router.get('/audit-logs', requireSuperAdmin, getAuditLogs);
 router.get('/audit-logs/stats', requireSuperAdmin, getAuditStats);
 router.get('/audit-logs/export', requireSuperAdmin, exportAuditLogs);
+
+// ═══════════════════════════════════════════════════════════
+// BRANCH ADMIN PERMISSIONS ENDPOINTS (user-scoped)
+// ═══════════════════════════════════════════════════════════
+router.get('/branch-admins/:userId/permissions', requireSuperAdmin, getBranchAdminPermissions);
+router.put('/branch-admins/:userId/permissions', requireSuperAdmin, updateBranchAdminPermissions);
+router.post('/branch-admins/:userId/permissions/enable-all', requireSuperAdmin, enableAllPermissions);
+router.post('/branch-admins/:userId/permissions/disable-all', requireSuperAdmin, disableAllPermissions);
+
+// ═══════════════════════════════════════════════════════════
+// BRANCH ADMIN PERMISSIONS ENDPOINTS (branch-scoped)
+// ═══════════════════════════════════════════════════════════
+router.get('/branches/:branchId/admin-permissions', requireSuperAdmin, getBranchPermissions);
+router.put('/branches/:branchId/admin-permissions', requireSuperAdmin, updateBranchPermissions);
+router.post('/branches/:branchId/admin-permissions/enable-all', requireSuperAdmin, enableBranchPermissions);
+router.post('/branches/:branchId/admin-permissions/disable-all', requireSuperAdmin, disableBranchPermissions);
 
 export default router;

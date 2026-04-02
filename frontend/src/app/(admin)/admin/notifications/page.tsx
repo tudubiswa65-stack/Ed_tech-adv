@@ -9,6 +9,7 @@ import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Spinner from '@/components/ui/Spinner';
 import PageWrapper from '@/components/layout/PageWrapper';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface Notification {
   id: string;
@@ -48,6 +49,8 @@ export default function NotificationsPage() {
     actionUrl: '',
     scheduledAt: ''
   });
+
+  const { hasPermission } = usePermissions();
 
   useEffect(() => {
     fetchNotifications();
@@ -162,9 +165,11 @@ export default function NotificationsPage() {
             <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
             <p className="text-gray-500">Manage and send notifications to students</p>
           </div>
-          <Button onClick={() => { resetForm(); setShowModal(true); }}>
-            + Create Notification
-          </Button>
+          {hasPermission('broadcast_message') && (
+            <Button onClick={() => { resetForm(); setShowModal(true); }}>
+              + Create Notification
+            </Button>
+          )}
         </div>
 
         {/* Filters */}
@@ -242,7 +247,7 @@ export default function NotificationsPage() {
                       </p>
                     </div>
                     <div className="flex gap-2 ml-4">
-                      {!notification.sent_at && (
+                      {!notification.sent_at && hasPermission('broadcast_message') && (
                         <Button size="sm" variant="outline" onClick={() => handleBroadcast(notification.id)}>
                           Send
                         </Button>

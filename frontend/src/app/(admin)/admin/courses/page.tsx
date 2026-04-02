@@ -5,6 +5,7 @@ import PageWrapper from '@/components/layout/PageWrapper';
 import { Card, Button, Modal, Input, Badge, Spinner } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
 import { useToast } from '@/context/ToastContext';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface Subject {
   id: string;
@@ -78,6 +79,7 @@ export default function CoursesPage() {
   const [formLoading, setFormLoading] = useState(false);
 
   const toast = useToast();
+  const { hasPermission, loading: permLoading } = usePermissions();
 
   const fetchCourses = async () => {
     setLoading(true);
@@ -328,7 +330,11 @@ export default function CoursesPage() {
   return (
     <PageWrapper
       title="Course Management"
-      actions={<Button onClick={() => { setFormData(EMPTY_FORM); setShowModal(true); }}>Create Course</Button>}
+      actions={
+        hasPermission('add_course') ? (
+          <Button onClick={() => { setFormData(EMPTY_FORM); setShowModal(true); }}>Create Course</Button>
+        ) : undefined
+      }
     >
       {loading ? (
         <div className="flex items-center justify-center min-h-[400px]">
@@ -338,7 +344,9 @@ export default function CoursesPage() {
         <Card>
           <div className="text-center py-12">
             <p className="text-gray-500 mb-4">No courses found</p>
-            <Button onClick={() => setShowModal(true)}>Create Your First Course</Button>
+            {hasPermission('add_course') && (
+              <Button onClick={() => setShowModal(true)}>Create Your First Course</Button>
+            )}
           </div>
         </Card>
       ) : (
@@ -416,8 +424,12 @@ export default function CoursesPage() {
                   {expandedCourse === course.id ? 'Hide Modules' : 'View Modules'}
                 </Button>
                 <div className="flex items-center space-x-2">
-                  <Button size="sm" variant="outline" onClick={() => openEdit(course)}>Edit</Button>
-                  <Button size="sm" variant="danger" onClick={() => { setSelectedCourse(course); setShowDeleteModal(true); }}>Delete</Button>
+                  {hasPermission('edit_course') && (
+                    <Button size="sm" variant="outline" onClick={() => openEdit(course)}>Edit</Button>
+                  )}
+                  {hasPermission('delete_course') && (
+                    <Button size="sm" variant="danger" onClick={() => { setSelectedCourse(course); setShowDeleteModal(true); }}>Delete</Button>
+                  )}
                 </div>
               </div>
 
