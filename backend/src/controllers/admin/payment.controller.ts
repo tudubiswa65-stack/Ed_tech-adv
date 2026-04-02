@@ -3,6 +3,7 @@ import { createHmac, createHash, timingSafeEqual, randomBytes } from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { AuthRequest } from '../../types';
 import supabaseAdmin from '../../db/supabaseAdmin';
+import { getUserBranchId } from '../../utils/branchFilter';
 
 // HMAC Secret for payment receipt signatures
 const PAYMENT_HMAC_SECRET = process.env.PAYMENT_HMAC_SECRET || 'default-secret-change-in-production';
@@ -56,7 +57,12 @@ export function verifyReceiptSignature(
 
 export const getPayments = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { student_id, branch_id, status } = req.query;
+    const { student_id, status } = req.query;
+
+    // branch_admin is restricted to their own branch
+    const adminBranchId = getUserBranchId(req.user);
+    const requestedBranchId = req.query.branch_id as string | undefined;
+    const effectiveBranchId = adminBranchId ?? requestedBranchId;
 
     let query = supabaseAdmin
       .from('payments')
@@ -64,7 +70,7 @@ export const getPayments = async (req: AuthRequest, res: Response): Promise<void
       .order('created_at', { ascending: false });
 
     if (student_id) query = query.eq('student_id', student_id as string);
-    if (branch_id) query = query.eq('branch_id', branch_id as string);
+    if (effectiveBranchId) query = query.eq('branch_id', effectiveBranchId as string);
     if (status) query = query.eq('status', status as string);
 
     const { data, error } = await query;
@@ -82,13 +88,16 @@ export const recordPayment = async (req: AuthRequest, res: Response): Promise<vo
     const {
       student_id,
       course_id,
-      branch_id,
       amount,
       status,
       payment_method,
       transaction_id,
       description,
     } = req.body;
+
+    // branch_admin: force branch_id to their own branch; prevent cross-branch payment recording
+    const adminBranchId = getUserBranchId(req.user);
+    const branch_id = adminBranchId ?? req.body.branch_id;
 
     if (!student_id || amount === undefined || !payment_method) {
       res.status(400).json({ error: 'Missing required fields: student_id, amount, payment_method' });

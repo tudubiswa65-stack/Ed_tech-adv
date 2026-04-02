@@ -1,6 +1,24 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
 import { AuthRequest } from '../../types';
+import { getUserBranchId } from '../../utils/branchFilter';
+
+/**
+ * Resolve the list of student IDs that a branch_admin is allowed to access.
+ * Returns null when there is no branch restriction (super_admin / admin).
+ * Returns an empty array when the branch has no students (results should be empty).
+ */
+async function getBranchStudentIds(req: AuthRequest): Promise<string[] | null> {
+  const branchId = getUserBranchId(req.user);
+  if (!branchId) return null;
+
+  const { data } = await supabaseAdmin
+    .from('students')
+    .select('id')
+    .eq('branch_id', branchId);
+
+  return (data || []).map((s: { id: string }) => s.id);
+}
 
 // Get all results with filtering and pagination
 export const getResults = async (req: AuthRequest, res: Response) => {
@@ -16,6 +34,16 @@ export const getResults = async (req: AuthRequest, res: Response) => {
     } = req.query;
 
     const offset = (Number(page) - 1) * Number(limit);
+
+    // Resolve the set of student IDs visible to this admin
+    const branchStudentIds = await getBranchStudentIds(req);
+    if (branchStudentIds !== null && branchStudentIds.length === 0) {
+      // Branch has no students → return empty result immediately
+      return res.json({
+        results: [],
+        pagination: { total: 0, page: Number(page), limit: Number(limit), totalPages: 0 }
+      });
+    }
 
     let query = supabaseAdmin
       .from('results')
@@ -52,6 +80,10 @@ export const getResults = async (req: AuthRequest, res: Response) => {
     }
     if (status) {
       query = query.eq('status', status);
+    }
+    // Restrict to students in the branch_admin's branch
+    if (branchStudentIds !== null) {
+      query = query.in('student_id', branchStudentIds);
     }
 
     // Validate sortBy against allowlist to reject invalid parameters
@@ -115,15 +147,24 @@ export const getResultById = async (req: AuthRequest, res: Response) => {
           id,
           name,
           email,
-          roll_number
+          roll_number,
+          branch_id
         )
       `)
       .eq('id', id)
-      
       .single();
 
     if (error) {
       return res.status(404).json({ error: 'Result not found' });
+    }
+
+    // branch_admin may only access results for students in their own branch
+    const adminBranchId = getUserBranchId(req.user);
+    if (adminBranchId) {
+      const studentBranchId = (data.students as any)?.branch_id;
+      if (studentBranchId !== adminBranchId) {
+        return res.status(403).json({ error: 'Access denied: result belongs to a different branch' });
+      }
     }
 
     res.json(data);
@@ -143,15 +184,17 @@ export const getTestAnalytics = async (req: AuthRequest, res: Response) => {
       .from('tests')
       .select('id, title, total_marks, passing_marks, questions')
       .eq('id', testId)
-      
       .single();
 
     if (testError || !test) {
       return res.status(404).json({ error: 'Test not found' });
     }
 
+    // Resolve branch-scoped student IDs for branch_admin
+    const branchStudentIds = await getBranchStudentIds(req);
+
     // Get all results for this test with student details for top performers
-    const { data: results, error: resultsError } = await supabaseAdmin
+    let resultsQuery = supabaseAdmin
       .from('results')
       .select(`
         id,
@@ -163,8 +206,31 @@ export const getTestAnalytics = async (req: AuthRequest, res: Response) => {
         submitted_at,
         students (id, name, email, roll_number)
       `)
-      .eq('test_id', testId)
-      ;
+      .eq('test_id', testId);
+
+      if (branchStudentIds !== null) {
+        if (branchStudentIds.length === 0) {
+          // Branch has no students — return empty analytics
+          return res.json({
+            test,
+            totalAttempts: 0,
+            passedAttempts: 0,
+            failedAttempts: 0,
+            averageScore: 0,
+            averagePercentage: 0,
+            averageTime: 0,
+            fastestTime: 0,
+            slowestTime: 0,
+            medianPercentage: 0,
+            stdDeviation: 0,
+            topPerformers: [],
+            questionStats: [],
+          });
+        }
+        resultsQuery = resultsQuery.in('student_id', branchStudentIds);
+      }
+
+    const { data: results, error: resultsError } = await resultsQuery;
 
     if (resultsError) {
       return res.status(400).json({ error: resultsError.message });
