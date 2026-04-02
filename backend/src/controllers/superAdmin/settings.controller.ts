@@ -2,6 +2,38 @@ import { Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
 import { AuthRequest } from '../../types';
 
+// Keys whose DB string values should be cast to numbers
+const NUMBER_KEYS = new Set([
+  'session_timeout', 'payment_threshold', 'late_fee_percentage',
+  'grace_period_days', 'max_upload_size_mb'
+]);
+
+// Keys whose DB string values should be cast to booleans
+const BOOLEAN_KEYS = new Set([
+  'maintenance_mode', 'user_registration', 'email_notifications', 'sms_notifications'
+]);
+
+// Keys whose DB string values are JSON arrays
+const JSON_ARRAY_KEYS = new Set(['allowed_file_types']);
+
+type SettingValue = string | number | boolean | string[] | null;
+
+function parseValue(key: string, raw: string | null): SettingValue {
+  if (raw === null || raw === undefined) return null;
+  if (BOOLEAN_KEYS.has(key)) return raw === 'true';
+  if (NUMBER_KEYS.has(key)) return Number(raw);
+  if (JSON_ARRAY_KEYS.has(key)) {
+    try { return JSON.parse(raw) as string[]; } catch { return []; }
+  }
+  return raw;
+}
+
+function serializeValue(key: string, val: SettingValue | undefined): string {
+  if (val === null || val === undefined) return '';
+  if (JSON_ARRAY_KEYS.has(key)) return JSON.stringify(val);
+  return String(val);
+}
+
 export const getAllSettings = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { data: settings, error } = await supabaseAdmin
@@ -15,13 +47,9 @@ export const getAllSettings = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
-    // Convert to key-value object
+    // Return flat { key: parsedValue } so the frontend can use values directly
     const settingsObj = settings?.reduce((acc, setting) => {
-      acc[setting.key] = {
-        value: setting.value,
-        description: setting.description,
-        updated_at: setting.updated_at
-      };
+      acc[setting.key] = parseValue(setting.key, setting.value);
       return acc;
     }, {} as Record<string, any>) || {};
 
@@ -40,19 +68,21 @@ export const updateSetting = async (req: AuthRequest, res: Response): Promise<vo
     const { key } = req.params;
     const { value, description } = req.body;
 
-    const updateData: any = {
-      value,
+    const serialized = serializeValue(key, value);
+
+    const upsertData: Record<string, SettingValue | string> = {
+      key,
+      value: serialized,
       updated_at: new Date().toISOString()
     };
 
     if (description !== undefined) {
-      updateData.description = description;
+      upsertData.description = description;
     }
 
     const { data: setting, error } = await supabaseAdmin
       .from('super_admin_settings')
-      .update(updateData)
-      .eq('key', key)
+      .upsert(upsertData, { onConflict: 'key' })
       .select()
       .single();
 
@@ -75,24 +105,34 @@ export const updateSetting = async (req: AuthRequest, res: Response): Promise<vo
 
 export const updateMultipleSettings = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { settings } = req.body;
+    // Frontend sends a flat object: { platform_name: 'x', maintenance_mode: true, ... }
+    const body = req.body;
 
-    if (!settings || typeof settings !== 'object') {
-      res.status(400).json({ success: false, error: 'Settings object is required' });
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      res.status(400).json({ success: false, error: 'Request body must be a settings object' });
       return;
     }
 
-    const updates = Object.entries(settings).map(([key, value]) => {
-      return supabaseAdmin
-        .from('super_admin_settings')
-        .update({
-          value,
-          updated_at: new Date().toISOString()
-        })
-        .eq('key', key);
-    });
+    const upsertRows = Object.entries(body as Record<string, SettingValue>).map(([key, value]) => ({
+      key,
+      value: serializeValue(key, value),
+      updated_at: new Date().toISOString()
+    }));
 
-    await Promise.all(updates);
+    if (upsertRows.length === 0) {
+      res.json({ success: true, message: 'No settings to update' });
+      return;
+    }
+
+    const { error } = await supabaseAdmin
+      .from('super_admin_settings')
+      .upsert(upsertRows, { onConflict: 'key' });
+
+    if (error) {
+      console.error('Error updating settings:', error);
+      res.status(500).json({ success: false, error: 'Failed to update settings' });
+      return;
+    }
 
     res.json({
       success: true,
@@ -106,14 +146,21 @@ export const updateMultipleSettings = async (req: AuthRequest, res: Response): P
 
 export const getBrandingSettings = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { data: settings } = await supabaseAdmin
+    const BRANDING_KEYS = ['platform_name', 'tagline', 'primary_color', 'logo_url'];
+
+    const { data: settings, error } = await supabaseAdmin
       .from('super_admin_settings')
       .select('*')
-      .in('key', ['platform_name', 'platform_tagline', 'primary_color', 'secondary_color', 'logo_url', 'favicon_url']);
+      .in('key', BRANDING_KEYS);
 
-    // Convert to key-value object
+    if (error) {
+      console.error('Error fetching branding settings:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch branding settings' });
+      return;
+    }
+
     const branding = settings?.reduce((acc, setting) => {
-      acc[setting.key] = setting.value;
+      acc[setting.key] = parseValue(setting.key, setting.value);
       return acc;
     }, {} as Record<string, any>) || {};
 
@@ -129,38 +176,35 @@ export const getBrandingSettings = async (req: AuthRequest, res: Response): Prom
 
 export const updateBrandingSettings = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const {
-      platform_name,
-      platform_tagline,
-      primary_color,
-      secondary_color,
-      logo_url,
-      favicon_url
-    } = req.body;
+    const { platform_name, tagline, primary_color, logo_url } = req.body;
 
-    const brandingSettings = [
+    const brandingSettings: { key: string; value: any }[] = [
       { key: 'platform_name', value: platform_name },
-      { key: 'platform_tagline', value: platform_tagline },
+      { key: 'tagline',       value: tagline },
       { key: 'primary_color', value: primary_color },
-      { key: 'secondary_color', value: secondary_color },
-      { key: 'logo_url', value: logo_url },
-      { key: 'favicon_url', value: favicon_url }
-    ];
+      { key: 'logo_url',      value: logo_url }
+    ].filter(s => s.value !== undefined);
 
-    const updates = brandingSettings.map(setting => {
-      if (setting.value !== undefined) {
-        return supabaseAdmin
-          .from('super_admin_settings')
-          .update({
-            value: setting.value,
-            updated_at: new Date().toISOString()
-          })
-          .eq('key', setting.key);
-      }
-      return Promise.resolve();
-    });
+    if (brandingSettings.length === 0) {
+      res.json({ success: true, message: 'No branding settings to update' });
+      return;
+    }
 
-    await Promise.all(updates);
+    const upsertRows = brandingSettings.map(s => ({
+      key: s.key,
+      value: serializeValue(s.key, s.value),
+      updated_at: new Date().toISOString()
+    }));
+
+    const { error } = await supabaseAdmin
+      .from('super_admin_settings')
+      .upsert(upsertRows, { onConflict: 'key' });
+
+    if (error) {
+      console.error('Error updating branding settings:', error);
+      res.status(500).json({ success: false, error: 'Failed to update branding settings' });
+      return;
+    }
 
     res.json({
       success: true,
@@ -174,14 +218,22 @@ export const updateBrandingSettings = async (req: AuthRequest, res: Response): P
 
 export const getFeatureFlags = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { data: settings } = await supabaseAdmin
+    const FEATURE_KEYS = ['maintenance_mode', 'user_registration', 'email_notifications', 'sms_notifications'];
+
+    const { data: settings, error } = await supabaseAdmin
       .from('super_admin_settings')
       .select('*')
-      .in('key', ['maintenance_mode', 'registration_enabled', 'max_upload_size', 'session_timeout']);
+      .in('key', FEATURE_KEYS);
 
-    // Convert to key-value object
+    if (error) {
+      console.error('Error fetching feature flags:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch feature flags' });
+      return;
+    }
+
+    // Return proper booleans so the frontend toggles work correctly
     const features = settings?.reduce((acc, setting) => {
-      acc[setting.key] = setting.value;
+      acc[setting.key] = parseValue(setting.key, setting.value);
       return acc;
     }, {} as Record<string, any>) || {};
 
@@ -197,31 +249,41 @@ export const getFeatureFlags = async (req: AuthRequest, res: Response): Promise<
 
 export const resetSettings = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    // Reset to default values
-    const defaultSettings = {
-      platform_name: 'EdTech Platform',
-      platform_tagline: 'Empowering Education',
-      primary_color: '#2E86C1',
-      secondary_color: '#1A7A4A',
-      default_currency: 'USD',
-      timezone: 'UTC',
-      maintenance_mode: false,
-      registration_enabled: true,
-      max_upload_size: 50,
-      session_timeout: 604800
+    // Default values keyed to match what the frontend Settings page expects
+    const defaultSettings: Record<string, SettingValue> = {
+      platform_name:       'EdTech Platform',
+      tagline:             'Empowering Education',
+      primary_color:       '#6366f1',
+      logo_url:            '',
+      currency:            'INR',
+      timezone:            'UTC',
+      session_timeout:     60,
+      payment_threshold:   0,
+      late_fee_percentage: 0,
+      grace_period_days:   0,
+      max_upload_size_mb:  10,
+      allowed_file_types:  ['pdf', 'jpg', 'jpeg', 'png', 'docx'],
+      maintenance_mode:    false,
+      user_registration:   true,
+      email_notifications: true,
+      sms_notifications:   false
     };
 
-    const updates = Object.entries(defaultSettings).map(([key, value]) => {
-      return supabaseAdmin
-        .from('super_admin_settings')
-        .update({
-          value,
-          updated_at: new Date().toISOString()
-        })
-        .eq('key', key);
-    });
+    const upsertRows = Object.entries(defaultSettings).map(([key, value]) => ({
+      key,
+      value: serializeValue(key, value),
+      updated_at: new Date().toISOString()
+    }));
 
-    await Promise.all(updates);
+    const { error } = await supabaseAdmin
+      .from('super_admin_settings')
+      .upsert(upsertRows, { onConflict: 'key' });
+
+    if (error) {
+      console.error('Error resetting settings:', error);
+      res.status(500).json({ success: false, error: 'Failed to reset settings' });
+      return;
+    }
 
     res.json({
       success: true,
