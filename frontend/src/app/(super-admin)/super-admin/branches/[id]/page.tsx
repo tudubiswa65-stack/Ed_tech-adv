@@ -448,7 +448,9 @@ export default function BranchDetailPage() {
     );
   }
 
-  const tabs = [
+  type ActiveTab = 'overview' | 'students' | 'payments' | 'activity' | 'permissions';
+
+  const tabs: { key: ActiveTab; label: string }[] = [
     { key: 'overview', label: 'Overview' },
     { key: 'students', label: `Students (${branch.stats.studentCount})` },
     { key: 'payments', label: 'Payments' },
@@ -512,7 +514,7 @@ export default function BranchDetailPage() {
           {tabs.map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key as typeof activeTab)}
+              onClick={() => setActiveTab(tab.key)}
               className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === tab.key
                   ? 'border-indigo-600 text-indigo-600'

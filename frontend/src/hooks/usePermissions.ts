@@ -79,7 +79,7 @@ export function usePermissions(): PermissionsState {
         // Fall back to defaults (all false) on error
       })
       .finally(() => setLoading(false));
-  }, [user?.id]);
+  }, [user]);
 
   return {
     permissions,

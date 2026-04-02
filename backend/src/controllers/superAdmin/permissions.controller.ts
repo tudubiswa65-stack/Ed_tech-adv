@@ -1,7 +1,16 @@
 import { Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
-import { AuthRequest } from '../../types';
+import { AuthRequest, JWTPayload } from '../../types';
 import { ALL_PERMISSIONS, DEFAULT_PERMISSIONS, PermissionKey } from '../../utils/permissions';
+
+/** JWTPayload may include a `name` field that is not in the base type. */
+type JWTPayloadWithName = JWTPayload & { name?: string };
+
+/** Derive the Super Admin's display name from the request's JWT payload. */
+function getUpdaterName(req: AuthRequest): string {
+  const payload = req.user as JWTPayloadWithName | undefined;
+  return payload?.name || payload?.email || 'Super Admin';
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -110,7 +119,7 @@ export const updateBranchAdminPermissions = async (
     }
 
     const now = new Date().toISOString();
-    const updaterName = (req.user as any)?.name || req.user?.email || 'Super Admin';
+    const updaterName = getUpdaterName(req);
 
     const { data, error } = await supabaseAdmin
       .from('branch_admin_permissions')
@@ -165,7 +174,7 @@ export const enableAllPermissions = async (
 
     const allTrue = Object.fromEntries(ALL_PERMISSIONS.map((p) => [p, true]));
     const now = new Date().toISOString();
-    const updaterName = (req.user as any)?.name || req.user?.email || 'Super Admin';
+    const updaterName = getUpdaterName(req);
 
     const { data, error } = await supabaseAdmin
       .from('branch_admin_permissions')
@@ -218,7 +227,7 @@ export const disableAllPermissions = async (
 
     const allFalse = Object.fromEntries(ALL_PERMISSIONS.map((p) => [p, false]));
     const now = new Date().toISOString();
-    const updaterName = (req.user as any)?.name || req.user?.email || 'Super Admin';
+    const updaterName = getUpdaterName(req);
 
     const { data, error } = await supabaseAdmin
       .from('branch_admin_permissions')
