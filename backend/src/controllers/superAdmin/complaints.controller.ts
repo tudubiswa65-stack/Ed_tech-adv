@@ -24,7 +24,7 @@ export const getAllComplaints = async (req: AuthRequest, res: Response): Promise
         priority,
         created_at,
         updated_at,
-        students (
+        users!student_id (
           id,
           name,
           email,
@@ -54,7 +54,7 @@ export const getAllComplaints = async (req: AuthRequest, res: Response): Promise
 
     // Filter through the student's branch when a branch_id is specified
     if (branch_id) {
-      query = query.eq('students.branch_id', branch_id as string);
+      query = query.eq('users.branch_id', branch_id as string);
     }
 
     if (search) {
@@ -78,8 +78,8 @@ export const getAllComplaints = async (req: AuthRequest, res: Response): Promise
     const transformedData = (data || []).map((complaint: any) => ({
       ...complaint,
       subject: complaint.title,
-      student_name: complaint.students?.name,
-      branch_name: complaint.students?.branches?.name,
+      student_name: complaint.users?.name,
+      branch_name: complaint.users?.branches?.name,
     }));
 
     res.json({
@@ -106,26 +106,25 @@ export const getComplaintById = async (req: AuthRequest, res: Response): Promise
       .from('complaints')
       .select(`
         *,
-        students!inner (
+        users!student_id (
           id,
           name,
           email,
           phone,
-          branch_id
-        ),
-        branches (
-          id,
-          name,
-          location,
-          contact_number
-        ),
-        complaint_replies (
-          *,
-          admins (
+          branch_id,
+          branches (
             id,
             name,
-            role
+            location,
+            contact_number
           )
+        ),
+        complaint_replies (
+          id,
+          message,
+          sender_id,
+          sender_role,
+          created_at
         )
       `)
       .eq('id', id)
@@ -159,7 +158,8 @@ export const resolveComplaint = async (req: AuthRequest, res: Response): Promise
         status: 'resolved',
         resolution_notes,
         resolved_at: new Date().toISOString(),
-        resolved_by: adminId
+        resolved_by: adminId,
+        updated_at: new Date().toISOString()
       })
       .eq('id', id)
       .select()
@@ -192,10 +192,11 @@ export const overrideBranchAdmin = async (req: AuthRequest, res: Response): Prom
     const { data: complaint, error } = await supabaseAdmin
       .from('complaints')
       .update({
-        status,
+        status: status || 'overridden',
         override_notes: notes,
         override_by: adminId,
-        override_at: new Date().toISOString()
+        override_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       })
       .eq('id', id)
       .select()
@@ -224,11 +225,12 @@ export const getComplaintStats = async (req: AuthRequest, res: Response): Promis
 
     let query = supabaseAdmin
       .from('complaints')
-      .select('status, priority, branch_id, created_at');
+      .select('status, priority, created_at');
 
-    if (branch_id) {
-      query = query.eq('branch_id', branch_id);
-    }
+    // branch_id does not exist on the complaints table; branch filtering
+    // is not supported at super-admin level and the parameter is ignored.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _branchId = branch_id;
 
     const { data: complaints } = await query;
 
@@ -242,13 +244,6 @@ export const getComplaintStats = async (req: AuthRequest, res: Response): Promis
     const mediumPriority = complaints?.filter(c => c.priority === 'medium').length || 0;
     const lowPriority = complaints?.filter(c => c.priority === 'low').length || 0;
 
-    // Branch breakdown
-    const branchBreakdown = complaints?.reduce((acc, c) => {
-      const branchId = c.branch_id || 'unassigned';
-      acc[branchId] = (acc[branchId] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>) || {};
-
     res.json({
       success: true,
       data: {
@@ -258,8 +253,7 @@ export const getComplaintStats = async (req: AuthRequest, res: Response): Promis
         resolved,
         highPriority,
         mediumPriority,
-        lowPriority,
-        branchBreakdown
+        lowPriority
       }
     });
   } catch (error) {
