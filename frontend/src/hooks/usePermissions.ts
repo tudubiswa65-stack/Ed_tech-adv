@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -81,9 +81,14 @@ export function usePermissions(): PermissionsState {
       .finally(() => setLoading(false));
   }, [user]);
 
+  const hasPermission = useCallback(
+    (key: PermissionKey) => permissions[key] ?? false,
+    [permissions]
+  );
+
   return {
     permissions,
     loading,
-    hasPermission: (key: PermissionKey) => permissions[key] ?? false,
+    hasPermission,
   };
 }

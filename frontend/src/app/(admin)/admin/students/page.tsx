@@ -228,7 +228,12 @@ export default function StudentsPage() {
             </Button>
           )}
           {!hasPermission('edit_student') && !hasPermission('delete_student') && (
-            <span className="text-xs text-gray-400 italic">No actions available</span>
+            <span
+              className="text-xs text-gray-400 italic"
+              aria-label="No actions available — contact your Super Admin to enable permissions"
+            >
+              No actions available
+            </span>
           )}
         </div>
       ),

@@ -510,10 +510,12 @@ export default function BranchDetailPage() {
 
       {/* Tabs */}
       <div className="border-b border-gray-200">
-        <nav className="flex space-x-8 overflow-x-auto">
+        <nav className="flex space-x-8 overflow-x-auto" role="tablist" aria-label="Branch details tabs">
           {tabs.map((tab) => (
             <button
               key={tab.key}
+              role="tab"
+              aria-selected={activeTab === tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === tab.key
