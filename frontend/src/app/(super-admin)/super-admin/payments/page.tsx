@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { DataTable } from '@/components/super-admin/DataTable';
 import { StatCard } from '@/components/super-admin/StatCard';
+import { PieChart, BarChart } from '@/components/super-admin/charts';
 import { Modal } from '@/components/ui';
 
 interface Payment {
@@ -25,10 +26,12 @@ interface Defaulter {
 }
 
 interface Analytics {
-  total_revenue: number;
-  pending_amount: number;
-  completed_count: number;
-  defaulter_count: number;
+  totalRevenue: number;
+  pendingAmount: number;
+  completedCount: number;
+  pendingCount: number;
+  failedCount: number;
+  branchBreakdown?: Record<string, { total: number; completed: number; pending: number }>;
 }
 
 interface Branch {
@@ -216,10 +219,44 @@ export default function PaymentsPage() {
 
       {analytics && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Total Revenue" value={`$${Number(analytics.total_revenue).toLocaleString()}`} icon="payments" color="green" />
-          <StatCard title="Pending Amount" value={`$${Number(analytics.pending_amount).toLocaleString()}`} icon="payments" color="orange" />
-          <StatCard title="Completed Payments" value={analytics.completed_count} icon="payments" color="blue" />
-          <StatCard title="Defaulters" value={analytics.defaulter_count} icon="students" color="pink" />
+          <StatCard title="Total Revenue" value={`$${Number(analytics.totalRevenue).toLocaleString()}`} icon="payments" color="green" />
+          <StatCard title="Pending Amount" value={`$${Number(analytics.pendingAmount).toLocaleString()}`} icon="payments" color="orange" />
+          <StatCard title="Completed Payments" value={analytics.completedCount} icon="payments" color="blue" />
+          <StatCard title="Pending Payments" value={analytics.pendingCount} icon="payments" color="pink" />
+        </div>
+      )}
+
+      {/* Revenue Analytics Charts */}
+      {analytics && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Payment Status Breakdown */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Payment Status Breakdown</h3>
+            <p className="text-sm text-gray-500 mb-4">Distribution of payment statuses</p>
+            <PieChart
+              data={[
+                { label: 'Completed', value: analytics.completedCount },
+                { label: 'Pending', value: analytics.pendingCount },
+                { label: 'Failed', value: analytics.failedCount },
+              ].filter((d) => d.value > 0)}
+            />
+          </div>
+
+          {/* Revenue vs Pending Comparison */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Revenue Overview</h3>
+            <p className="text-sm text-gray-500 mb-4">Collected vs outstanding amounts</p>
+            <BarChart
+              data={[
+                { category: 'Collected', amount: analytics.totalRevenue },
+                { category: 'Pending', amount: analytics.pendingAmount },
+              ]}
+              xKey="category"
+              yKey="amount"
+              color="#6366f1"
+              currency={true}
+            />
+          </div>
         </div>
       )}
 
