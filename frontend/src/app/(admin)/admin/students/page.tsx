@@ -6,6 +6,7 @@ import PageWrapper from '@/components/layout/PageWrapper';
 import { Table, Button, Input, Modal, Badge, Spinner } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
 import { useToast } from '@/context/ToastContext';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface Student {
   id: string;
@@ -57,6 +58,7 @@ export default function StudentsPage() {
 
   const router = useRouter();
   const toast = useToast();
+  const { hasPermission } = usePermissions();
 
   const fetchStudents = async () => {
     setLoading(true);
@@ -204,23 +206,30 @@ export default function StudentsPage() {
       label: 'Actions',
       render: (student: Student) => (
         <div className="flex items-center space-x-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => router.push(`/admin/students/${student.id}/edit`)}
-          >
-            Edit
-          </Button>
-          <Button
-            size="sm"
-            variant="danger"
-            onClick={() => {
-              setSelectedStudent(student);
-              setShowDeleteModal(true);
-            }}
-          >
-            Delete
-          </Button>
+          {hasPermission('edit_student') && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => router.push(`/admin/students/${student.id}/edit`)}
+            >
+              Edit
+            </Button>
+          )}
+          {hasPermission('delete_student') && (
+            <Button
+              size="sm"
+              variant="danger"
+              onClick={() => {
+                setSelectedStudent(student);
+                setShowDeleteModal(true);
+              }}
+            >
+              Delete
+            </Button>
+          )}
+          {!hasPermission('edit_student') && !hasPermission('delete_student') && (
+            <span className="text-xs text-gray-400 italic">No actions available</span>
+          )}
         </div>
       ),
     },
@@ -230,7 +239,9 @@ export default function StudentsPage() {
     <PageWrapper
         title="Student Management"
         actions={
-          <Button onClick={() => setShowAddModal(true)}>Add Student</Button>
+          hasPermission('add_student') ? (
+            <Button onClick={() => setShowAddModal(true)}>Add Student</Button>
+          ) : undefined
         }
       >
         {/* Filters */}

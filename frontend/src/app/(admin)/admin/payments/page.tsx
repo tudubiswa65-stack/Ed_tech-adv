@@ -5,6 +5,7 @@ import PageWrapper from '@/components/layout/PageWrapper';
 import { Table, Button, Modal, Badge, Input } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
 import { useToast } from '@/context/ToastContext';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface Payment {
   id: string;
@@ -52,6 +53,7 @@ export default function AdminPaymentsPage() {
   });
 
   const toast = useToast();
+  const { hasPermission } = usePermissions();
 
   useEffect(() => {
     fetchPayments();
@@ -156,9 +158,13 @@ export default function AdminPaymentsPage() {
       key: 'actions',
       label: 'Receipt',
       render: (p: Payment) => (
-        <Button size="sm" variant="outline" onClick={() => handleViewReceipt(p.id)}>
-          🧾 View
-        </Button>
+        hasPermission('issue_receipts') ? (
+          <Button size="sm" variant="outline" onClick={() => handleViewReceipt(p.id)}>
+            🧾 View
+          </Button>
+        ) : (
+          <span className="text-xs text-gray-400 italic">No access</span>
+        )
       ),
     },
   ];
@@ -166,7 +172,11 @@ export default function AdminPaymentsPage() {
   return (
     <PageWrapper
       title="Payments & Revenue"
-      actions={<Button onClick={() => setShowAddModal(true)}>Record Payment</Button>}
+      actions={
+        hasPermission('manage_fees') ? (
+          <Button onClick={() => setShowAddModal(true)}>Record Payment</Button>
+        ) : undefined
+      }
     >
       <Table columns={columns} data={payments} loading={loading} emptyMessage="No payments found" />
 

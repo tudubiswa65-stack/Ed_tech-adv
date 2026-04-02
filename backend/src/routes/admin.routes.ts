@@ -27,6 +27,8 @@ import {
   verifyPayment,
   getPaymentReceipt,
 } from '../controllers/admin/payment.controller';
+import { getMyPermissions } from '../controllers/admin/permissions.controller';
+import { requirePermission } from '../middleware/permissionMiddleware';
 import rateLimit from 'express-rate-limit';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { requireRole } from '../middleware/roleMiddleware';
@@ -59,13 +61,16 @@ router.use(requireRole('admin', 'super_admin', 'branch_admin'));
 // Dashboard
 router.get('/dashboard', getDashboardStats);
 
+// My Permissions (for branch_admin self-check)
+router.get('/my-permissions', getMyPermissions);
+
 // Students
 router.get('/students', getStudents);
-router.post('/students', createStudent);
+router.post('/students', requirePermission('add_student'), createStudent);
 router.post('/students/bulk', bulkUploadLimiter, upload.single('file'), bulkUploadStudents);
 router.get('/students/:id', getStudentById);
-router.put('/students/:id', updateStudent);
-router.delete('/students/:id', deleteStudent);
+router.put('/students/:id', requirePermission('edit_student'), updateStudent);
+router.delete('/students/:id', requirePermission('delete_student'), deleteStudent);
 
 // Branches
 router.get('/branches', getBranches);
@@ -81,9 +86,9 @@ router.put('/attendance/:id', updateAttendance);
 
 // Payments
 router.get('/payments', getPayments);
-router.post('/payments', paymentRecordLimiter, recordPayment);
-router.put('/payments/:id', updatePaymentStatus);
-router.get('/payments/:id/receipt', getPaymentReceipt);
+router.post('/payments', paymentRecordLimiter, requirePermission('manage_fees'), recordPayment);
+router.put('/payments/:id', requirePermission('issue_receipts'), updatePaymentStatus);
+router.get('/payments/:id/receipt', requirePermission('issue_receipts'), getPaymentReceipt);
 router.get('/payments/:id/verify', verifyPayment);
 
 export default router;
