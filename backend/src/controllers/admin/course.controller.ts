@@ -1,10 +1,15 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
+import { AuthRequest } from '../../types';
+import { getUserBranchId } from '../../utils/branchFilter';
 
-// Get all courses
-export const getCourses = async (req: Request, res: Response): Promise<void> => {
+// Get all courses (filtered by branch for branch_admin)
+export const getCourses = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { data: courses, error } = await supabaseAdmin
+    // branch_admin is restricted to their own branch
+    const adminBranchId = getUserBranchId(req.user);
+
+    let query = supabaseAdmin
       .from('courses')
       .select(`
         *,
@@ -21,24 +26,43 @@ export const getCourses = async (req: Request, res: Response): Promise<void> => 
       `)
       .order('created_at', { ascending: false });
 
+    // Apply branch filter for branch_admin
+    if (adminBranchId) {
+      query = query.eq('branch_id', adminBranchId);
+    }
+
+    const { data: courses, error } = await query;
+
     if (error) {
       res.status(400).json({ error: error.message });
       return;
     }
 
-    // Get counts for each course
+    // Get counts for each course (scoped to branch for branch_admin)
     const coursesWithCounts = await Promise.all(
       (courses || []).map(async (course) => {
-        const { count: studentCount } = await supabaseAdmin
+        let studentQuery = supabaseAdmin
           .from('students')
           .select('*', { count: 'exact', head: true })
           .eq('course_id', course.id)
           .eq('is_active', true);
 
-        const { count: testCount } = await supabaseAdmin
+        if (adminBranchId) {
+          studentQuery = studentQuery.eq('branch_id', adminBranchId);
+        }
+
+        const { count: studentCount } = await studentQuery;
+
+        let testQuery = supabaseAdmin
           .from('tests')
           .select('*', { count: 'exact', head: true })
           .eq('course_id', course.id);
+
+        if (adminBranchId) {
+          testQuery = testQuery.eq('branch_id', adminBranchId);
+        }
+
+        const { count: testCount } = await testQuery;
 
         const { count: materialCount } = await supabaseAdmin
           .from('study_materials')
@@ -62,7 +86,7 @@ export const getCourses = async (req: Request, res: Response): Promise<void> => 
 };
 
 // Create a new course
-export const createCourse = async (req: Request, res: Response): Promise<void> => {
+export const createCourse = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const {
       name,
@@ -89,12 +113,22 @@ export const createCourse = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
+    // branch_admin can only create courses in their own branch
+    const adminBranchId = getUserBranchId(req.user);
+
     const insertData: Record<string, unknown> = {
       name: name || title,
       title: title || name,
       is_active: true,
       status: status || 'active',
     };
+
+    // Force branch_id for branch_admin, otherwise use provided branch_id
+    if (adminBranchId) {
+      insertData.branch_id = adminBranchId;
+    } else if (req.body.branch_id) {
+      insertData.branch_id = req.body.branch_id;
+    }
 
     if (description !== undefined) insertData.description = description;
     if (thumbnail !== undefined) insertData.thumbnail = thumbnail;
@@ -169,7 +203,7 @@ export const createCourse = async (req: Request, res: Response): Promise<void> =
 };
 
 // Update a course
-export const updateCourse = async (req: Request, res: Response): Promise<void> => {
+export const updateCourse = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const {
@@ -192,6 +226,22 @@ export const updateCourse = async (req: Request, res: Response): Promise<void> =
       is_active,
       is_published,
     } = req.body;
+
+    // branch_admin may only update courses in their own branch
+    const adminBranchId = getUserBranchId(req.user);
+    if (adminBranchId) {
+      const { data: existing } = await supabaseAdmin
+        .from('courses')
+        .select('branch_id')
+        .eq('id', id)
+        .single();
+      if (!existing || existing.branch_id !== adminBranchId) {
+        res.status(403).json({ error: 'Access denied: course belongs to a different branch' });
+        return;
+      }
+      // Prevent changing the branch_id
+      delete (req.body as any).branch_id;
+    }
 
     const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
@@ -274,16 +324,36 @@ export const updateCourse = async (req: Request, res: Response): Promise<void> =
 };
 
 // Delete a course
-export const deleteCourse = async (req: Request, res: Response): Promise<void> => {
+export const deleteCourse = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
+    // branch_admin may only delete courses in their own branch
+    const adminBranchId = getUserBranchId(req.user);
+    if (adminBranchId) {
+      const { data: existing } = await supabaseAdmin
+        .from('courses')
+        .select('branch_id')
+        .eq('id', id)
+        .single();
+      if (!existing || existing.branch_id !== adminBranchId) {
+        res.status(403).json({ error: 'Access denied: course belongs to a different branch' });
+        return;
+      }
+    }
+
     // Check if any active students are enrolled
-    const { count } = await supabaseAdmin
+    let studentQuery = supabaseAdmin
       .from('students')
       .select('*', { count: 'exact', head: true })
       .eq('course_id', id)
       .eq('is_active', true);
+
+    if (adminBranchId) {
+      studentQuery = studentQuery.eq('branch_id', adminBranchId);
+    }
+
+    const { count } = await studentQuery;
 
     if (count && count > 0) {
       res.status(400).json({ error: 'Cannot delete course with active students' });

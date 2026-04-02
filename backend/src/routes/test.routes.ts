@@ -18,9 +18,9 @@ import { requireRole } from '../middleware/roleMiddleware';
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-// All routes require authentication and admin role
+// All routes require authentication and admin role (including branch_admin)
 router.use(authMiddleware);
-router.use(requireRole('admin', 'super_admin'));
+router.use(requireRole('admin', 'super_admin', 'branch_admin'));
 
 // Test routes
 router.get('/', getTests);
