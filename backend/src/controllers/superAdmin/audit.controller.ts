@@ -2,24 +2,49 @@ import { Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
 import { AuthRequest } from '../../types';
 
+/** Escape PostgREST ilike wildcard characters in a user-supplied string. */
+function escapeIlike(value: string): string {
+  return value.replace(/[%_\\]/g, c => `\\${c}`);
+}
+
+/** Safely serialize a value to a CSV cell string. */
+function csvCell(value: unknown): string {
+  if (value === null || value === undefined) return 'N/A';
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
+}
+
 export const getAuditLogs = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const {
       page = 1,
-      limit = 10,
+      limit = 20,
       search = '',
       admin_id,
       action,
       entity_type,
+      // Accept both date_from/date_to (frontend) and start_date/end_date (legacy)
+      date_from,
+      date_to,
       start_date,
       end_date
     } = req.query;
 
+    const from_date = (date_from || start_date) as string | undefined;
+    const to_date = (date_to || end_date) as string | undefined;
+
     let query = supabaseAdmin
       .from('audit_logs')
       .select(`
-        *,
-        admins (
+        id,
+        action,
+        entity_type,
+        entity_id,
+        description,
+        ip_address,
+        created_at,
+        admin_id,
+        users!audit_logs_admin_id_fkey (
           id,
           name,
           email,
@@ -27,33 +52,35 @@ export const getAuditLogs = async (req: AuthRequest, res: Response): Promise<voi
         )
       `, { count: 'exact' });
 
-    // Apply filters
     if (admin_id) {
       query = query.eq('admin_id', admin_id);
     }
 
     if (action) {
-      query = query.ilike('action', `%${action}%`);
+      query = query.ilike('action', `%${escapeIlike(action as string)}%`);
     }
 
     if (entity_type) {
-      query = query.eq('entity_type', entity_type);
+      query = query.ilike('entity_type', `%${escapeIlike(entity_type as string)}%`);
     }
 
-    if (start_date) {
-      query = query.gte('created_at', start_date);
+    if (from_date) {
+      query = query.gte('created_at', from_date);
     }
 
-    if (end_date) {
-      query = query.lte('created_at', end_date);
+    if (to_date) {
+      query = query.lte('created_at', to_date);
     }
 
     if (search) {
-      query = query.or(`action.ilike.%${search}%,entity_type.ilike.%${search}%,entity_id.ilike.%${search}%`);
+      const safe = escapeIlike(search as string);
+      query = query.or(`action.ilike.%${safe}%,entity_type.ilike.%${safe}%,description.ilike.%${safe}%`);
     }
 
-    const from = ((parseInt(page as string) - 1) * parseInt(limit as string));
-    const to = from + parseInt(limit as string) - 1;
+    const pageNum = parseInt(page as string);
+    const limitNum = parseInt(limit as string);
+    const from = (pageNum - 1) * limitNum;
+    const to = from + limitNum - 1;
 
     const { data, error, count } = await query
       .order('created_at', { ascending: false })
@@ -65,14 +92,23 @@ export const getAuditLogs = async (req: AuthRequest, res: Response): Promise<voi
       return;
     }
 
+    // Flatten nested user relation to admin_name for frontend compatibility
+    const rows = (data || []).map((log: Record<string, unknown>) => {
+      const { users, ...rest } = log as Record<string, unknown> & { users?: { name?: string } | null };
+      return {
+        ...rest,
+        admin_name: users?.name || 'N/A'
+      };
+    });
+
     res.json({
       success: true,
-      data: data || [],
+      data: rows,
       pagination: {
-        page: parseInt(page as string),
-        limit: parseInt(limit as string),
+        page: pageNum,
+        limit: limitNum,
         total: count || 0,
-        totalPages: Math.ceil((count || 0) / parseInt(limit as string))
+        totalPages: Math.ceil((count || 0) / limitNum)
       }
     });
   } catch (error) {
@@ -83,65 +119,31 @@ export const getAuditLogs = async (req: AuthRequest, res: Response): Promise<voi
 
 export const getAuditStats = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { start_date, end_date } = req.query;
-
-    let query = supabaseAdmin
+    const { data: logs, error } = await supabaseAdmin
       .from('audit_logs')
-      .select('action, entity_type, created_at, admin_id');
+      .select('admin_id, created_at');
 
-    if (start_date) {
-      query = query.gte('created_at', start_date);
+    if (error) {
+      console.error('Error fetching audit stats:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch audit stats' });
+      return;
     }
 
-    if (end_date) {
-      query = query.lte('created_at', end_date);
-    }
+    const total_logs = logs?.length || 0;
 
-    const { data: logs } = await query;
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const today_actions = logs?.filter(
+      log => new Date(log.created_at) >= todayStart
+    ).length || 0;
 
-    const total = logs?.length || 0;
-
-    // Action breakdown
-    const actionBreakdown = logs?.reduce((acc, log) => {
-      acc[log.action] = (acc[log.action] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>) || {};
-
-    // Entity type breakdown
-    const entityBreakdown = logs?.reduce((acc, log) => {
-      const entity = log.entity_type || 'unknown';
-      acc[entity] = (acc[entity] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>) || {};
-
-    // Top active admins
-    const adminActivity = logs?.reduce((acc, log) => {
-      if (log.admin_id) {
-        acc[log.admin_id] = (acc[log.admin_id] || 0) + 1;
-      }
-      return acc;
-    }, {} as Record<string, number>) || {};
-
-    const topAdmins = Object.entries(adminActivity)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 10);
-
-    // Daily activity (last 7 days)
-    const dailyActivity = logs?.reduce((acc, log) => {
-      const date = new Date(log.created_at).toLocaleDateString();
-      acc[date] = (acc[date] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>) || {};
+    const unique_admins = new Set(
+      logs?.filter(l => l.admin_id).map(l => l.admin_id)
+    ).size;
 
     res.json({
       success: true,
-      data: {
-        total,
-        actionBreakdown,
-        entityBreakdown,
-        topAdmins: topAdmins.map(([adminId, count]) => ({ adminId, count })),
-        dailyActivity
-      }
+      data: { total_logs, today_actions, unique_admins }
     });
   } catch (error) {
     console.error('Error fetching audit stats:', error);
@@ -151,58 +153,80 @@ export const getAuditStats = async (req: AuthRequest, res: Response): Promise<vo
 
 export const exportAuditLogs = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { start_date, end_date, format = 'json' } = req.query;
+    const {
+      date_from,
+      date_to,
+      start_date,
+      end_date,
+      format = 'csv'
+    } = req.query;
+
+    const from_date = (date_from || start_date) as string | undefined;
+    const to_date = (date_to || end_date) as string | undefined;
 
     let query = supabaseAdmin
       .from('audit_logs')
       .select(`
-        *,
-        admins (
-          id,
+        id,
+        action,
+        entity_type,
+        entity_id,
+        description,
+        ip_address,
+        created_at,
+        users!audit_logs_admin_id_fkey (
           name,
           email
         )
-      `);
+      `)
+      .order('created_at', { ascending: false });
 
-    if (start_date) {
-      query = query.gte('created_at', start_date);
+    if (from_date) {
+      query = query.gte('created_at', from_date);
     }
 
-    if (end_date) {
-      query = query.lte('created_at', end_date);
+    if (to_date) {
+      query = query.lte('created_at', to_date);
     }
 
-    const { data: logs } = await query;
+    const { data: logs, error } = await query;
 
-    if (format === 'csv') {
-      // Convert to CSV
-      const headers = ['ID', 'Admin Name', 'Admin Email', 'Action', 'Entity Type', 'Entity ID', 'Created At', 'IP Address'];
-      const rows = logs?.map(log => [
-        log.id,
-        log.admins?.name || 'N/A',
-        log.admins?.email || 'N/A',
-        log.action,
-        log.entity_type || 'N/A',
-        log.entity_id || 'N/A',
-        log.created_at,
-        log.ip_address || 'N/A'
-      ]) || [];
-
-      const csvContent = [
-        headers.join(','),
-        ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-      ].join('\n');
-
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', `attachment; filename="audit-logs-${Date.now()}.csv"`);
-      res.send(csvContent);
-    } else {
-      // Return JSON
-      res.json({
-        success: true,
-        data: logs || []
-      });
+    if (error) {
+      console.error('Error exporting audit logs:', error);
+      res.status(500).json({ success: false, error: 'Failed to export audit logs' });
+      return;
     }
+
+    if (format === 'json') {
+      res.json({ success: true, data: logs || [] });
+      return;
+    }
+
+    // Default: CSV
+    const headers = ['ID', 'Admin Name', 'Admin Email', 'Action', 'Entity Type', 'Entity ID', 'Description', 'Created At', 'IP Address'];
+    const rows = (logs || []).map((log: Record<string, unknown>) => {
+      const user = log.users as { name?: string; email?: string } | null;
+      return [
+        csvCell(log.id),
+        user?.name || 'N/A',
+        user?.email || 'N/A',
+        csvCell(log.action),
+        csvCell(log.entity_type) || 'N/A',
+        csvCell(log.entity_id) || 'N/A',
+        csvCell(log.description) || 'N/A',
+        csvCell(log.created_at),
+        csvCell(log.ip_address) || 'N/A'
+      ];
+    });
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="audit-logs-${Date.now()}.csv"`);
+    res.send(csvContent);
   } catch (error) {
     console.error('Error exporting audit logs:', error);
     res.status(500).json({ success: false, error: 'Failed to export audit logs' });
