@@ -12,7 +12,7 @@ export const getAttendance = async (req: AuthRequest, res: Response): Promise<vo
     const requestedBranchId = req.query.branch_id as string | undefined;
     const effectiveBranchId = adminBranchId ?? requestedBranchId;
 
-    let query = supabaseAdmin.from('attendance').select('*, students(name)');
+    let query = supabaseAdmin.from('attendance').select('*, users!student_id(name)');
 
     if (date) query = query.eq('date', date);
     if (student_id) query = query.eq('student_id', student_id);
@@ -134,7 +134,7 @@ export const markAttendance = async (req: AuthRequest, res: Response): Promise<v
 
     const { data, error } = await supabaseAdmin
       .from('attendance')
-      .insert(formattedRecords)
+      .upsert(formattedRecords, { onConflict: 'student_id,course_id,date' })
       .select();
 
     if (error) throw error;

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useInstitute } from '@/hooks/useInstitute';
+import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
 
 interface NavItem {
@@ -51,10 +52,16 @@ interface SidebarProps {
 export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const config = useInstitute();
+  const { user } = useAuth();
+  const isBranchAdmin = user?.role === 'branch_admin';
   const navItems = role === 'admin' ? adminNavItems : studentNavItems;
 
   const filteredNavItems = navItems.filter((item) => {
     if (item.feature && !config.features[item.feature]) {
+      return false;
+    }
+    // Branch admins cannot control branch settings — hide Settings
+    if (isBranchAdmin && item.href.startsWith('/admin/settings')) {
       return false;
     }
     return true;

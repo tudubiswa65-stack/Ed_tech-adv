@@ -11,7 +11,7 @@ interface AttendanceRecord {
   student_id: string;
   date: string;
   status: 'present' | 'absent' | 'late' | 'excused';
-  students?: { name: string };
+  users?: { name: string };
 }
 
 interface StudentWithAttendance {
@@ -157,7 +157,7 @@ export default function AdminAttendancePage() {
     {
       key: 'student',
       label: 'Student Name',
-      render: (row: AttendanceRecord) => row.students?.name || 'Unknown',
+      render: (row: AttendanceRecord) => row.users?.name || 'Unknown',
     },
     {
       key: 'date',
