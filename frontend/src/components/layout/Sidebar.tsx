@@ -60,8 +60,8 @@ export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
     if (item.feature && !config.features[item.feature]) {
       return false;
     }
-    // Branch admins cannot control branch settings — hide Settings
-    if (isBranchAdmin && item.href.startsWith('/admin/settings')) {
+    // Branch admins cannot manage branches or settings — hide those items
+    if (isBranchAdmin && (item.href.startsWith('/admin/branches') || item.href.startsWith('/admin/settings'))) {
       return false;
     }
     return true;
