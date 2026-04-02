@@ -59,15 +59,30 @@ export default function BranchDetailPage() {
   const fetchBranchData = async () => {
     setLoading(true);
     try {
-      const [detailsRes, studentsRes, paymentsRes] = await Promise.all([
+      const [detailsResult, studentsResult, paymentsResult] = await Promise.allSettled([
         apiClient.get(`/super-admin/branches/${branchId}/details`),
         apiClient.get(`/super-admin/students?branch_id=${branchId}&limit=50`),
         apiClient.get(`/super-admin/payments/branch/${branchId}`),
       ]);
 
-      if (detailsRes.data.success) setBranch(detailsRes.data.data);
-      if (studentsRes.data.success) setStudents(studentsRes.data.data || []);
-      if (paymentsRes.data.success) setPayments(paymentsRes.data.data || []);
+      if (detailsResult.status === 'fulfilled' && detailsResult.value.data.success) {
+        setBranch(detailsResult.value.data.data);
+      } else if (detailsResult.status === 'rejected') {
+        const err = detailsResult.reason;
+        setError(err.response?.data?.error || 'Failed to load branch details');
+      }
+
+      if (studentsResult.status === 'fulfilled' && studentsResult.value.data.success) {
+        setStudents(studentsResult.value.data.data || []);
+      } else if (studentsResult.status === 'rejected') {
+        console.error('Failed to load branch students:', studentsResult.reason);
+      }
+
+      if (paymentsResult.status === 'fulfilled' && paymentsResult.value.data.success) {
+        setPayments(paymentsResult.value.data.data || []);
+      } else if (paymentsResult.status === 'rejected') {
+        console.error('Failed to load branch payments:', paymentsResult.reason);
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to load branch details');
     } finally {
@@ -223,7 +238,7 @@ export default function BranchDetailPage() {
         </div>
         <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-purple-500">
           <p className="text-sm text-gray-500">Total Revenue</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">${branch.stats.totalRevenue.toLocaleString()}</p>
+          <p className="text-3xl font-bold text-gray-900 mt-1">${(branch.stats?.totalRevenue ?? 0).toLocaleString()}</p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-orange-500">
           <p className="text-sm text-gray-500">Member Since</p>

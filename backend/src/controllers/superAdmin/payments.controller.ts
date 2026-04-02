@@ -89,7 +89,7 @@ export const getPaymentsByBranch = async (req: AuthRequest, res: Response): Prom
       .from('payments')
       .select(`
         *,
-        students!inner(
+        students (
           id,
           name,
           email
@@ -114,9 +114,15 @@ export const getPaymentsByBranch = async (req: AuthRequest, res: Response): Prom
       return;
     }
 
+    // Flatten student_name so the branch detail page can render it directly
+    const transformedData = (data || []).map((payment: any) => ({
+      ...payment,
+      student_name: payment.students?.name,
+    }));
+
     res.json({
       success: true,
-      data: data || [],
+      data: transformedData,
       pagination: {
         page: parseInt(page as string),
         limit: parseInt(limit as string),

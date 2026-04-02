@@ -16,24 +16,25 @@ export const getAllFeedback = async (req: AuthRequest, res: Response): Promise<v
     let query = supabaseAdmin
       .from('feedback')
       .select(`
-        *,
-        students!inner (
+        id,
+        type,
+        rating,
+        subject,
+        message,
+        created_at,
+        students (
           id,
           name,
           email,
-          branch_id
-        ),
-        branches (
-          id,
-          name
+          branch_id,
+          branches (
+            id,
+            name
+          )
         )
       `, { count: 'exact' });
 
     // Apply filters
-    if (branch_id) {
-      query = query.eq('branch_id', branch_id);
-    }
-
     if (type) {
       query = query.eq('type', type);
     }
@@ -42,8 +43,13 @@ export const getAllFeedback = async (req: AuthRequest, res: Response): Promise<v
       query = query.eq('rating', parseInt(rating as string));
     }
 
+    // Filter through the student's branch when a branch_id is specified
+    if (branch_id) {
+      query = query.eq('students.branch_id', branch_id as string);
+    }
+
     if (search) {
-      query = query.or(`subject.ilike.%${search}%,message.ilike.%${search}%,students.name.ilike.%${search}%`);
+      query = query.or(`subject.ilike.%${search}%,message.ilike.%${search}%`);
     }
 
     const from = ((parseInt(page as string) - 1) * parseInt(limit as string));
@@ -59,9 +65,16 @@ export const getAllFeedback = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
+    // Transform to flat shape expected by the frontend
+    const transformedData = (data || []).map((item: any) => ({
+      ...item,
+      student_name: item.students?.name,
+      branch_name: item.students?.branches?.name,
+    }));
+
     res.json({
       success: true,
-      data: data || [],
+      data: transformedData,
       pagination: {
         page: parseInt(page as string),
         limit: parseInt(limit as string),
@@ -158,9 +171,10 @@ export const getFeedbackAnalytics = async (req: AuthRequest, res: Response): Pro
     res.json({
       success: true,
       data: {
-        total,
+        total_feedback: total,
+        average_rating: Math.round(averageRating * 100) / 100,
+        positive_reviews: feedback?.filter(f => (f.rating || 0) >= 4).length || 0,
         ratingDistribution,
-        averageRating: Math.round(averageRating * 100) / 100,
         typeStats,
         branchBreakdown: Object.entries(branchBreakdown).map(([branchId, stats]) => ({
           branchId,
