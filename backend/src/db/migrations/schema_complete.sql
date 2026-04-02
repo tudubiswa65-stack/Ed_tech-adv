@@ -138,7 +138,7 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Complaint status
 DO $$ BEGIN
-  CREATE TYPE complaint_status AS ENUM ('open', 'in_progress', 'resolved');
+  CREATE TYPE complaint_status AS ENUM ('open', 'in_progress', 'resolved', 'overridden');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ╔══════════════════════════════════════════════════════════════════╗
@@ -782,6 +782,14 @@ CREATE TABLE IF NOT EXISTS complaints (
     --   `if (priority) updateData.priority = priority`
     priority    VARCHAR(20) DEFAULT 'medium'
                     CHECK (priority IN ('low','medium','high','urgent')),
+    -- Resolution tracking (super-admin resolve endpoint)
+    resolution_notes TEXT,
+    resolved_at      TIMESTAMPTZ,
+    resolved_by      UUID REFERENCES users(id) ON DELETE SET NULL,
+    -- Override tracking (super-admin override endpoint)
+    override_notes   TEXT,
+    override_by      UUID REFERENCES users(id) ON DELETE SET NULL,
+    override_at      TIMESTAMPTZ,
     created_at  TIMESTAMPTZ DEFAULT NOW(),
     updated_at  TIMESTAMPTZ DEFAULT NOW()
 );
