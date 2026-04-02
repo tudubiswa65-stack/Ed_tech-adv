@@ -147,11 +147,19 @@ export const adminLogin = async (req: LoginRequest, res: Response): Promise<void
 
     // Generate JWT – use the role stored in DB so super_admin and branch_admin
     // receive a token that reflects their actual role.
-    const token = jwt.sign(
-      { id: admin.id, email: admin.email, role: admin.role as AdminRole },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRY } as jwt.SignOptions
-    );
+    // Include branch_id for branch admins to enforce branch-level data isolation
+    const jwtPayload: { id: string; email: string; role: AdminRole; branch_id?: string } = {
+      id: admin.id,
+      email: admin.email,
+      role: admin.role as AdminRole,
+    };
+
+    // Include branch_id in JWT for branch admins
+    if (admin.role === 'branch_admin' && admin.branch_id) {
+      jwtPayload.branch_id = admin.branch_id;
+    }
+
+    const token = jwt.sign(jwtPayload, JWT_SECRET, { expiresIn: JWT_EXPIRY } as jwt.SignOptions);
 
     // Determine cookie options based on environment / transport security
     const cookieOptions = buildCookieOptions(req);
@@ -336,7 +344,7 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
     if (user.role === 'admin' || user.role === 'super_admin' || user.role === 'branch_admin') {
       const { data, error } = await supabaseAdmin
         .from('users')
-        .select('id, name, email, role, avatar_url')
+        .select('id, name, email, role, avatar_url, branch_id')
         .eq('id', user.id)
         .in('role', ['admin', 'super_admin', 'branch_admin'])
         .single();

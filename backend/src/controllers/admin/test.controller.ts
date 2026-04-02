@@ -2,13 +2,10 @@ import { Request, Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
 import { parseCSV, validateCSVStructure } from '../../utils/csvParser';
 import mammoth from 'mammoth';
+import { AuthRequest } from '../../types';
+import { getUserBranchId } from '../../utils/branchFilter';
 
-interface TestRequest extends Request {
-  user?: {
-    id: string;
-    role: string;
-  };
-}
+interface TestRequest extends AuthRequest {}
 
 /**
  * Parse raw text extracted from PDF/DOCX to extract MCQ questions.
@@ -94,10 +91,13 @@ function parseQuestionsFromText(text: string): Array<{
   return questions;
 }
 
-// Get all tests
-export const getTests = async (req: Request, res: Response): Promise<void> => {
+// Get all tests (filtered by branch for branch_admin)
+export const getTests = async (req: TestRequest, res: Response): Promise<void> => {
   try {
     const { course_id, type } = req.query;
+
+    // branch_admin is restricted to their own branch
+    const adminBranchId = getUserBranchId(req.user);
 
     let query = supabaseAdmin
       .from('tests')
@@ -107,6 +107,11 @@ export const getTests = async (req: Request, res: Response): Promise<void> => {
         questions (count)
       `)
       .order('created_at', { ascending: false });
+
+    // Apply branch filter for branch_admin
+    if (adminBranchId) {
+      query = query.eq('branch_id', adminBranchId);
+    }
 
     if (course_id) {
       query = query.eq('course_id', course_id);
@@ -156,18 +161,47 @@ export const createTest = async (req: TestRequest, res: Response): Promise<void>
       return;
     }
 
+    // branch_admin can only create tests in their own branch
+    const adminBranchId = getUserBranchId(req.user);
+
+    // Verify the course belongs to the branch_admin's branch
+    if (adminBranchId) {
+      const { data: course, error: courseError } = await supabaseAdmin
+        .from('courses')
+        .select('branch_id')
+        .eq('id', course_id)
+        .single();
+
+      if (courseError || !course) {
+        res.status(404).json({ error: 'Course not found' });
+        return;
+      }
+
+      if (course.branch_id !== adminBranchId) {
+        res.status(403).json({ error: 'Access denied: course belongs to a different branch' });
+        return;
+      }
+    }
+
+    const insertData: Record<string, unknown> = {
+      title,
+      description,
+      course_id,
+      time_limit_mins: time_limit_mins || 60,
+      type: type || 'graded',
+      scheduled_at,
+      is_active: !scheduled_at,
+      created_by: req.user?.id,
+    };
+
+    // Force branch_id for branch_admin
+    if (adminBranchId) {
+      insertData.branch_id = adminBranchId;
+    }
+
     const { data, error } = await supabaseAdmin
       .from('tests')
-      .insert({
-        title,
-        description,
-        course_id,
-        time_limit_mins: time_limit_mins || 60,
-        type: type || 'graded',
-        scheduled_at,
-        is_active: !scheduled_at,
-        created_by: req.user?.id,
-      })
+      .insert(insertData)
       .select()
       .single();
 
@@ -186,10 +220,24 @@ export const createTest = async (req: TestRequest, res: Response): Promise<void>
 };
 
 // Update a test
-export const updateTest = async (req: Request, res: Response): Promise<void> => {
+export const updateTest = async (req: TestRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { title, description, time_limit_mins, type, scheduled_at, is_active } = req.body;
+
+    // branch_admin may only update tests in their own branch
+    const adminBranchId = getUserBranchId(req.user);
+    if (adminBranchId) {
+      const { data: existing } = await supabaseAdmin
+        .from('tests')
+        .select('branch_id')
+        .eq('id', id)
+        .single();
+      if (!existing || existing.branch_id !== adminBranchId) {
+        res.status(403).json({ error: 'Access denied: test belongs to a different branch' });
+        return;
+      }
+    }
 
     // Check if test has submissions
     const { count } = await supabaseAdmin
@@ -230,9 +278,23 @@ export const updateTest = async (req: Request, res: Response): Promise<void> => 
 };
 
 // Delete a test (soft delete)
-export const deleteTest = async (req: Request, res: Response): Promise<void> => {
+export const deleteTest = async (req: TestRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+
+    // branch_admin may only delete tests in their own branch
+    const adminBranchId = getUserBranchId(req.user);
+    if (adminBranchId) {
+      const { data: existing } = await supabaseAdmin
+        .from('tests')
+        .select('branch_id')
+        .eq('id', id)
+        .single();
+      if (!existing || existing.branch_id !== adminBranchId) {
+        res.status(403).json({ error: 'Access denied: test belongs to a different branch' });
+        return;
+      }
+    }
 
     const { error } = await supabaseAdmin
       .from('tests')
@@ -251,10 +313,33 @@ export const deleteTest = async (req: Request, res: Response): Promise<void> => 
   }
 };
 
+// Helper function to verify test belongs to branch_admin's branch
+async function verifyTestBranchAccess(testId: string, adminBranchId: string | null): Promise<boolean> {
+  if (!adminBranchId) return true; // super_admin/admin have full access
+
+  const { data: test } = await supabaseAdmin
+    .from('tests')
+    .select('branch_id')
+    .eq('id', testId)
+    .single();
+
+  return test?.branch_id === adminBranchId;
+}
+
 // Get questions for a test
-export const getTestQuestions = async (req: Request, res: Response): Promise<void> => {
+export const getTestQuestions = async (req: TestRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+
+    // branch_admin may only access questions for tests in their own branch
+    const adminBranchId = getUserBranchId(req.user);
+    if (adminBranchId) {
+      const hasAccess = await verifyTestBranchAccess(id, adminBranchId);
+      if (!hasAccess) {
+        res.status(403).json({ error: 'Access denied: test belongs to a different branch' });
+        return;
+      }
+    }
 
     const { data, error } = await supabaseAdmin
       .from('questions')
@@ -275,10 +360,20 @@ export const getTestQuestions = async (req: Request, res: Response): Promise<voi
 };
 
 // Add a question
-export const addQuestion = async (req: Request, res: Response): Promise<void> => {
+export const addQuestion = async (req: TestRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { question_text, option_a, option_b, option_c, option_d, correct_option, order_index } = req.body;
+
+    // branch_admin may only add questions to tests in their own branch
+    const adminBranchId = getUserBranchId(req.user);
+    if (adminBranchId) {
+      const hasAccess = await verifyTestBranchAccess(id, adminBranchId);
+      if (!hasAccess) {
+        res.status(403).json({ error: 'Access denied: test belongs to a different branch' });
+        return;
+      }
+    }
 
     if (!question_text || !option_a || !option_b || !option_c || !option_d || !correct_option) {
       res.status(400).json({ error: 'All question fields are required' });
@@ -313,10 +408,29 @@ export const addQuestion = async (req: Request, res: Response): Promise<void> =>
 };
 
 // Update a question
-export const updateQuestion = async (req: Request, res: Response): Promise<void> => {
+export const updateQuestion = async (req: TestRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { question_text, option_a, option_b, option_c, option_d, correct_option, order_index } = req.body;
+
+    // branch_admin may only update questions for tests in their own branch
+    const adminBranchId = getUserBranchId(req.user);
+    if (adminBranchId) {
+      // Get the test_id for this question
+      const { data: question } = await supabaseAdmin
+        .from('questions')
+        .select('test_id')
+        .eq('id', id)
+        .single();
+
+      if (question) {
+        const hasAccess = await verifyTestBranchAccess(question.test_id, adminBranchId);
+        if (!hasAccess) {
+          res.status(403).json({ error: 'Access denied: question belongs to a different branch' });
+          return;
+        }
+      }
+    }
 
     const updateData: any = { updated_at: new Date().toISOString() };
     if (question_text) updateData.question_text = question_text;
@@ -347,9 +461,28 @@ export const updateQuestion = async (req: Request, res: Response): Promise<void>
 };
 
 // Delete a question
-export const deleteQuestion = async (req: Request, res: Response): Promise<void> => {
+export const deleteQuestion = async (req: TestRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+
+    // branch_admin may only delete questions for tests in their own branch
+    const adminBranchId = getUserBranchId(req.user);
+    if (adminBranchId) {
+      // Get the test_id for this question
+      const { data: question } = await supabaseAdmin
+        .from('questions')
+        .select('test_id')
+        .eq('id', id)
+        .single();
+
+      if (question) {
+        const hasAccess = await verifyTestBranchAccess(question.test_id, adminBranchId);
+        if (!hasAccess) {
+          res.status(403).json({ error: 'Access denied: question belongs to a different branch' });
+          return;
+        }
+      }
+    }
 
     const { error } = await supabaseAdmin
       .from('questions')
@@ -369,7 +502,7 @@ export const deleteQuestion = async (req: Request, res: Response): Promise<void>
 };
 
 // Bulk upload questions via CSV
-export const bulkUploadQuestions = async (req: Request, res: Response): Promise<void> => {
+export const bulkUploadQuestions = async (req: TestRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const file = req.file;
@@ -377,6 +510,16 @@ export const bulkUploadQuestions = async (req: Request, res: Response): Promise<
     if (!file) {
       res.status(400).json({ error: 'No file uploaded' });
       return;
+    }
+
+    // branch_admin may only upload questions to tests in their own branch
+    const adminBranchId = getUserBranchId(req.user);
+    if (adminBranchId) {
+      const hasAccess = await verifyTestBranchAccess(id, adminBranchId);
+      if (!hasAccess) {
+        res.status(403).json({ error: 'Access denied: test belongs to a different branch' });
+        return;
+      }
     }
 
     const mimeType = file.mimetype;
@@ -522,14 +665,25 @@ export const bulkUploadQuestions = async (req: Request, res: Response): Promise<
 };
 
 // Assign test to students
-export const assignTest = async (req: Request, res: Response): Promise<void> => {
+export const assignTest = async (req: TestRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { student_ids, assign_all_course } = req.body;
 
+    // branch_admin may only assign tests from their own branch
+    const adminBranchId = getUserBranchId(req.user);
+    if (adminBranchId) {
+      const hasAccess = await verifyTestBranchAccess(id, adminBranchId);
+      if (!hasAccess) {
+        res.status(403).json({ error: 'Access denied: test belongs to a different branch' });
+        return;
+      }
+    }
+
     let targetStudentIds = student_ids || [];
 
     // If assign_all_course is true, get all students in the test's course
+    // For branch_admin, scope to their branch only
     if (assign_all_course) {
       const { data: test } = await supabaseAdmin
         .from('tests')
@@ -538,14 +692,29 @@ export const assignTest = async (req: Request, res: Response): Promise<void> => 
         .single();
 
       if (test?.course_id) {
-        const { data: students } = await supabaseAdmin
+        let studentsQuery = supabaseAdmin
           .from('students')
           .select('id')
           .eq('course_id', test.course_id)
           .eq('is_active', true);
 
+        if (adminBranchId) {
+          studentsQuery = studentsQuery.eq('branch_id', adminBranchId);
+        }
+
+        const { data: students } = await studentsQuery;
         targetStudentIds = students?.map((s) => s.id) || [];
       }
+    } else if (adminBranchId && targetStudentIds.length > 0) {
+      // When specific student_ids are provided, verify they belong to the branch_admin's branch
+      const { data: students } = await supabaseAdmin
+        .from('students')
+        .select('id')
+        .in('id', targetStudentIds)
+        .eq('branch_id', adminBranchId);
+
+      const allowedStudentIds = new Set(students?.map((s) => s.id) || []);
+      targetStudentIds = targetStudentIds.filter((id: string) => allowedStudentIds.has(id));
     }
 
     if (targetStudentIds.length === 0) {
