@@ -12,6 +12,7 @@ const pageTitles: Record<string, string> = {
   '/super-admin/branches': 'Branch Management',
   '/super-admin/payments': 'Payments & Revenue',
   '/super-admin/courses': 'Course Management',
+  '/super-admin/tests': 'Tests',
   '/super-admin/students': 'Student Management',
   '/super-admin/notifications': 'Notifications',
   '/super-admin/complaints': 'Complaints',
