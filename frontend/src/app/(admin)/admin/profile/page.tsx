@@ -20,7 +20,7 @@ interface AdminProfile {
 }
 
 export default function AdminProfilePage() {
-  const { refreshUser } = useAuth();
+  const { refreshUser, updateUserAvatar } = useAuth();
   const { error: toastError, success: toastSuccess } = useToast();
   const [profile, setProfile] = useState<AdminProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,13 +75,11 @@ export default function AdminProfilePage() {
     try {
       const formData = new FormData();
       formData.append('avatar', file);
-      const res = await apiClient.post('/admin/profile/avatar', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const res = await apiClient.post('/admin/profile/avatar', formData);
       const newUrl = res.data?.data?.avatar_url;
       if (newUrl) {
         setProfile((p) => p ? { ...p, avatar_url: newUrl } : p);
-        await refreshUser();
+        updateUserAvatar(newUrl);
         toastSuccess('Profile photo updated successfully.');
       }
     } catch (err) {

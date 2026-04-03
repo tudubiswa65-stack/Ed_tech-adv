@@ -91,7 +91,7 @@ export default function StudentProfileDashboard() {
   });
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarFileRef = useRef<HTMLInputElement>(null);
-  const { refreshUser } = useAuth();
+  const { updateUserAvatar } = useAuth();
   const { error: toastError, success: toastSuccess } = useToast();
   const router = useRouter();
 
@@ -175,15 +175,13 @@ export default function StudentProfileDashboard() {
     try {
       const formData = new FormData();
       formData.append('avatar', file);
-      const res = await apiClient.post('/student/profile/avatar', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const res = await apiClient.post('/student/profile/avatar', formData);
       const newUrl = res.data?.data?.avatar_url;
       if (newUrl) {
         setData((prev) =>
           prev && prev.profile ? { ...prev, profile: { ...prev.profile, avatar_url: newUrl } } : prev
         );
-        await refreshUser();
+        updateUserAvatar(newUrl);
         toastSuccess('Profile photo updated successfully.');
       }
     } catch (err) {
