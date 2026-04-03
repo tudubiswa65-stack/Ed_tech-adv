@@ -168,7 +168,7 @@ export default function MobileBottomNav({ role }: { role: Role }) {
   const tabs = getTabsForRole(role);
 
   const isStudentRole = role === 'student';
-  const isAdminRole = role === 'admin' || role === 'branch_admin';
+  const isAdminRole = role === 'admin' || role === 'branch_admin' || role === 'super_admin';
 
   return (
     <nav

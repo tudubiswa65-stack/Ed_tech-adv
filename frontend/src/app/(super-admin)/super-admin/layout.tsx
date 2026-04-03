@@ -50,17 +50,23 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
   }
 
   const title = pageTitles[pathname] ?? 'Super Admin Dashboard';
+  const isDashboard = pathname === '/super-admin';
 
   return (
-    <div className="min-h-screen flex bg-gray-50 dark:bg-slate-800">
+    <div className="min-h-screen flex bg-[#0f172a]">
       {/* Sidebar — visible only on desktop (lg+) */}
       <div className="hidden lg:block shrink-0">
         <SuperAdminSidebar />
       </div>
       <div className="flex-1 flex flex-col min-w-0">
-        <Navbar title={title} onMenuClick={() => {}} />
-        {/* pb-16 prevents content from hiding behind the mobile bottom nav */}
-        <main className="flex-1 overflow-auto p-6 pb-16 lg:pb-6">{children}</main>
+        {/* On mobile the dashboard page renders its own header; hide Navbar there */}
+        <div className={isDashboard ? 'hidden lg:block' : ''}>
+          <Navbar title={title} onMenuClick={() => {}} />
+        </div>
+        {/* Dashboard page controls its own mobile padding; other pages keep p-6 */}
+        <main className={`flex-1 overflow-auto pb-16 lg:pb-6 ${isDashboard ? 'p-0 lg:p-6' : 'p-6'}`}>
+          {children}
+        </main>
       </div>
       {/* Mobile bottom navigation — hidden on desktop */}
       <MobileBottomNav role="super_admin" />
