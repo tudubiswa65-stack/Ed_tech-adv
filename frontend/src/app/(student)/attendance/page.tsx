@@ -229,8 +229,8 @@ export default function StudentAttendancePage() {
       <div style={outer}>
         <style>{`
           @keyframes att-pulse{0%,100%{opacity:1}50%{opacity:.4}}
-          .att-stats{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:12px}
-          .att-top{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:12px}
+          .att-stats{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:14px}
+          .att-top{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:14px}
           @media(min-width:640px){.att-stats{grid-template-columns:1fr 1fr 1fr}}
           @media(min-width:900px){.att-top{grid-template-columns:1fr 1fr}}
         `}</style>
@@ -244,14 +244,14 @@ export default function StudentAttendancePage() {
         </div>
         {/* stats row */}
         <div className="att-stats">
-          <Skeleton style={{ height: 88, borderRadius: 12 }} />
-          <Skeleton style={{ height: 88, borderRadius: 12 }} />
-          <Skeleton style={{ height: 88, borderRadius: 12 }} />
+          <Skeleton style={{ height: 100, borderRadius: 12 }} />
+          <Skeleton style={{ height: 100, borderRadius: 12 }} />
+          <Skeleton style={{ height: 100, borderRadius: 12 }} />
         </div>
         {/* rate card + log top section */}
         <div className="att-top">
-          <Skeleton style={{ height: 100, borderRadius: 12 }} />
-          <Skeleton style={{ height: 100, borderRadius: 12 }} />
+          <Skeleton style={{ height: 112, borderRadius: 12 }} />
+          <Skeleton style={{ height: 112, borderRadius: 12 }} />
         </div>
         {/* log */}
         <div style={{ ...cardBase, padding: 0, overflow: 'hidden' }}>
