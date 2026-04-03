@@ -66,7 +66,7 @@ export default function StudentRootLayout({ children }: { children: React.ReactN
     <div className="min-h-screen flex bg-gray-50 dark:bg-slate-900">
       {/* Sidebar — visible only on desktop (lg+) */}
       <div className="hidden lg:block shrink-0">
-        <Sidebar role="student" isOpen={false} onClose={() => {}} />
+        <Sidebar role="student" />
       </div>
       <div className="flex-1 flex flex-col min-w-0">
         <Navbar title={title} onMenuClick={() => {}} />

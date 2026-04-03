@@ -70,7 +70,7 @@ export default function AdminRootLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen flex bg-gray-50/80 dark:bg-slate-900">
       {/* Sidebar — visible only on desktop (lg+) */}
       <div className="hidden lg:block shrink-0">
-        <Sidebar role="admin" isOpen={false} onClose={() => {}} />
+        <Sidebar role="admin" />
       </div>
       <div className="flex-1 flex flex-col min-w-0">
         <Navbar title={title} onMenuClick={() => {}} />

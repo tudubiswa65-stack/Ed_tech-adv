@@ -55,7 +55,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
     <div className="min-h-screen flex bg-gray-50 dark:bg-slate-800">
       {/* Sidebar — visible only on desktop (lg+) */}
       <div className="hidden lg:block shrink-0">
-        <SuperAdminSidebar isOpen={false} onClose={() => {}} />
+        <SuperAdminSidebar />
       </div>
       <div className="flex-1 flex flex-col min-w-0">
         <Navbar title={title} onMenuClick={() => {}} />

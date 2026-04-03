@@ -26,11 +26,11 @@ const superAdminNavItems: NavItem[] = [
 ];
 
 interface SidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export default function SuperAdminSidebar({ isOpen, onClose }: SidebarProps) {
+export default function SuperAdminSidebar({ isOpen = false, onClose = () => {} }: SidebarProps) {
   const pathname = usePathname();
   const config = useInstitute();
 
