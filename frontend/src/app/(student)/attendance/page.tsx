@@ -91,6 +91,20 @@ const pillBase: React.CSSProperties = {
   flexShrink: 0,
 };
 
+// ── shared responsive styles ──────────────────────────────────────────────────
+
+const ATT_STYLES = `
+  @keyframes att-pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .att-outer{padding:16px 16px 32px;width:100%;margin:0 auto}
+  .att-stats{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:14px}
+  .att-top{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:14px}
+  @media(min-width:768px){
+    .att-outer{padding:24px 20px 40px;max-width:1100px}
+    .att-stats{grid-template-columns:1fr 1fr 1fr}
+  }
+  @media(min-width:900px){.att-top{grid-template-columns:1fr 1fr}}
+`;
+
 // ── skeleton block ────────────────────────────────────────────────────────────
 
 function Skeleton({ style }: { style?: React.CSSProperties }) {
@@ -189,10 +203,6 @@ export default function StudentAttendancePage() {
   const outer: React.CSSProperties = {
     minHeight: '100%',
     background: BG,
-    padding: '24px 20px 40px',
-    maxWidth: 1100,
-    width: '100%',
-    margin: '0 auto',
   };
 
   const avatarEl = user?.avatar_url ? (
@@ -226,14 +236,8 @@ export default function StudentAttendancePage() {
 
   if (loading) {
     return (
-      <div style={outer}>
-        <style>{`
-          @keyframes att-pulse{0%,100%{opacity:1}50%{opacity:.4}}
-          .att-stats{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:14px}
-          .att-top{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:14px}
-          @media(min-width:640px){.att-stats{grid-template-columns:1fr 1fr 1fr}}
-          @media(min-width:900px){.att-top{grid-template-columns:1fr 1fr}}
-        `}</style>
+      <div className="att-outer" style={outer}>
+        <style>{ATT_STYLES}</style>
         {/* header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <Skeleton style={{ width: 120, height: 14 }} />
@@ -275,14 +279,8 @@ export default function StudentAttendancePage() {
   // ── main render ───────────────────────────────────────────────────────────────
 
   return (
-    <div style={outer}>
-      <style>{`
-        @keyframes att-pulse{0%,100%{opacity:1}50%{opacity:.4}}
-        .att-stats{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:14px}
-        .att-top{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:14px}
-        @media(min-width:640px){.att-stats{grid-template-columns:1fr 1fr 1fr}}
-        @media(min-width:900px){.att-top{grid-template-columns:1fr 1fr}}
-      `}</style>
+    <div className="att-outer" style={outer}>
+      <style>{ATT_STYLES}</style>
 
       {/* ── HEADER ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
