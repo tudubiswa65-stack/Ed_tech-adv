@@ -69,18 +69,18 @@ export default function StudentAttendancePage() {
 
   return (
     <PageWrapper title="My Attendance">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6 mb-4 sm:mb-8">
         <Card className="p-4 flex flex-col items-center justify-center">
           <div className="text-sm text-gray-500 uppercase font-semibold dark:text-slate-400">Total Classes</div>
-          <div className="text-3xl font-bold">{stats.total}</div>
+          <div className="text-xl sm:text-3xl font-bold">{stats.total}</div>
         </Card>
         <Card className="p-4 flex flex-col items-center justify-center">
           <div className="text-sm text-gray-500 uppercase font-semibold dark:text-slate-400">Present</div>
-          <div className="text-3xl font-bold text-green-600">{stats.present}</div>
+          <div className="text-xl sm:text-3xl font-bold text-green-600">{stats.present}</div>
         </Card>
         <Card className="p-4 flex flex-col items-center justify-center">
           <div className="text-sm text-gray-500 uppercase font-semibold dark:text-slate-400">Attendance Rate</div>
-          <div className="text-3xl font-bold text-primary-600">{percentage.toFixed(1)}%</div>
+          <div className="text-xl sm:text-3xl font-bold text-primary-600">{percentage.toFixed(1)}%</div>
         </Card>
       </div>
 

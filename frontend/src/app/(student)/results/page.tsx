@@ -100,28 +100,28 @@ export default function StudentResultsPage() {
       <div className="space-y-6">
         {/* Performance Summary */}
         {performance && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <Card>
               <div className="p-4 text-center">
-                <p className="text-2xl md:text-3xl font-bold text-[var(--primary-color)]">{performance.totalTests}</p>
+                <p className="text-xl sm:text-2xl md:text-3xl font-bold text-[var(--primary-color)]">{performance.totalTests}</p>
                 <p className="text-student-muted mt-1">Tests Taken</p>
               </div>
             </Card>
             <Card>
               <div className="p-4 text-center">
-                <p className="text-2xl md:text-3xl font-bold text-green-600">{performance.passedTests}</p>
+                <p className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600">{performance.passedTests}</p>
                 <p className="text-student-muted mt-1">Passed</p>
               </div>
             </Card>
             <Card>
               <div className="p-4 text-center">
-                <p className="text-2xl md:text-3xl font-bold">{performance.averagePercentage.toFixed(1)}%</p>
+                <p className="text-xl sm:text-2xl md:text-3xl font-bold">{performance.averagePercentage.toFixed(1)}%</p>
                 <p className="text-student-muted mt-1">Avg Score</p>
               </div>
             </Card>
             <Card>
               <div className="p-4 text-center">
-                <p className={`text-2xl md:text-3xl font-bold ${
+                <p className={`text-xl sm:text-2xl md:text-3xl font-bold ${
                   performance.improvementTrend === 'improving' ? 'text-green-600' :
                   performance.improvementTrend === 'declining' ? 'text-red-600' : 'text-gray-600'
                 } dark:text-slate-300`}>
@@ -169,58 +169,96 @@ export default function StudentResultsPage() {
 
         {/* Results List */}
         <Card>
-          <div className="p-4 md:p-6">
+          <div className="p-3 sm:p-5">
             <h3 className="text-student-subheading mb-4">Test History</h3>
             {results.length === 0 ? (
               <p className="text-center text-student-muted py-8">No test results yet.</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Test</th>
-                      <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Subject</th>
-                      <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Score</th>
-                      <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Percentage</th>
-                      <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Status</th>
-                      <th className="text-left py-3 px-3 font-medium text-gray-500 hidden md:table-cell dark:text-slate-400">Time</th>
-                      <th className="text-left py-3 px-3 font-medium text-gray-500 hidden sm:table-cell dark:text-slate-400">Date</th>
-                      <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {results.map(result => (
-                      <tr key={result.id} className="border-b hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700">
-                        <td className="py-3 px-3 font-medium">{result.tests?.title}</td>
-                        <td className="py-3 px-3 text-gray-600 dark:text-slate-300">{result.tests?.subjects?.name || 'N/A'}</td>
-                        <td className="py-3 px-3">
+              <>
+                {/* Mobile cards — visible below sm breakpoint */}
+                <div className="block sm:hidden space-y-3">
+                  {results.map(result => (
+                    <div key={result.id} className="p-3 bg-gray-50 rounded-xl dark:bg-slate-800">
+                      <p className="font-medium text-gray-900 dark:text-slate-100 mb-2">{result.tests?.title || '—'}</p>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-gray-500 dark:text-slate-400">Subject</span>
+                        <span>{result.tests?.subjects?.name || 'Not set'}</span>
+                      </div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-gray-500 dark:text-slate-400">Score</span>
+                        <span>
                           <span className="font-semibold">{result.score}</span>
                           <span className="text-gray-400 dark:text-slate-500">/{result.total_marks}</span>
-                        </td>
-                        <td className="py-3 px-3">{result.percentage?.toFixed(1)}%</td>
-                        <td className="py-3 px-3">
-                          <Badge variant={result.status === 'passed' ? 'success' : 'danger'}>
-                            {result.status}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-3 hidden md:table-cell">
-                          {result.time_taken_seconds ? formatTime(result.time_taken_seconds) : 'N/A'}
-                        </td>
-                        <td className="py-3 px-3 hidden sm:table-cell">{formatDate(result.submitted_at)}</td>
-                        <td className="py-3 px-3">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => router.push(`/results/${result.id}`)}
-                          >
-                            View Details
-                          </Button>
-                        </td>
+                          <span className="ml-1">({result.percentage?.toFixed(1)}%)</span>
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm mb-2">
+                        <span className="text-gray-500 dark:text-slate-400">Status</span>
+                        <Badge variant={result.status === 'passed' ? 'success' : 'danger'}>
+                          {result.status}
+                        </Badge>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => router.push(`/results/${result.id}`)}
+                      >
+                        View Details
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop table — hidden below sm breakpoint */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Test</th>
+                        <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Subject</th>
+                        <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Score</th>
+                        <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Percentage</th>
+                        <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Status</th>
+                        <th className="text-left py-3 px-3 font-medium text-gray-500 hidden md:table-cell dark:text-slate-400">Time</th>
+                        <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Date</th>
+                        <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {results.map(result => (
+                        <tr key={result.id} className="border-b hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700">
+                          <td className="py-3 px-3 font-medium">{result.tests?.title || '—'}</td>
+                          <td className="py-3 px-3 text-gray-600 dark:text-slate-300">{result.tests?.subjects?.name || 'Not set'}</td>
+                          <td className="py-3 px-3">
+                            <span className="font-semibold">{result.score}</span>
+                            <span className="text-gray-400 dark:text-slate-500">/{result.total_marks}</span>
+                          </td>
+                          <td className="py-3 px-3">{result.percentage?.toFixed(1)}%</td>
+                          <td className="py-3 px-3">
+                            <Badge variant={result.status === 'passed' ? 'success' : 'danger'}>
+                              {result.status}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-3 hidden md:table-cell">
+                            {result.time_taken_seconds ? formatTime(result.time_taken_seconds) : 'Not set'}
+                          </td>
+                          <td className="py-3 px-3">{formatDate(result.submitted_at)}</td>
+                          <td className="py-3 px-3">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => router.push(`/results/${result.id}`)}
+                            >
+                              View Details
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
         </Card>
