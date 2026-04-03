@@ -9,7 +9,7 @@ interface BadgeProps {
 }
 
 export default function Badge({ variant = 'primary', children, className = '' }: BadgeProps) {
-  const baseStyles = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
+  const baseStyles = 'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold leading-none';
 
   const variantStyles = {
     primary: {

@@ -25,17 +25,22 @@ export default function Table<T extends { id?: string }>({
   onRowClick,
 }: TableProps<T>) {
   const safeData = Array.isArray(data) ? data : [];
+  const colCount = columns.length;
 
   if (loading) {
     return (
-      <div className="bg-white rounded-base shadow overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="animate-pulse">
-          <div className="h-12 bg-gray-100 border-b" />
+          <div className="h-11 bg-gray-50 border-b border-gray-100" />
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-14 border-b flex items-center px-4 space-x-4">
-              <div className="h-4 bg-gray-200 rounded w-1/4" />
-              <div className="h-4 bg-gray-200 rounded w-1/3" />
-              <div className="h-4 bg-gray-200 rounded w-1/4" />
+            <div key={i} className="h-14 border-b border-gray-50 flex items-center px-6 gap-4">
+              {[...Array(Math.min(colCount, 4))].map((__, j) => (
+                <div
+                  key={j}
+                  className="h-3 bg-gray-100 rounded"
+                  style={{ width: `${[28, 36, 20, 16][j % 4]}%` }}
+                />
+              ))}
             </div>
           ))}
         </div>
@@ -44,36 +49,39 @@ export default function Table<T extends { id?: string }>({
   }
 
   return (
-    <div className="bg-white rounded-base shadow overflow-hidden overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-100">
         <thead className="bg-gray-50">
           <tr>
             {columns.map((column) => (
               <th
                 key={column.key}
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
               >
                 {column.label}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-white divide-y divide-gray-50">
           {safeData.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="px-6 py-12 text-center text-gray-500">
-                {emptyMessage}
+              <td colSpan={columns.length} className="px-6 py-16 text-center">
+                <svg className="mx-auto mb-3 w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <p className="text-sm text-gray-400">{emptyMessage}</p>
               </td>
             </tr>
           ) : (
             safeData.map((item, index) => (
               <tr
                 key={(item as any).id || index}
-                className={`${onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''}`}
+                className={`${onRowClick ? 'cursor-pointer hover:bg-gray-50/70' : 'hover:bg-gray-50/40'} transition-colors`}
                 onClick={() => onRowClick?.(item)}
               >
                 {columns.map((column) => (
-                  <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                     {column.render
                       ? column.render(item)
                       : (item as any)[column.key]}
