@@ -33,7 +33,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
             <span style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f87171', flexShrink: 0 }}>Critical Error</span>
-            <span style={{ fontSize: '0.875rem', color: '#d1d5db', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: '0.875rem', color: '#d1d5db', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               Something went critically wrong — take it out on some words! 🎮
             </span>
           </div>

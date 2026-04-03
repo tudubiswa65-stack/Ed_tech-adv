@@ -27,8 +27,10 @@ export default function Error({ error, reset }: ErrorProps) {
       <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between gap-4 px-4 py-2 bg-black/60 backdrop-blur-sm text-white">
         <div className="flex items-center gap-3 min-w-0">
           <span className="text-2xl font-bold text-red-400 shrink-0">500</span>
-          <span className="text-sm text-gray-300 truncate hidden sm:block">
-            Something went wrong — blast through it with a game! 🎮
+          <span className="text-sm text-gray-300 truncate" title={error.message || undefined}>
+            {error.message
+              ? `Error: ${error.message}`
+              : 'Something went wrong — blast through it with a game! 🎮'}
           </span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
