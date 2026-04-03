@@ -270,12 +270,17 @@ export const studentLogin = async (req: LoginRequest, res: Response): Promise<vo
       .update({ last_login: new Date().toISOString() })
       .eq('id', student.id);
 
-    // Generate JWT
-    const token = jwt.sign(
-      { id: student.id, email: student.email, role: 'student' as const },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRY } as jwt.SignOptions
-    );
+    // Generate JWT – include institute_id so downstream controllers can use it
+    // without an extra DB round-trip.
+    const studentJwtPayload: { id: string; email: string; role: 'student'; instituteId?: string } = {
+      id: student.id,
+      email: student.email,
+      role: 'student' as const,
+    };
+    if (student.institute_id) {
+      studentJwtPayload.instituteId = student.institute_id;
+    }
+    const token = jwt.sign(studentJwtPayload, JWT_SECRET, { expiresIn: JWT_EXPIRY } as jwt.SignOptions);
 
     // Determine cookie options based on environment / transport security
     const cookieOptions = buildCookieOptions(req);
