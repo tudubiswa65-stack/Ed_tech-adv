@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Spinner } from '@/components/ui';
 import SuperAdminSidebar from '@/components/layout/SuperAdminSidebar';
 import Navbar from '@/components/layout/Navbar';
+import MobileBottomNav from '@/components/layout/MobileBottomNav';
 
 const pageTitles: Record<string, string> = {
   '/super-admin': 'Dashboard',
@@ -22,7 +23,6 @@ const pageTitles: Record<string, string> = {
 };
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -53,11 +53,17 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="min-h-screen flex bg-gray-50 dark:bg-slate-800">
-      <SuperAdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="flex-1 flex flex-col min-w-0">
-        <Navbar title={title} onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+      {/* Sidebar — visible only on desktop (lg+) */}
+      <div className="hidden lg:block shrink-0">
+        <SuperAdminSidebar isOpen={false} onClose={() => {}} />
       </div>
+      <div className="flex-1 flex flex-col min-w-0">
+        <Navbar title={title} onMenuClick={() => {}} />
+        {/* pb-16 prevents content from hiding behind the mobile bottom nav */}
+        <main className="flex-1 overflow-auto p-6 pb-20 lg:pb-6">{children}</main>
+      </div>
+      {/* Mobile bottom navigation — hidden on desktop */}
+      <MobileBottomNav role="super_admin" />
     </div>
   );
 }

@@ -80,15 +80,7 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
       <div className="flex items-center justify-between h-14 px-4 lg:px-6">
         {/* Left – hamburger + page title */}
         <div className="flex items-center gap-3">
-          <button
-            onClick={onMenuClick}
-            className="lg:hidden p-1.5 rounded-lg text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors dark:bg-slate-700"
-            aria-label="Toggle menu"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+          {/* Hamburger hidden on mobile — bottom nav handles mobile navigation */}
           <h1 className="text-base md:text-lg font-semibold text-gray-800 dark:text-slate-100">{title}</h1>
         </div>
 
