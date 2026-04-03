@@ -189,8 +189,9 @@ export default function StudentAttendancePage() {
   const outer: React.CSSProperties = {
     minHeight: '100%',
     background: BG,
-    padding: '20px 16px 32px',
-    maxWidth: 420,
+    padding: '24px 20px 40px',
+    maxWidth: 1100,
+    width: '100%',
     margin: '0 auto',
   };
 
@@ -226,7 +227,13 @@ export default function StudentAttendancePage() {
   if (loading) {
     return (
       <div style={outer}>
-        <style>{`@keyframes att-pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
+        <style>{`
+          @keyframes att-pulse{0%,100%{opacity:1}50%{opacity:.4}}
+          .att-stats{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:12px}
+          .att-top{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:12px}
+          @media(min-width:640px){.att-stats{grid-template-columns:1fr 1fr 1fr}}
+          @media(min-width:900px){.att-top{grid-template-columns:1fr 1fr}}
+        `}</style>
         {/* header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <Skeleton style={{ width: 120, height: 14 }} />
@@ -236,13 +243,16 @@ export default function StudentAttendancePage() {
           </div>
         </div>
         {/* stats row */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
-          <Skeleton style={{ height: 78, borderRadius: 12 }} />
-          <Skeleton style={{ height: 78, borderRadius: 12 }} />
-          <Skeleton style={{ height: 78, borderRadius: 12 }} />
+        <div className="att-stats">
+          <Skeleton style={{ height: 88, borderRadius: 12 }} />
+          <Skeleton style={{ height: 88, borderRadius: 12 }} />
+          <Skeleton style={{ height: 88, borderRadius: 12 }} />
         </div>
-        {/* rate card */}
-        <Skeleton style={{ height: 88, borderRadius: 12, marginBottom: 12 }} />
+        {/* rate card + log top section */}
+        <div className="att-top">
+          <Skeleton style={{ height: 100, borderRadius: 12 }} />
+          <Skeleton style={{ height: 100, borderRadius: 12 }} />
+        </div>
         {/* log */}
         <div style={{ ...cardBase, padding: 0, overflow: 'hidden' }}>
           <div style={{ padding: '10px 14px', borderBottom: '0.5px solid rgba(255,255,255,0.05)' }}>
@@ -266,7 +276,13 @@ export default function StudentAttendancePage() {
 
   return (
     <div style={outer}>
-      <style>{`@keyframes att-pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
+      <style>{`
+        @keyframes att-pulse{0%,100%{opacity:1}50%{opacity:.4}}
+        .att-stats{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:14px}
+        .att-top{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:14px}
+        @media(min-width:640px){.att-stats{grid-template-columns:1fr 1fr 1fr}}
+        @media(min-width:900px){.att-top{grid-template-columns:1fr 1fr}}
+      `}</style>
 
       {/* ── HEADER ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
@@ -289,36 +305,36 @@ export default function StudentAttendancePage() {
         </div>
       </div>
 
-      {/* ── STATS ROW ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
+      {/* ── STATS ROW — 1 col mobile → 3 col desktop ── */}
+      <div className="att-stats">
         {/* Total */}
-        <div style={{ ...cardBase, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px 12px' }}>
-          <span style={{ ...sectionLabel, marginBottom: 6 }}>Total</span>
-          <span style={{ fontSize: 22, fontWeight: 700, color: '#fff', lineHeight: 1 }}>{totalClasses}</span>
-          <span style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 5 }}>classes</span>
+        <div style={{ ...cardBase, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '18px 16px' }}>
+          <span style={{ ...sectionLabel, marginBottom: 8 }}>Total</span>
+          <span style={{ fontSize: 28, fontWeight: 700, color: '#fff', lineHeight: 1 }}>{totalClasses}</span>
+          <span style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 6 }}>classes</span>
         </div>
 
         {/* Present */}
-        <div style={{ ...cardBase, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px 12px' }}>
-          <span style={{ ...sectionLabel, marginBottom: 6 }}>Present</span>
-          <span style={{ fontSize: 22, fontWeight: 700, color: GREEN, lineHeight: 1 }}>{presentCount}</span>
-          <span style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 5 }}>days</span>
+        <div style={{ ...cardBase, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '18px 16px' }}>
+          <span style={{ ...sectionLabel, marginBottom: 8 }}>Present</span>
+          <span style={{ fontSize: 28, fontWeight: 700, color: GREEN, lineHeight: 1 }}>{presentCount}</span>
+          <span style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 6 }}>days</span>
         </div>
 
         {/* Absent */}
-        <div style={{ ...cardBase, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px 12px' }}>
-          <span style={{ ...sectionLabel, marginBottom: 6 }}>Absent</span>
-          <span style={{ fontSize: 22, fontWeight: 700, color: RED, lineHeight: 1 }}>{absentCount}</span>
-          <span style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 5 }}>days</span>
+        <div style={{ ...cardBase, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '18px 16px' }}>
+          <span style={{ ...sectionLabel, marginBottom: 8 }}>Absent</span>
+          <span style={{ fontSize: 28, fontWeight: 700, color: RED, lineHeight: 1 }}>{absentCount}</span>
+          <span style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 6 }}>days</span>
         </div>
       </div>
 
       {/* ── ATTENDANCE RATE CARD ── */}
-      <div style={{ ...cardBase, padding: '14px 16px', marginBottom: 12 }}>
+      <div style={{ ...cardBase, padding: '18px 20px', marginBottom: 14 }}>
         {/* top row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <span style={{ fontSize: 12, color: TEXT_MUTED }}>Attendance rate</span>
-          <span style={{ fontSize: 20, fontWeight: 500, color: GREEN }}>{Math.round(attendanceRate)}%</span>
+          <span style={{ fontSize: 22, fontWeight: 500, color: GREEN }}>{Math.round(attendanceRate)}%</span>
         </div>
         {/* progress bar */}
         <div
@@ -327,7 +343,7 @@ export default function StudentAttendancePage() {
             background: 'rgba(255,255,255,0.07)',
             borderRadius: 8,
             overflow: 'hidden',
-            marginBottom: 10,
+            marginBottom: 12,
           }}
         >
           <div
@@ -377,7 +393,7 @@ export default function StudentAttendancePage() {
           style={{
             display: 'grid',
             gridTemplateColumns: '1fr auto',
-            padding: '10px 14px',
+            padding: '12px 20px',
             borderBottom: '0.5px solid rgba(255,255,255,0.05)',
           }}
         >
@@ -386,11 +402,11 @@ export default function StudentAttendancePage() {
         </div>
 
         {error ? (
-          <div style={{ padding: '20px 14px' }}>
+          <div style={{ padding: '20px 20px' }}>
             <RetryMessage onRetry={fetchAttendance} />
           </div>
         ) : attendance.length === 0 ? (
-          <div style={{ padding: '32px 14px', textAlign: 'center' }}>
+          <div style={{ padding: '40px 20px', textAlign: 'center' }}>
             <p style={{ fontSize: 13, color: TEXT_MUTED, margin: 0 }}>No attendance records yet.</p>
           </div>
         ) : (
@@ -406,7 +422,7 @@ export default function StudentAttendancePage() {
                   display: 'grid',
                   gridTemplateColumns: '1fr auto',
                   alignItems: 'center',
-                  padding: '13px 14px',
+                  padding: '15px 20px',
                   borderBottom: isLast ? 'none' : DIVIDER,
                   background: isAbsent ? 'rgba(248,113,113,0.04)' : 'transparent',
                 }}
