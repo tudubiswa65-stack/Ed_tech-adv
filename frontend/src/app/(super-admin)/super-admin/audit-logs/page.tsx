@@ -104,14 +104,14 @@ export default function AuditLogsPage() {
       admin: 'bg-orange-100 text-orange-700',
       settings: 'bg-gray-100 text-gray-600',
     };
-    return <span className={`px-2 py-1 text-xs font-medium rounded-full ${map[entity?.toLowerCase()] || 'bg-gray-100 text-gray-600'}`}>{entity}</span>;
+    return <span className={`px-2 py-1 text-xs font-medium rounded-full ${map[entity?.toLowerCase()] || 'bg-gray-100 text-gray-600'} dark:text-slate-300 dark:bg-slate-700`}>{entity}</span>;
   };
 
   const columns = [
     {
       key: 'action',
       header: 'Action',
-      render: (row: AuditLog) => <span className="font-mono text-xs font-medium text-gray-900">{row.action}</span>,
+      render: (row: AuditLog) => <span className="font-mono text-xs font-medium text-gray-900 dark:text-slate-100">{row.action}</span>,
     },
     {
       key: 'entity_type',
@@ -122,7 +122,7 @@ export default function AuditLogsPage() {
       key: 'description',
       header: 'Description',
       render: (row: AuditLog) => (
-        <span className="text-xs text-gray-600">{row.description?.length > 80 ? row.description.slice(0, 80) + '...' : row.description}</span>
+        <span className="text-xs text-gray-600 dark:text-slate-300">{row.description?.length > 80 ? row.description.slice(0, 80) + '...' : row.description}</span>
       ),
     },
     { key: 'admin_name', header: 'Admin' },
@@ -137,7 +137,7 @@ export default function AuditLogsPage() {
   ];
 
   if (loading && logs.length === 0) {
-    return <div className="flex items-center justify-center h-64 text-gray-500">Loading audit logs...</div>;
+    return <div className="flex items-center justify-center h-64 text-gray-500 dark:text-slate-400">Loading audit logs...</div>;
   }
 
   if (error) {
@@ -147,7 +147,7 @@ export default function AuditLogsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Audit Logs</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Audit Logs</h1>
         <button
           onClick={handleExport}
           className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
@@ -170,27 +170,27 @@ export default function AuditLogsPage() {
           placeholder="Filter by action..."
           value={actionFilter}
           onChange={e => setActionFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
         />
         <input
           type="text"
           placeholder="Filter by entity type..."
           value={entityFilter}
           onChange={e => setEntityFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
         />
         <input
           type="date"
           value={dateFrom}
           onChange={e => setDateFrom(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
           title="From date"
         />
         <input
           type="date"
           value={dateTo}
           onChange={e => setDateTo(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
           title="To date"
         />
         <input
@@ -198,7 +198,7 @@ export default function AuditLogsPage() {
           placeholder="Search logs..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-48"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-48 dark:border-slate-500"
         />
       </div>
 
@@ -206,21 +206,21 @@ export default function AuditLogsPage() {
 
       {pagination.totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-slate-400">
             Showing page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
           </p>
           <div className="flex space-x-2">
             <button
               onClick={() => setPagination(p => ({ ...p, page: Math.max(1, p.page - 1) }))}
               disabled={pagination.page <= 1}
-              className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-slate-800 dark:border-slate-500 dark:hover:bg-slate-700"
             >
               Previous
             </button>
             <button
               onClick={() => setPagination(p => ({ ...p, page: Math.min(p.totalPages, p.page + 1) }))}
               disabled={pagination.page >= pagination.totalPages}
-              className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-slate-800 dark:border-slate-500 dark:hover:bg-slate-700"
             >
               Next
             </button>

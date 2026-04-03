@@ -108,7 +108,7 @@ export default function FeedbackPage() {
         {[1, 2, 3, 4, 5].map(star => (
           <svg
             key={star}
-            className={`w-4 h-4 ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
+            className={`w-4 h-4 ${star <= rating ? 'text-yellow-400' : 'text-gray-300'} dark:text-slate-500`}
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -126,8 +126,8 @@ export default function FeedbackPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Student Feedback</h1>
-          <p className="text-gray-500">View and analyze student feedback</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Student Feedback</h1>
+          <p className="text-gray-500 dark:text-slate-400">View and analyze student feedback</p>
         </div>
 
         {/* Stats */}
@@ -136,26 +136,26 @@ export default function FeedbackPage() {
             <Card>
               <div className="p-4 text-center">
                 <p className="text-3xl font-bold text-[var(--primary-color)]">{stats.totalFeedback}</p>
-                <p className="text-sm text-gray-500">Total Feedback</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Total Feedback</p>
               </div>
             </Card>
             <Card>
               <div className="p-4 text-center">
                 <p className="text-3xl font-bold text-yellow-500">
                   {stats.averageRating.toFixed(1)}
-                  <span className="text-lg text-gray-400">/5</span>
+                  <span className="text-lg text-gray-400 dark:text-slate-500">/5</span>
                 </p>
-                <p className="text-sm text-gray-500">Average Rating</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Average Rating</p>
               </div>
             </Card>
             <Card>
               <div className="p-4">
-                <p className="text-sm font-medium text-gray-700 mb-2">Rating Distribution</p>
+                <p className="text-sm font-medium text-gray-700 mb-2 dark:text-slate-200">Rating Distribution</p>
                 <div className="space-y-1">
                   {stats.ratingDistribution.map(r => (
                     <div key={r.rating} className="flex items-center gap-2">
                       <span className="text-xs w-6">{r.rating}⭐</span>
-                      <div className="flex-1 bg-gray-200 rounded-full h-2">
+                      <div className="flex-1 bg-gray-200 rounded-full h-2 dark:bg-slate-600">
                         <div
                           className="bg-yellow-400 h-full rounded-full"
                           style={{ width: `${(r.count / maxRatingCount) * 100}%` }}
@@ -174,12 +174,12 @@ export default function FeedbackPage() {
         {stats && (
           <Card>
             <div className="p-4">
-              <h3 className="font-medium text-gray-900 mb-3">Feedback by Type</h3>
+              <h3 className="font-medium text-gray-900 mb-3 dark:text-slate-100">Feedback by Type</h3>
               <div className="grid grid-cols-4 gap-4">
                 {Object.entries(stats.typeDistribution).map(([type, count]) => (
-                  <div key={type} className="text-center p-3 bg-gray-50 rounded-lg">
+                  <div key={type} className="text-center p-3 bg-gray-50 rounded-lg dark:bg-slate-800">
                     <p className="text-2xl font-bold">{count}</p>
-                    <p className="text-sm text-gray-500 capitalize">{type}</p>
+                    <p className="text-sm text-gray-500 capitalize dark:text-slate-400">{type}</p>
                   </div>
                 ))}
               </div>
@@ -192,11 +192,11 @@ export default function FeedbackPage() {
           <div className="p-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Type</label>
                 <select
                   value={filters.type}
                   onChange={(e) => setFilters(f => ({ ...f, type: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                 >
                   <option value="">All Types</option>
                   <option value="course">Course</option>
@@ -206,11 +206,11 @@ export default function FeedbackPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Rating</label>
                 <select
                   value={filters.rating}
                   onChange={(e) => setFilters(f => ({ ...f, rating: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                 >
                   <option value="">All Ratings</option>
                   <option value="5">5 Stars</option>
@@ -231,25 +231,25 @@ export default function FeedbackPage() {
 
         {/* Feedback List */}
         <Card>
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-200 dark:divide-slate-700">
             {loading ? (
               <div className="flex justify-center py-12">
                 <Spinner />
               </div>
             ) : feedback.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">No feedback found.</div>
+              <div className="p-8 text-center text-gray-500 dark:text-slate-400">No feedback found.</div>
             ) : (
               feedback.map(item => (
-                <div key={item.id} className="p-4 hover:bg-gray-50">
+                <div key={item.id} className="p-4 hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <Badge variant={getTypeColor(item.type)}>{item.type}</Badge>
                         {renderStars(item.rating)}
                       </div>
-                      <h3 className="font-semibold text-gray-900">{item.subject || 'No Subject'}</h3>
-                      <p className="text-sm text-gray-600 mt-1">{item.message}</p>
-                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                      <h3 className="font-semibold text-gray-900 dark:text-slate-100">{item.subject || 'No Subject'}</h3>
+                      <p className="text-sm text-gray-600 mt-1 dark:text-slate-300">{item.message}</p>
+                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-400 dark:text-slate-500">
                         <span>From: {item.students?.name || 'Anonymous'}</span>
                         <span>{formatDate(item.created_at)}</span>
                       </div>

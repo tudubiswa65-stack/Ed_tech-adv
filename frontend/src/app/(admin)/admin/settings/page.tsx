@@ -203,12 +203,12 @@ export default function SettingsPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-500">Manage your institute settings and preferences</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Settings</h1>
+          <p className="text-gray-500 dark:text-slate-400">Manage your institute settings and preferences</p>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200">
+        <div className="border-b border-gray-200 dark:border-slate-600">
           <nav className="flex gap-8">
             {[
               { id: 'institute', label: 'Institute', adminOnly: true },
@@ -223,7 +223,7 @@ export default function SettingsPage() {
                   activeTab === tab.id
                     ? 'border-[var(--primary-color)] text-[var(--primary-color)]'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                } dark:text-slate-200`}
               >
                 {tab.label}
               </button>
@@ -262,19 +262,19 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Address</label>
                 <textarea
                   value={instituteConfig.address || ''}
                   onChange={(e) => setInstituteConfig({ ...instituteConfig, address: e.target.value })}
                   rows={3}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                 />
               </div>
 
               <h3 className="text-lg font-semibold pt-4">Brand Colors</h3>
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Primary Color</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Primary Color</label>
                   <div className="flex gap-2">
                     <input
                       type="color"
@@ -289,7 +289,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Secondary Color</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Secondary Color</label>
                   <div className="flex gap-2">
                     <input
                       type="color"
@@ -329,8 +329,8 @@ export default function SettingsPage() {
                 ].map(feature => (
                   <div key={feature.key} className="flex items-center justify-between py-3 border-b">
                     <div>
-                      <p className="font-medium text-gray-900">{feature.label}</p>
-                      <p className="text-sm text-gray-500">{feature.desc}</p>
+                      <p className="font-medium text-gray-900 dark:text-slate-100">{feature.label}</p>
+                      <p className="text-sm text-gray-500 dark:text-slate-400">{feature.desc}</p>
                     </div>
                     <Switch
                       checked={!!settings[feature.key]}
@@ -358,15 +358,15 @@ export default function SettingsPage() {
               {!showPasswordForm ? (
                 <div className="flex items-center justify-between py-4 border-b">
                   <div>
-                    <p className="font-medium text-gray-900">Change Password</p>
-                    <p className="text-sm text-gray-500">Update your account password</p>
+                    <p className="font-medium text-gray-900 dark:text-slate-100">Change Password</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">Update your account password</p>
                   </div>
                   <Button variant="outline" onClick={() => setShowPasswordForm(true)}>
                     Change
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-4 border p-4 rounded-lg bg-gray-50">
+                <div className="space-y-4 border p-4 rounded-lg bg-gray-50 dark:bg-slate-800">
                   <h4 className="font-medium">Change Password</h4>
                   <Input
                     label="Current Password"
@@ -400,8 +400,8 @@ export default function SettingsPage() {
               <div className="py-4 border-b">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">Two-Factor Authentication</p>
-                    <p className="text-sm text-gray-500">Add an extra layer of security</p>
+                    <p className="font-medium text-gray-900 dark:text-slate-100">Two-Factor Authentication</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">Add an extra layer of security</p>
                   </div>
                   <Button variant="outline" disabled>Coming Soon</Button>
                 </div>
@@ -410,8 +410,8 @@ export default function SettingsPage() {
               <div className="py-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">Active Sessions</p>
-                    <p className="text-sm text-gray-500">Manage your active login sessions</p>
+                    <p className="font-medium text-gray-900 dark:text-slate-100">Active Sessions</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">Manage your active login sessions</p>
                   </div>
                   <Button variant="outline" disabled>Coming Soon</Button>
                 </div>
@@ -433,20 +433,20 @@ export default function SettingsPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-3 px-4 font-medium text-gray-500">Name</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-500">Email</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-500">Role</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-500">Created</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-500">Actions</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-slate-400">Name</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-slate-400">Email</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-slate-400">Role</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-slate-400">Created</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-slate-400">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {admins.map(admin => (
-                      <tr key={admin.id} className="border-b hover:bg-gray-50">
+                      <tr key={admin.id} className="border-b hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700">
                         <td className="py-3 px-4">{admin.name}</td>
                         <td className="py-3 px-4">{admin.email}</td>
                         <td className="py-3 px-4 capitalize">{admin.role}</td>
-                        <td className="py-3 px-4 text-sm text-gray-500">
+                        <td className="py-3 px-4 text-sm text-gray-500 dark:text-slate-400">
                           {new Date(admin.created_at).toLocaleDateString()}
                         </td>
                         <td className="py-3 px-4">
@@ -471,7 +471,7 @@ export default function SettingsPage() {
         {/* Add Admin Modal */}
         {showAdminModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md dark:bg-slate-800">
               <h3 className="text-lg font-semibold mb-4">Add New Admin</h3>
               <div className="space-y-4">
                 <Input
@@ -492,11 +492,11 @@ export default function SettingsPage() {
                   onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })}
                 />
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Role</label>
                   <select
                     value={newAdmin.role}
                     onChange={(e) => setNewAdmin({ ...newAdmin, role: e.target.value })}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                   >
                     <option value="admin">Admin</option>
                     <option value="superadmin">Super Admin</option>

@@ -106,7 +106,7 @@ export default function ComplaintsPage() {
       high: 'bg-orange-100 text-orange-700',
       critical: 'bg-red-100 text-red-700',
     };
-    return <span className={`px-2 py-1 text-xs font-medium rounded-full ${map[priority] || 'bg-gray-100 text-gray-600'}`}>{priority}</span>;
+    return <span className={`px-2 py-1 text-xs font-medium rounded-full ${map[priority] || 'bg-gray-100 text-gray-600'} dark:text-slate-300 dark:bg-slate-700`}>{priority}</span>;
   };
 
   const statusBadge = (status: string) => {
@@ -116,7 +116,7 @@ export default function ComplaintsPage() {
       resolved: 'bg-green-100 text-green-700',
       overridden: 'bg-purple-100 text-purple-700',
     };
-    return <span className={`px-2 py-1 text-xs font-medium rounded-full ${map[status] || 'bg-gray-100 text-gray-600'}`}>{status.replace(/_/g, ' ')}</span>;
+    return <span className={`px-2 py-1 text-xs font-medium rounded-full ${map[status] || 'bg-gray-100 text-gray-600'} dark:text-slate-300 dark:bg-slate-700`}>{status.replace(/_/g, ' ')}</span>;
   };
 
   const columns = [
@@ -129,7 +129,7 @@ export default function ComplaintsPage() {
       key: 'description',
       header: 'Description',
       render: (row: Complaint) => (
-        <span className="text-xs text-gray-600">{row.description?.length > 60 ? row.description.slice(0, 60) + '...' : row.description}</span>
+        <span className="text-xs text-gray-600 dark:text-slate-300">{row.description?.length > 60 ? row.description.slice(0, 60) + '...' : row.description}</span>
       ),
     },
     { key: 'student_name', header: 'Student' },
@@ -166,7 +166,7 @@ export default function ComplaintsPage() {
   ];
 
   if (loading && complaints.length === 0) {
-    return <div className="flex items-center justify-center h-64 text-gray-500">Loading complaints...</div>;
+    return <div className="flex items-center justify-center h-64 text-gray-500 dark:text-slate-400">Loading complaints...</div>;
   }
 
   if (error) {
@@ -176,7 +176,7 @@ export default function ComplaintsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Complaints</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Complaints</h1>
       </div>
 
       {stats && (
@@ -192,7 +192,7 @@ export default function ComplaintsPage() {
         <select
           value={statusFilter}
           onChange={e => setStatusFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
         >
           <option value="">All Status</option>
           <option value="open">Open</option>
@@ -202,7 +202,7 @@ export default function ComplaintsPage() {
         <select
           value={priorityFilter}
           onChange={e => setPriorityFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
         >
           <option value="">All Priorities</option>
           <option value="low">Low</option>
@@ -215,7 +215,7 @@ export default function ComplaintsPage() {
           placeholder="Search complaints..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-48"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-48 dark:border-slate-500"
         />
       </div>
 
@@ -223,19 +223,19 @@ export default function ComplaintsPage() {
 
       <Modal isOpen={resolveModal} onClose={() => setResolveModal(false)} title="Resolve Complaint" size="md">
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">Resolving: <strong>{selectedComplaint?.subject}</strong></p>
+          <p className="text-sm text-gray-600 dark:text-slate-300">Resolving: <strong>{selectedComplaint?.subject}</strong></p>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Resolution Notes</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Resolution Notes</label>
             <textarea
               value={resolutionNotes}
               onChange={e => setResolutionNotes(e.target.value)}
               rows={4}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
               placeholder="Describe how the complaint was resolved..."
             />
           </div>
           <div className="flex justify-end space-x-3">
-            <button onClick={() => setResolveModal(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+            <button onClick={() => setResolveModal(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:border-slate-500 dark:hover:bg-slate-700">Cancel</button>
             <button onClick={handleResolve} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">Resolve</button>
           </div>
         </div>

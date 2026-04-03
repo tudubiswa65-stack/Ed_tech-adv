@@ -108,7 +108,7 @@ export default function StudentPaymentsPage() {
             🧾 View Receipt
           </Button>
         ) : (
-          <span className="text-xs text-gray-400">—</span>
+          <span className="text-xs text-gray-400 dark:text-slate-500">—</span>
         ),
     },
   ];
@@ -117,7 +117,7 @@ export default function StudentPaymentsPage() {
     <PageWrapper title="My Payments">
       <div className="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="p-4 flex flex-col items-center justify-center">
-          <div className="text-sm text-gray-500 uppercase font-semibold">Total Paid</div>
+          <div className="text-sm text-gray-500 uppercase font-semibold dark:text-slate-400">Total Paid</div>
           <div className="text-3xl font-bold text-green-600">
             ${payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0).toFixed(2)}
           </div>
@@ -129,35 +129,35 @@ export default function StudentPaymentsPage() {
       {/* Receipt Modal */}
       <Modal isOpen={showReceiptModal} onClose={() => setShowReceiptModal(false)} title="Payment Receipt" size="md">
         {receiptLoading ? (
-          <div className="flex justify-center py-8 text-gray-500">Loading receipt…</div>
+          <div className="flex justify-center py-8 text-gray-500 dark:text-slate-400">Loading receipt…</div>
         ) : selectedReceipt ? (
           <div className="font-mono text-sm" id="receipt-content">
             <div className="text-center border-b pb-4 mb-4">
               <h2 className="text-lg font-bold">OFFICIAL RECEIPT</h2>
-              <p className="text-gray-500 text-xs">EdTech Platform</p>
+              <p className="text-gray-500 text-xs dark:text-slate-400">EdTech Platform</p>
             </div>
 
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-gray-500">Receipt No:</span>
+                <span className="text-gray-500 dark:text-slate-400">Receipt No:</span>
                 <span className="font-bold">{selectedReceipt.receipt_number}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Amount:</span>
+                <span className="text-gray-500 dark:text-slate-400">Amount:</span>
                 <span className="font-bold text-green-700">PKR {Number(selectedReceipt.amount).toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Method:</span>
+                <span className="text-gray-500 dark:text-slate-400">Method:</span>
                 <span>{selectedReceipt.payment_method}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Date:</span>
+                <span className="text-gray-500 dark:text-slate-400">Date:</span>
                 <span>{new Date(selectedReceipt.issued_at).toLocaleString()}</span>
               </div>
             </div>
 
             <div className="mt-4 pt-4 border-t">
-              <p className="text-xs text-gray-400 break-all">
+              <p className="text-xs text-gray-400 break-all dark:text-slate-500">
                 <span className="font-medium">Digital Signature:</span>{' '}
                 {selectedReceipt.signature_hash?.substring(0, 32)}…
               </p>

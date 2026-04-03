@@ -121,7 +121,7 @@ export default function PaymentsPage() {
       failed: 'bg-red-100 text-red-700',
     };
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${map[status] || 'bg-gray-100 text-gray-700'}`}>
+      <span className={`px-2 py-1 text-xs font-medium rounded-full ${map[status] || 'bg-gray-100 text-gray-700'} dark:text-slate-200 dark:bg-slate-700`}>
         {status}
       </span>
     );
@@ -132,7 +132,7 @@ export default function PaymentsPage() {
       key: 'id',
       header: 'Payment ID',
       render: (row: Payment) => (
-        <span className="font-mono text-xs text-gray-600">{row.id.slice(0, 8)}...</span>
+        <span className="font-mono text-xs text-gray-600 dark:text-slate-300">{row.id.slice(0, 8)}...</span>
       ),
     },
     {
@@ -204,7 +204,7 @@ export default function PaymentsPage() {
   ];
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64 text-gray-500">Loading payments...</div>;
+    return <div className="flex items-center justify-center h-64 text-gray-500 dark:text-slate-400">Loading payments...</div>;
   }
 
   if (error) {
@@ -214,7 +214,7 @@ export default function PaymentsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Payments</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Payments</h1>
       </div>
 
       {analytics && (
@@ -230,9 +230,9 @@ export default function PaymentsPage() {
       {analytics && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Payment Status Breakdown */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">Payment Status Breakdown</h3>
-            <p className="text-sm text-gray-500 mb-4">Distribution of payment statuses</p>
+          <div className="bg-white rounded-lg shadow-sm p-6 dark:bg-slate-800">
+            <h3 className="text-lg font-semibold text-gray-900 mb-1 dark:text-slate-100">Payment Status Breakdown</h3>
+            <p className="text-sm text-gray-500 mb-4 dark:text-slate-400">Distribution of payment statuses</p>
             <PieChart
               data={[
                 { label: 'Completed', value: analytics.completedCount },
@@ -243,9 +243,9 @@ export default function PaymentsPage() {
           </div>
 
           {/* Revenue vs Pending Comparison */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">Revenue Overview</h3>
-            <p className="text-sm text-gray-500 mb-4">Collected vs outstanding amounts</p>
+          <div className="bg-white rounded-lg shadow-sm p-6 dark:bg-slate-800">
+            <h3 className="text-lg font-semibold text-gray-900 mb-1 dark:text-slate-100">Revenue Overview</h3>
+            <p className="text-sm text-gray-500 mb-4 dark:text-slate-400">Collected vs outstanding amounts</p>
             <BarChart
               data={[
                 { category: 'Collected', amount: analytics.totalRevenue },
@@ -260,7 +260,7 @@ export default function PaymentsPage() {
         </div>
       )}
 
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-slate-600">
         <nav className="flex space-x-8">
           {(['all', 'defaulters'] as const).map(tab => (
             <button
@@ -270,7 +270,7 @@ export default function PaymentsPage() {
                 activeTab === tab
                   ? 'border-indigo-600 text-indigo-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+              } dark:text-slate-200`}
             >
               {tab === 'all' ? 'All Payments' : 'Defaulters'}
             </button>
@@ -284,7 +284,7 @@ export default function PaymentsPage() {
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
             >
               <option value="">All Status</option>
               <option value="completed">Completed</option>
@@ -294,7 +294,7 @@ export default function PaymentsPage() {
             <select
               value={branchFilter}
               onChange={e => setBranchFilter(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
             >
               <option value="">All Branches</option>
               {branches.map(b => (
@@ -306,7 +306,7 @@ export default function PaymentsPage() {
               placeholder="Search payments..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-48"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-48 dark:border-slate-500"
             />
           </div>
           <DataTable columns={paymentColumns} data={payments} />
@@ -322,8 +322,8 @@ export default function PaymentsPage() {
           <div className="space-y-3 text-sm">
             {Object.entries(receiptData).map(([key, value]) => (
               <div key={key} className="flex justify-between border-b pb-2">
-                <span className="font-medium text-gray-600 capitalize">{key.replace(/_/g, ' ')}</span>
-                <span className="text-gray-900">{String(value)}</span>
+                <span className="font-medium text-gray-600 capitalize dark:text-slate-300">{key.replace(/_/g, ' ')}</span>
+                <span className="text-gray-900 dark:text-slate-100">{String(value)}</span>
               </div>
             ))}
           </div>

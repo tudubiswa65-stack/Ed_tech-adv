@@ -32,7 +32,7 @@ const StarRating = ({ rating }: { rating: number }) => (
     {[1, 2, 3, 4, 5].map(star => (
       <svg
         key={star}
-        className={`w-4 h-4 ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
+        className={`w-4 h-4 ${star <= rating ? 'text-yellow-400' : 'text-gray-300'} dark:text-slate-500`}
         fill="currentColor"
         viewBox="0 0 20 20"
       >
@@ -98,7 +98,7 @@ export default function FeedbackPage() {
       platform: 'bg-indigo-100 text-indigo-700',
       general: 'bg-gray-100 text-gray-600',
     };
-    return <span className={`px-2 py-1 text-xs font-medium rounded-full ${map[type] || 'bg-gray-100 text-gray-600'}`}>{type}</span>;
+    return <span className={`px-2 py-1 text-xs font-medium rounded-full ${map[type] || 'bg-gray-100 text-gray-600'} dark:text-slate-300 dark:bg-slate-700`}>{type}</span>;
   };
 
   const columns = [
@@ -117,8 +117,8 @@ export default function FeedbackPage() {
       header: 'Subject / Message',
       render: (row: Feedback) => (
         <div className="max-w-xs">
-          <p className="font-medium text-gray-900">{row.subject}</p>
-          <p className="text-xs text-gray-500 truncate">{row.message}</p>
+          <p className="font-medium text-gray-900 dark:text-slate-100">{row.subject}</p>
+          <p className="text-xs text-gray-500 truncate dark:text-slate-400">{row.message}</p>
         </div>
       ),
     },
@@ -132,7 +132,7 @@ export default function FeedbackPage() {
   ];
 
   if (loading && feedback.length === 0) {
-    return <div className="flex items-center justify-center h-64 text-gray-500">Loading feedback...</div>;
+    return <div className="flex items-center justify-center h-64 text-gray-500 dark:text-slate-400">Loading feedback...</div>;
   }
 
   if (error) {
@@ -141,15 +141,15 @@ export default function FeedbackPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Feedback</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Feedback</h1>
 
       {analytics && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard title="Total Feedback" value={analytics.total_feedback} icon="tests" color="blue" />
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <p className="text-sm font-medium text-gray-500">Average Rating</p>
+          <div className="bg-white rounded-lg shadow-sm border p-6 dark:bg-slate-800">
+            <p className="text-sm font-medium text-gray-500 dark:text-slate-400">Average Rating</p>
             <div className="flex items-center gap-2 mt-1">
-              <p className="text-2xl font-bold text-gray-900">{Number(analytics.average_rating).toFixed(1)}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-slate-100">{Number(analytics.average_rating).toFixed(1)}</p>
               <StarRating rating={Math.round(analytics.average_rating)} />
             </div>
           </div>
@@ -161,7 +161,7 @@ export default function FeedbackPage() {
         <select
           value={branchFilter}
           onChange={e => setBranchFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
         >
           <option value="">All Branches</option>
           {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -169,7 +169,7 @@ export default function FeedbackPage() {
         <select
           value={typeFilter}
           onChange={e => setTypeFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
         >
           <option value="">All Types</option>
           <option value="course">Course</option>
@@ -180,7 +180,7 @@ export default function FeedbackPage() {
         <select
           value={ratingFilter}
           onChange={e => setRatingFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
         >
           <option value="">All Ratings</option>
           <option value="1">1★+</option>
@@ -194,7 +194,7 @@ export default function FeedbackPage() {
           placeholder="Search feedback..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-48"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-48 dark:border-slate-500"
         />
       </div>
 

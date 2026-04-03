@@ -124,7 +124,7 @@ export default function StudentResultsPage() {
                 <p className={`text-2xl md:text-3xl font-bold ${
                   performance.improvementTrend === 'improving' ? 'text-green-600' :
                   performance.improvementTrend === 'declining' ? 'text-red-600' : 'text-gray-600'
-                }`}>
+                } dark:text-slate-300`}>
                   {performance.improvementTrend === 'improving' ? '↑' :
                    performance.improvementTrend === 'declining' ? '↓' : '→'}
                 </p>
@@ -144,7 +144,7 @@ export default function StudentResultsPage() {
                   <div key={subject} className="flex items-center gap-3">
                     <div className="w-28 text-sm font-medium truncate">{subject}</div>
                     <div className="flex-1">
-                      <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="h-3 bg-gray-200 rounded-full overflow-hidden dark:bg-slate-600">
                         <div
                           className={`h-full rounded-full ${
                             data.avgPercentage >= 70 ? 'bg-green-500' :
@@ -178,24 +178,24 @@ export default function StudentResultsPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-3 px-3 font-medium text-gray-500">Test</th>
-                      <th className="text-left py-3 px-3 font-medium text-gray-500">Subject</th>
-                      <th className="text-left py-3 px-3 font-medium text-gray-500">Score</th>
-                      <th className="text-left py-3 px-3 font-medium text-gray-500">Percentage</th>
-                      <th className="text-left py-3 px-3 font-medium text-gray-500">Status</th>
-                      <th className="text-left py-3 px-3 font-medium text-gray-500 hidden md:table-cell">Time</th>
-                      <th className="text-left py-3 px-3 font-medium text-gray-500 hidden sm:table-cell">Date</th>
-                      <th className="text-left py-3 px-3 font-medium text-gray-500">Actions</th>
+                      <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Test</th>
+                      <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Subject</th>
+                      <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Score</th>
+                      <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Percentage</th>
+                      <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Status</th>
+                      <th className="text-left py-3 px-3 font-medium text-gray-500 hidden md:table-cell dark:text-slate-400">Time</th>
+                      <th className="text-left py-3 px-3 font-medium text-gray-500 hidden sm:table-cell dark:text-slate-400">Date</th>
+                      <th className="text-left py-3 px-3 font-medium text-gray-500 dark:text-slate-400">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {results.map(result => (
-                      <tr key={result.id} className="border-b hover:bg-gray-50">
+                      <tr key={result.id} className="border-b hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700">
                         <td className="py-3 px-3 font-medium">{result.tests?.title}</td>
-                        <td className="py-3 px-3 text-gray-600">{result.tests?.subjects?.name || 'N/A'}</td>
+                        <td className="py-3 px-3 text-gray-600 dark:text-slate-300">{result.tests?.subjects?.name || 'N/A'}</td>
                         <td className="py-3 px-3">
                           <span className="font-semibold">{result.score}</span>
-                          <span className="text-gray-400">/{result.total_marks}</span>
+                          <span className="text-gray-400 dark:text-slate-500">/{result.total_marks}</span>
                         </td>
                         <td className="py-3 px-3">{result.percentage?.toFixed(1)}%</td>
                         <td className="py-3 px-3">

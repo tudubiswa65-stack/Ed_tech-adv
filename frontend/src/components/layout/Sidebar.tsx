@@ -202,7 +202,7 @@ export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
                         isActive
                           ? 'text-white font-medium bg-white/10'
                           : 'text-white/65 hover:text-white hover:bg-white/8'
-                      }`}
+                      } dark:bg-slate-800`}
                       onClick={onClose}
                     >
                       {isActive && (

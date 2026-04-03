@@ -85,7 +85,7 @@ export default function BranchesPage() {
     {
       key: 'name',
       label: 'Name',
-      render: (branch: Branch) => <span className="font-medium text-gray-900">{branch.name}</span>,
+      render: (branch: Branch) => <span className="font-medium text-gray-900 dark:text-slate-100">{branch.name}</span>,
     },
     {
       key: 'location',
@@ -197,9 +197,9 @@ export default function BranchesPage() {
                 id="is_active"
                 checked={formData.is_active}
                 onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded dark:border-slate-500"
               />
-              <label htmlFor="is_active" className="text-sm font-medium text-gray-700">
+              <label htmlFor="is_active" className="text-sm font-medium text-gray-700 dark:text-slate-200">
                 Active
               </label>
             </div>

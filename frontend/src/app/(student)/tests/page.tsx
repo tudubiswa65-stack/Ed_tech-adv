@@ -54,7 +54,7 @@ export default function StudentTestsPage() {
   return (
     <PageWrapper title="My Tests">
         {/* Tabs */}
-        <div className="flex gap-4 md:gap-6 mb-6 border-b border-gray-200">
+        <div className="flex gap-4 md:gap-6 mb-6 border-b border-gray-200 dark:border-slate-600">
           {tabs.map((tab) => (
             <button
               key={tab.key}
@@ -63,7 +63,7 @@ export default function StudentTestsPage() {
                 activeTab === tab.key
                   ? 'border-current'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+              } dark:text-slate-200`}
               style={activeTab === tab.key ? { color: 'var(--color-primary)' } : {}}
             >
               {tab.label} ({tab.count})
@@ -83,7 +83,7 @@ export default function StudentTestsPage() {
             {currentTests.map((test: any) => (
               <Card key={test.id}>
                 <div className="mb-3">
-                  <h3 className="text-student-subheading text-gray-900">{test.title}</h3>
+                  <h3 className="text-student-subheading text-gray-900 dark:text-slate-100">{test.title}</h3>
                   <p className="text-student-muted mt-0.5">{test.course_name}</p>
                 </div>
 
@@ -95,15 +95,15 @@ export default function StudentTestsPage() {
                 </div>
 
                 {activeTab === 'completed' && test.result && (
-                  <div className="p-3 bg-gray-50 rounded-xl mb-4">
+                  <div className="p-3 bg-gray-50 rounded-xl mb-4 dark:bg-slate-800">
                     <div className="flex justify-between">
-                      <span className="text-student-body text-gray-600">Score:</span>
+                      <span className="text-student-body text-gray-600 dark:text-slate-300">Score:</span>
                       <span className="font-bold text-sm" style={{ color: 'var(--color-primary)' }}>
                         {test.result.score}/{test.result.total_marks}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-student-body text-gray-600">Percentage:</span>
+                      <span className="text-student-body text-gray-600 dark:text-slate-300">Percentage:</span>
                       <span className="text-sm">{Math.round(test.result.percentage)}%</span>
                     </div>
                   </div>
@@ -125,7 +125,7 @@ export default function StudentTestsPage() {
                     </Button>
                   )}
                   {activeTab === 'scheduled' && (
-                    <div className="flex-1 text-center p-2 bg-gray-100 rounded-xl">
+                    <div className="flex-1 text-center p-2 bg-gray-100 rounded-xl dark:bg-slate-700">
                       <p className="text-student-muted">
                         {test.scheduled_at
                           ? `Starts ${new Date(test.scheduled_at).toLocaleString()}`

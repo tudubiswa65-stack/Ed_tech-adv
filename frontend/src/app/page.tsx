@@ -26,7 +26,7 @@ function HomeContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-800">
         <Spinner size="lg" />
       </div>
     );
@@ -37,7 +37,7 @@ function HomeContent() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4 dark:bg-slate-800">
       <LoginForm role="student" />
     </main>
   );
@@ -46,7 +46,7 @@ function HomeContent() {
 export default function Home() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-800">
         <Spinner size="lg" />
       </div>
     }>

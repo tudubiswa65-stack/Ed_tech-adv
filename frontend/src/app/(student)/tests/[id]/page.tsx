@@ -59,7 +59,7 @@ export default function TestDetailPage() {
     return (
       <PageWrapper title="Test Not Found">
         <Card>
-          <p className="text-center text-gray-500 py-8">This test could not be found.</p>
+          <p className="text-center text-gray-500 py-8 dark:text-slate-400">This test could not be found.</p>
         </Card>
       </PageWrapper>
     );
@@ -69,28 +69,28 @@ export default function TestDetailPage() {
     <PageWrapper title={test.title}>
         <Card className="max-w-2xl mx-auto">
           <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">{test.title}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2 dark:text-slate-100">{test.title}</h2>
             <Badge variant="info">{test.course_name}</Badge>
           </div>
 
           {test.description && (
-            <div className="mb-6 p-4 bg-gray-50 rounded-base">
-              <p className="text-gray-700">{test.description}</p>
+            <div className="mb-6 p-4 bg-gray-50 rounded-base dark:bg-slate-800">
+              <p className="text-gray-700 dark:text-slate-200">{test.description}</p>
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="text-center p-4 bg-gray-50 rounded-base">
+            <div className="text-center p-4 bg-gray-50 rounded-base dark:bg-slate-800">
               <p className="text-2xl font-bold" style={{ color: 'var(--color-primary)' }}>
                 {test.question_count}
               </p>
-              <p className="text-sm text-gray-500">Questions</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">Questions</p>
             </div>
-            <div className="text-center p-4 bg-gray-50 rounded-base">
+            <div className="text-center p-4 bg-gray-50 rounded-base dark:bg-slate-800">
               <p className="text-2xl font-bold" style={{ color: 'var(--color-primary)' }}>
                 {test.time_limit_mins}
               </p>
-              <p className="text-sm text-gray-500">Minutes</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">Minutes</p>
             </div>
           </div>
 
@@ -130,7 +130,7 @@ export default function TestDetailPage() {
           title="Start Test?"
           size="sm"
         >
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-600 mb-4 dark:text-slate-300">
             Are you ready to start <strong>{test.title}</strong>? The timer will begin immediately.
           </p>
           <div className="flex gap-3">

@@ -191,9 +191,9 @@ export default function AdminAttendancePage() {
       {/* Filters */}
       <div className="mb-6 flex flex-wrap gap-4">
         <div className="w-56">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Branch</label>
           <select
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:border-slate-500"
             value={selectedBranch}
             onChange={(e) => setSelectedBranch(e.target.value)}
           >
@@ -205,9 +205,9 @@ export default function AdminAttendancePage() {
         </div>
 
         <div className="w-56">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Course</label>
           <select
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:border-slate-500"
             value={selectedCourse}
             onChange={(e) => setSelectedCourse(e.target.value)}
           >
@@ -219,10 +219,10 @@ export default function AdminAttendancePage() {
         </div>
 
         <div className="w-48">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Date</label>
           <input
             type="date"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:border-slate-500"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
           />
@@ -248,41 +248,41 @@ export default function AdminAttendancePage() {
             <Spinner />
           </div>
         ) : students.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-slate-400">
             No students found for the selected filters.
           </div>
         ) : (
           <>
             {/* Bulk actions */}
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-sm font-medium text-gray-700">Mark All:</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-slate-200">Mark All:</span>
               <Button size="sm" variant="outline" onClick={() => handleMarkAll('present')}>✅ Present</Button>
               <Button size="sm" variant="outline" onClick={() => handleMarkAll('absent')}>❌ Absent</Button>
               <Button size="sm" variant="outline" onClick={() => handleMarkAll('late')}>⏰ Late</Button>
             </div>
 
             <div className="max-h-[55vh] overflow-y-auto border rounded-lg">
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-50 sticky top-0">
+              <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-slate-700">
+                <thead className="bg-gray-50 sticky top-0 dark:bg-slate-800">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Student</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Course</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Student</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Course</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Status</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-gray-200 dark:bg-slate-800 dark:divide-slate-700">
                   {students.map((student) => (
                     <tr key={student.id} className={markData[student.id] === 'present' ? 'bg-green-50' : markData[student.id] === 'absent' ? 'bg-red-50' : ''}>
                       <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900">{student.name}</div>
-                        <div className="text-xs text-gray-500">{student.email}</div>
+                        <div className="font-medium text-gray-900 dark:text-slate-100">{student.name}</div>
+                        <div className="text-xs text-gray-500 dark:text-slate-400">{student.email}</div>
                       </td>
-                      <td className="px-4 py-3 text-gray-500">
+                      <td className="px-4 py-3 text-gray-500 dark:text-slate-400">
                         {student.courses?.name || '–'}
                       </td>
                       <td className="px-4 py-3">
                         <select
-                          className="border border-gray-300 rounded-lg px-2 py-1 text-sm"
+                          className="border border-gray-300 rounded-lg px-2 py-1 text-sm dark:border-slate-500"
                           value={markData[student.id] || 'present'}
                           onChange={(e) => setMarkData({ ...markData, [student.id]: e.target.value })}
                         >
@@ -298,7 +298,7 @@ export default function AdminAttendancePage() {
               </table>
             </div>
 
-            <div className="mt-4 text-xs text-gray-400">
+            <div className="mt-4 text-xs text-gray-400 dark:text-slate-500">
               {students.length} student(s) found •{' '}
               {Object.values(markData).filter((v) => v === 'present').length} present •{' '}
               {Object.values(markData).filter((v) => v === 'absent').length} absent

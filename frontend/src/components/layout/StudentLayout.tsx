@@ -42,7 +42,7 @@ export default function StudentLayout({ children, title = 'Student Dashboard' }:
   }
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="min-h-screen flex bg-gray-50 dark:bg-slate-800">
       <Sidebar role="student" isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0">
         <Navbar title={title} onMenuClick={() => setSidebarOpen(true)} />

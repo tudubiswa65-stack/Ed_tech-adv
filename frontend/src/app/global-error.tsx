@@ -16,7 +16,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
   return (
     <html lang="en">
       <body>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8 dark:bg-slate-800">
           <div className="text-center max-w-md">
             <div className="mb-8">
               <svg
@@ -33,10 +33,10 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 />
               </svg>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2 dark:text-slate-100">
               Critical Error
             </h1>
-            <p className="text-gray-600 mb-8">
+            <p className="text-gray-600 mb-8 dark:text-slate-300">
               Something went critically wrong. Please try refreshing the page or contact support if the problem persists.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -48,7 +48,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               </button>
               <Link
                 href="/"
-                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium dark:text-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600"
               >
                 Go Home
               </Link>

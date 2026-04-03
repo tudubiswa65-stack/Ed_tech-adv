@@ -23,7 +23,7 @@ export default function AdminLoginPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-800">
         <Spinner size="lg" />
       </div>
     );
@@ -34,7 +34,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4 dark:bg-slate-800">
       <LoginForm role="admin" />
     </main>
   );

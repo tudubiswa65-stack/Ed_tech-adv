@@ -161,7 +161,7 @@ export default function StudentsPage() {
       key: 'name',
       label: 'Name',
       render: (student: Student) => (
-        <span className="font-medium text-gray-900">{student.name}</span>
+        <span className="font-medium text-gray-900 dark:text-slate-100">{student.name}</span>
       ),
     },
     {
@@ -229,7 +229,7 @@ export default function StudentsPage() {
           )}
           {!hasPermission('edit_student') && !hasPermission('delete_student') && (
             <span
-              className="text-xs text-gray-400 italic"
+              className="text-xs text-gray-400 italic dark:text-slate-500"
               aria-label="No actions available — contact your Super Admin to enable permissions"
             >
               No actions available
@@ -260,7 +260,7 @@ export default function StudentsPage() {
           </div>
           <div className="w-full sm:w-48">
             <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+              className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] dark:border-slate-500"
               value={branchFilter}
               onChange={(e) => setBranchFilter(e.target.value)}
             >
@@ -274,7 +274,7 @@ export default function StudentsPage() {
           </div>
           <div className="w-full sm:w-48">
             <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+              className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] dark:border-slate-500"
               value={courseFilter}
               onChange={(e) => setCourseFilter(e.target.value)}
             >
@@ -299,7 +299,7 @@ export default function StudentsPage() {
         {/* Pagination */}
         {total > 20 && (
           <div className="mt-4 flex items-center justify-between">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-slate-400">
               Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, total)} of {total} students
             </p>
             <div className="flex items-center space-x-2">
@@ -354,11 +354,11 @@ export default function StudentsPage() {
               />
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
                     Branch <span className="text-red-500">*</span>
                   </label>
                   <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] dark:border-slate-500"
                     value={formData.branch_id}
                     onChange={(e) => setFormData({ ...formData, branch_id: e.target.value })}
                     required
@@ -372,11 +372,11 @@ export default function StudentsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
                     Course <span className="text-red-500">*</span>
                   </label>
                   <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] dark:border-slate-500"
                     value={formData.course_id}
                     onChange={(e) => setFormData({ ...formData, course_id: e.target.value })}
                     required
@@ -409,7 +409,7 @@ export default function StudentsPage() {
           title="Confirm Deactivation"
           size="sm"
         >
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-600 mb-4 dark:text-slate-300">
             Are you sure you want to deactivate <strong>{selectedStudent?.name}</strong>? Their results will be preserved.
           </p>
           <div className="flex justify-end space-x-3">

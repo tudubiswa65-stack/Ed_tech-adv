@@ -79,7 +79,7 @@ export default function ResultDetailPage() {
       <PageWrapper title="Result Not Found">
         <Card>
           <div className="p-6 text-center">
-            <p className="text-gray-500">Result not found.</p>
+            <p className="text-gray-500 dark:text-slate-400">Result not found.</p>
             <Button onClick={() => router.back()} className="mt-4">Go Back</Button>
           </div>
         </Card>
@@ -102,8 +102,8 @@ export default function ResultDetailPage() {
           <div className="p-6">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">{result.tests?.title}</h2>
-                <p className="text-gray-500 mt-1">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{result.tests?.title}</h2>
+                <p className="text-gray-500 mt-1 dark:text-slate-400">
                   Completed on {formatDate(result.submitted_at)}
                 </p>
               </div>
@@ -116,28 +116,28 @@ export default function ResultDetailPage() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <p className="text-sm text-gray-500">Score</p>
+              <div className="bg-gray-50 rounded-lg p-4 text-center dark:bg-slate-800">
+                <p className="text-sm text-gray-500 dark:text-slate-400">Score</p>
                 <p className="text-2xl font-bold text-[var(--primary-color)]">
                   {result.score} / {result.total_marks}
                 </p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <p className="text-sm text-gray-500">Percentage</p>
+              <div className="bg-gray-50 rounded-lg p-4 text-center dark:bg-slate-800">
+                <p className="text-sm text-gray-500 dark:text-slate-400">Percentage</p>
                 <p className="text-2xl font-bold">
                   {result.percentage?.toFixed(1)}%
                 </p>
-                <p className="text-sm text-gray-500">Passing: {result.tests?.passing_marks}%</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Passing: {result.tests?.passing_marks}%</p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <p className="text-sm text-gray-500">Time Taken</p>
+              <div className="bg-gray-50 rounded-lg p-4 text-center dark:bg-slate-800">
+                <p className="text-sm text-gray-500 dark:text-slate-400">Time Taken</p>
                 <p className="text-lg font-semibold">
                   {result.time_taken_seconds ? formatTime(result.time_taken_seconds) : 'N/A'}
                 </p>
-                <p className="text-sm text-gray-500">Allowed: {result.tests?.time_limit_mins} min</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Allowed: {result.tests?.time_limit_mins} min</p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <p className="text-sm text-gray-500">Questions</p>
+              <div className="bg-gray-50 rounded-lg p-4 text-center dark:bg-slate-800">
+                <p className="text-sm text-gray-500 dark:text-slate-400">Questions</p>
                 <p className="text-lg font-semibold">{questions.length}</p>
               </div>
             </div>
@@ -171,7 +171,7 @@ export default function ResultDetailPage() {
                         isCorrect ? 'border-green-200 bg-green-50' :
                         isAnswered ? 'border-red-200 bg-red-50' :
                         'border-gray-200 bg-gray-50'
-                      }`}
+                      } dark:bg-slate-800 dark:border-slate-600`}
                     >
                       <div className="flex justify-between items-start mb-2">
                         <span className="font-medium">Question {index + 1}</span>
@@ -185,7 +185,7 @@ export default function ResultDetailPage() {
                           )}
                         </div>
                       </div>
-                      <p className="text-gray-800 mb-3">{question.question_text}</p>
+                      <p className="text-gray-800 mb-3 dark:text-slate-100">{question.question_text}</p>
 
                       <div className="space-y-2">
                         {options.map(({ key, text }) => {
@@ -201,7 +201,7 @@ export default function ResultDetailPage() {
                                   : isSelectedOption
                                   ? 'border-red-500 bg-red-100 text-red-800'
                                   : 'border-gray-200'
-                              }`}
+                              } dark:border-slate-600`}
                             >
                               <span className="mr-2 font-medium">{OPTION_LABELS[key]}.</span>
                               {text}

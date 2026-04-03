@@ -60,8 +60,8 @@ export default function SuperAdminDashboard() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Super Admin Dashboard</h1>
-        <p className="text-gray-600">Overview of all branches, students, and revenue</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Super Admin Dashboard</h1>
+        <p className="text-gray-600 dark:text-slate-300">Overview of all branches, students, and revenue</p>
       </div>
 
       {/* Stat Cards */}
@@ -107,16 +107,16 @@ export default function SuperAdminDashboard() {
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Student Growth Chart */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">Student Growth</h3>
-          <p className="text-sm text-gray-500 mb-4">New enrolments over the last 12 months</p>
+        <div className="bg-white rounded-lg shadow-sm p-6 dark:bg-slate-800">
+          <h3 className="text-lg font-semibold text-gray-900 mb-1 dark:text-slate-100">Student Growth</h3>
+          <p className="text-sm text-gray-500 mb-4 dark:text-slate-400">New enrolments over the last 12 months</p>
           <LineChart data={studentGrowth} xKey="month" yKey="count" color="#10b981" />
         </div>
 
         {/* Revenue Chart */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">Revenue Analytics</h3>
-          <p className="text-sm text-gray-500 mb-4">Monthly completed payments (last 12 months)</p>
+        <div className="bg-white rounded-lg shadow-sm p-6 dark:bg-slate-800">
+          <h3 className="text-lg font-semibold text-gray-900 mb-1 dark:text-slate-100">Revenue Analytics</h3>
+          <p className="text-sm text-gray-500 mb-4 dark:text-slate-400">Monthly completed payments (last 12 months)</p>
           <BarChart data={revenueData} xKey="month" yKey="revenue" color="#6366f1" currency={true} />
         </div>
       </div>
@@ -124,26 +124,26 @@ export default function SuperAdminDashboard() {
       {/* Charts Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Attendance Chart */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">Attendance Overview</h3>
-          <p className="text-sm text-gray-500 mb-4">Attendance breakdown across all branches</p>
+        <div className="bg-white rounded-lg shadow-sm p-6 dark:bg-slate-800">
+          <h3 className="text-lg font-semibold text-gray-900 mb-1 dark:text-slate-100">Attendance Overview</h3>
+          <p className="text-sm text-gray-500 mb-4 dark:text-slate-400">Attendance breakdown across all branches</p>
           <PieChart data={attendanceData} />
         </div>
 
         {/* Top Branches */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">Top Performing Branches</h3>
-          <p className="text-sm text-gray-500 mb-4">Ranked by number of active students</p>
+        <div className="bg-white rounded-lg shadow-sm p-6 dark:bg-slate-800">
+          <h3 className="text-lg font-semibold text-gray-900 mb-1 dark:text-slate-100">Top Performing Branches</h3>
+          <p className="text-sm text-gray-500 mb-4 dark:text-slate-400">Ranked by number of active students</p>
           <div className="space-y-3">
             {topBranches.slice(0, 5).map((branch) => (
-              <div key={branch.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div key={branch.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg dark:bg-slate-800">
                 <div>
-                  <p className="font-medium text-gray-900">{branch.name}</p>
-                  <p className="text-sm text-gray-500">{branch.location}</p>
+                  <p className="font-medium text-gray-900 dark:text-slate-100">{branch.name}</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">{branch.location}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-bold text-indigo-600">{branch.active_students}</p>
-                  <p className="text-sm text-gray-500">students</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">students</p>
                 </div>
               </div>
             ))}
@@ -152,7 +152,7 @@ export default function SuperAdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-lg shadow-sm p-6 dark:bg-slate-800">
         <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <a

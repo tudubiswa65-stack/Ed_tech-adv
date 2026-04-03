@@ -131,7 +131,7 @@ export default function StudentsPage() {
       DEACTIVATED: 'bg-orange-100 text-orange-700',
     };
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${map[status] || 'bg-gray-100 text-gray-600'}`}>
+      <span className={`px-2 py-1 text-xs font-medium rounded-full ${map[status] || 'bg-gray-100 text-gray-600'} dark:text-slate-300 dark:bg-slate-700`}>
         {status}
       </span>
     );
@@ -146,8 +146,8 @@ export default function StudentsPage() {
       header: 'Name / Email',
       render: (row: Student) => (
         <div>
-          <p className="font-medium text-gray-900">{row.name}</p>
-          <p className="text-xs text-gray-500">{row.email}</p>
+          <p className="font-medium text-gray-900 dark:text-slate-100">{row.name}</p>
+          <p className="text-xs text-gray-500 dark:text-slate-400">{row.email}</p>
         </div>
       ),
     },
@@ -188,7 +188,7 @@ export default function StudentsPage() {
   ];
 
   if (loading && students.length === 0) {
-    return <div className="flex items-center justify-center h-64 text-gray-500">Loading students...</div>;
+    return <div className="flex items-center justify-center h-64 text-gray-500 dark:text-slate-400">Loading students...</div>;
   }
 
   if (error) {
@@ -198,7 +198,7 @@ export default function StudentsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Students</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Students</h1>
         <button
           onClick={() => setIsAddModal(true)}
           className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
@@ -218,7 +218,7 @@ export default function StudentsPage() {
         <select
           value={branchFilter}
           onChange={e => setBranchFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
         >
           <option value="">All Branches</option>
           {branches.map(b => (
@@ -228,7 +228,7 @@ export default function StudentsPage() {
         <select
           value={statusFilter}
           onChange={e => setStatusFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
         >
           <option value="">All Status</option>
           <option value="ACTIVE">Active</option>
@@ -240,7 +240,7 @@ export default function StudentsPage() {
           placeholder="Search students..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-48"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-48 dark:border-slate-500"
         />
       </div>
 
@@ -257,22 +257,22 @@ export default function StudentsPage() {
             { label: 'Roll Number', key: 'roll_number', type: 'text' },
           ].map(field => (
             <div key={field.key}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">{field.label}</label>
               <input
                 type={field.type}
                 value={formData[field.key as keyof StudentForm]}
                 onChange={e => setFormData({ ...formData, [field.key]: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
                 required
               />
             </div>
           ))}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Branch</label>
             <select
               value={formData.branch_id}
               onChange={e => setFormData({ ...formData, branch_id: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
               required
             >
               <option value="">Select Branch</option>
@@ -282,7 +282,7 @@ export default function StudentsPage() {
             </select>
           </div>
           <div className="flex justify-end space-x-3 pt-2">
-            <button type="button" onClick={() => setIsAddModal(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+            <button type="button" onClick={() => setIsAddModal(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:border-slate-500 dark:hover:bg-slate-700">
               Cancel
             </button>
             <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
@@ -294,11 +294,11 @@ export default function StudentsPage() {
 
       <Modal isOpen={isStatusModal} onClose={() => setIsStatusModal(false)} title="Update Student Status" size="sm">
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">Update status for <strong>{selectedStudent?.name}</strong></p>
+          <p className="text-sm text-gray-600 dark:text-slate-300">Update status for <strong>{selectedStudent?.name}</strong></p>
           <select
             value={newStatus}
             onChange={e => setNewStatus(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
           >
             <option value="ACTIVE">Active</option>
             <option value="SUSPENDED">Suspended</option>
@@ -306,7 +306,7 @@ export default function StudentsPage() {
             <option value="DEACTIVATED">Deactivated</option>
           </select>
           <div className="flex justify-end space-x-3">
-            <button onClick={() => setIsStatusModal(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+            <button onClick={() => setIsStatusModal(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:border-slate-500 dark:hover:bg-slate-700">
               Cancel
             </button>
             <button onClick={handleUpdateStatus} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">

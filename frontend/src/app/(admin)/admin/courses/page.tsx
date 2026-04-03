@@ -216,23 +216,23 @@ export default function CoursesPage() {
       {/* Title / Name */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
             Course Title <span className="text-red-500">*</span>
           </label>
           <Input name="title" value={formData.title} onChange={handleChange} placeholder="e.g. Full Stack Web Development" required />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Instructor</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Instructor</label>
           <Input name="instructor" value={formData.instructor} onChange={handleChange} placeholder="Instructor name" />
         </div>
       </div>
 
       {/* Description */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Description</label>
         <textarea
           name="description"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500"
           rows={3}
           value={formData.description}
           onChange={handleChange}
@@ -243,17 +243,17 @@ export default function CoursesPage() {
       {/* Price + Duration */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Price (PKR)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Price (PKR)</label>
           <Input name="price" type="number" min="0" value={formData.price} onChange={handleChange} placeholder="0" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Duration</label>
           <Input name="duration_value" type="number" min="0" value={formData.duration_value} onChange={handleChange} placeholder="e.g. 6" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Unit</label>
           <select name="duration_unit" value={formData.duration_unit} onChange={handleChange}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500">
             <option value="days">Days</option>
             <option value="weeks">Weeks</option>
             <option value="months">Months</option>
@@ -265,15 +265,15 @@ export default function CoursesPage() {
       {/* Dates */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Start Date</label>
           <Input name="start_date" type="date" value={formData.start_date} onChange={handleChange} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">End Date</label>
           <Input name="end_date" type="date" value={formData.end_date} onChange={handleChange} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Last Enrollment Date</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Last Enrollment Date</label>
           <Input name="last_enrollment_date" type="date" value={formData.last_enrollment_date} onChange={handleChange} />
         </div>
       </div>
@@ -281,13 +281,13 @@ export default function CoursesPage() {
       {/* Category + Level + Status */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Category</label>
           <Input name="category" value={formData.category} onChange={handleChange} placeholder="e.g. Programming" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Level</label>
           <select name="level" value={formData.level} onChange={handleChange}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500">
             <option value="">Any level</option>
             <option value="beginner">Beginner</option>
             <option value="intermediate">Intermediate</option>
@@ -296,9 +296,9 @@ export default function CoursesPage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Status</label>
           <select name="status" value={formData.status} onChange={handleChange}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500">
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
             <option value="draft">Draft</option>
@@ -308,16 +308,16 @@ export default function CoursesPage() {
 
       {/* Thumbnail URL */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Thumbnail URL</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Thumbnail URL</label>
         <Input name="thumbnail" value={formData.thumbnail} onChange={handleChange} placeholder="https://example.com/image.png" />
       </div>
 
       {/* Terms & Conditions */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Terms &amp; Conditions</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Terms &amp; Conditions</label>
         <textarea
           name="terms_and_conditions"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500"
           rows={4}
           value={formData.terms_and_conditions}
           onChange={handleChange}
@@ -343,7 +343,7 @@ export default function CoursesPage() {
       ) : courses.length === 0 ? (
         <Card>
           <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">No courses found</p>
+            <p className="text-gray-500 mb-4 dark:text-slate-400">No courses found</p>
             {hasPermission('add_course') && (
               <Button onClick={() => setShowModal(true)}>Create Your First Course</Button>
             )}
@@ -365,11 +365,11 @@ export default function CoursesPage() {
 
               <div className="flex justify-between items-start mb-2">
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-semibold text-gray-900 truncate">
+                  <h3 className="text-base font-semibold text-gray-900 truncate dark:text-slate-100">
                     {course.title || course.name}
                   </h3>
                   {course.instructor && (
-                    <p className="text-xs text-gray-500">👤 {course.instructor}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">👤 {course.instructor}</p>
                   )}
                   {course.category && (
                     <p className="text-xs text-blue-600 mt-0.5">{course.category}</p>
@@ -381,11 +381,11 @@ export default function CoursesPage() {
               </div>
 
               {course.description && (
-                <p className="text-sm text-gray-500 mb-3 line-clamp-2">{course.description}</p>
+                <p className="text-sm text-gray-500 mb-3 line-clamp-2 dark:text-slate-400">{course.description}</p>
               )}
 
               {/* Meta row */}
-              <div className="flex items-center gap-3 text-xs text-gray-500 mb-3">
+              <div className="flex items-center gap-3 text-xs text-gray-500 mb-3 dark:text-slate-400">
                 {course.price !== undefined && (
                   <span className="font-medium text-green-700">PKR {course.price.toLocaleString()}</span>
                 )}
@@ -393,13 +393,13 @@ export default function CoursesPage() {
                   <span>{course.duration_value} {course.duration_unit}</span>
                 )}
                 {course.level && (
-                  <span className="capitalize bg-gray-100 px-2 py-0.5 rounded">{course.level}</span>
+                  <span className="capitalize bg-gray-100 px-2 py-0.5 rounded dark:bg-slate-700">{course.level}</span>
                 )}
               </div>
 
               {/* Date info */}
               {(course.start_date || course.end_date) && (
-                <div className="text-xs text-gray-400 mb-3">
+                <div className="text-xs text-gray-400 mb-3 dark:text-slate-500">
                   {course.start_date && <span>From: {new Date(course.start_date).toLocaleDateString()}</span>}
                   {course.start_date && course.end_date && <span className="mx-1">→</span>}
                   {course.end_date && <span>To: {new Date(course.end_date).toLocaleDateString()}</span>}
@@ -412,9 +412,9 @@ export default function CoursesPage() {
                   { label: 'Tests', val: course.test_count },
                   { label: 'Materials', val: course.material_count },
                 ].map(({ label, val }) => (
-                  <div key={label} className="text-center p-2 bg-gray-50 rounded">
+                  <div key={label} className="text-center p-2 bg-gray-50 rounded dark:bg-slate-800">
                     <p className="text-lg font-bold" style={{ color: 'var(--color-primary)' }}>{val}</p>
-                    <p className="text-xs text-gray-500">{label}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">{label}</p>
                   </div>
                 ))}
               </div>
@@ -435,16 +435,16 @@ export default function CoursesPage() {
 
               {expandedCourse === course.id && (
                 <div className="mt-4 pt-4 border-t">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Modules</h4>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2 dark:text-slate-200">Modules</h4>
                   {modules.length === 0 ? (
-                    <p className="text-sm text-gray-500">No modules yet</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">No modules yet</p>
                   ) : (
                     <div className="space-y-2">
                       {modules.map((module) => (
-                        <div key={module.id} className="p-2 bg-gray-50 rounded">
+                        <div key={module.id} className="p-2 bg-gray-50 rounded dark:bg-slate-800">
                           <p className="font-medium text-sm">{module.name}</p>
                           {module.subjects && module.subjects.length > 0 && (
-                            <div className="mt-1 pl-3 text-xs text-gray-500">
+                            <div className="mt-1 pl-3 text-xs text-gray-500 dark:text-slate-400">
                               {module.subjects.map((s) => s.name).join(', ')}
                             </div>
                           )}
@@ -483,7 +483,7 @@ export default function CoursesPage() {
 
       {/* Delete Course Modal */}
       <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} title="Delete Course" size="sm">
-        <p className="text-gray-600 mb-4">
+        <p className="text-gray-600 mb-4 dark:text-slate-300">
           Are you sure you want to delete <strong>{selectedCourse?.title || selectedCourse?.name}</strong>? This action cannot be undone.
         </p>
         <div className="flex justify-end space-x-3">

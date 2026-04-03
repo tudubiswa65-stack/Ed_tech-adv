@@ -196,19 +196,19 @@ function PermissionsPanel({ branchId }: { branchId: string }) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white p-6 rounded-lg shadow-sm">
+      <div className="bg-white p-6 rounded-lg shadow-sm dark:bg-slate-800">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Branch Admin Permissions</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Branch Admin Permissions</h3>
             {data && (
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 mt-1 dark:text-slate-400">
                 Managing permissions for{' '}
-                <span className="font-medium text-gray-700">{data.user_name}</span>
+                <span className="font-medium text-gray-700 dark:text-slate-200">{data.user_name}</span>
                 {' '}({data.user_email})
               </p>
             )}
             {data?.updated_at && (
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-gray-400 mt-1 dark:text-slate-500">
                 Last updated: {new Date(data.updated_at).toLocaleString()}
                 {data.updated_by_name && ` by ${data.updated_by_name}`}
               </p>
@@ -247,8 +247,8 @@ function PermissionsPanel({ branchId }: { branchId: string }) {
 
       {/* Permission Groups */}
       {data && PERMISSION_GROUPS.map((group) => (
-        <div key={group.label} className="bg-white p-6 rounded-lg shadow-sm">
-          <h4 className="text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-100">
+        <div key={group.label} className="bg-white p-6 rounded-lg shadow-sm dark:bg-slate-800">
+          <h4 className="text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-100 dark:text-slate-100 dark:border-slate-700">
             {group.label}
           </h4>
           <div className="space-y-4">
@@ -258,8 +258,8 @@ function PermissionsPanel({ branchId }: { branchId: string }) {
               return (
                 <div key={key} className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{PERMISSION_LABELS[key]}</p>
-                    <p className="text-xs text-gray-500 capitalize">{key.replace(/_/g, ' ')}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{PERMISSION_LABELS[key]}</p>
+                    <p className="text-xs text-gray-500 capitalize dark:text-slate-400">{key.replace(/_/g, ' ')}</p>
                   </div>
                   <button
                     role="switch"
@@ -271,13 +271,13 @@ function PermissionsPanel({ branchId }: { branchId: string }) {
                       relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
                       ${enabled ? 'bg-indigo-600' : 'bg-gray-200'}
                       ${(isSaving || bulkSaving) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                    `}
+                     dark:bg-slate-600`}
                   >
                     <span
                       className={`
                         inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200
                         ${enabled ? 'translate-x-6' : 'translate-x-1'}
-                      `}
+                       dark:bg-slate-800`}
                     />
                     {isSaving && (
                       <span className="absolute inset-0 flex items-center justify-center">
@@ -355,8 +355,8 @@ export default function BranchDetailPage() {
       header: 'Student',
       render: (row: Student) => (
         <div>
-          <p className="font-medium text-gray-900">{row.name}</p>
-          <p className="text-sm text-gray-500">{row.email}</p>
+          <p className="font-medium text-gray-900 dark:text-slate-100">{row.name}</p>
+          <p className="text-sm text-gray-500 dark:text-slate-400">{row.email}</p>
         </div>
       ),
     },
@@ -372,7 +372,7 @@ export default function BranchDetailPage() {
               : row.status === 'SUSPENDED'
               ? 'text-red-700 bg-red-100'
               : 'text-gray-700 bg-gray-100'
-          }`}
+          } dark:text-slate-200 dark:bg-slate-700`}
         >
           {row.status}
         </span>
@@ -428,7 +428,7 @@ export default function BranchDetailPage() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-2"></div>
-          <p className="text-gray-500">Loading branch details...</p>
+          <p className="text-gray-500 dark:text-slate-400">Loading branch details...</p>
         </div>
       </div>
     );
@@ -464,16 +464,16 @@ export default function BranchDetailPage() {
       <div className="flex items-center space-x-4">
         <button
           onClick={() => router.push('/super-admin/branches')}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          className="p-2 rounded-lg hover:bg-gray-100 transition-colors dark:bg-slate-700 dark:hover:bg-slate-700"
           title="Back"
         >
-          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-gray-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
         </button>
         <div className="flex-1">
           <div className="flex items-center space-x-3">
-            <h1 className="text-2xl font-bold text-gray-900">{branch.name}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{branch.name}</h1>
             <span
               className={`px-3 py-1 text-sm font-medium rounded-full ${
                 branch.is_active ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'
@@ -482,7 +482,7 @@ export default function BranchDetailPage() {
               {branch.is_active ? 'Active' : 'Inactive'}
             </span>
           </div>
-          <p className="text-gray-500 mt-1">
+          <p className="text-gray-500 mt-1 dark:text-slate-400">
             {branch.location} • {branch.contact_number}
           </p>
         </div>
@@ -490,26 +490,26 @@ export default function BranchDetailPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-500">
-          <p className="text-sm text-gray-500">Total Students</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">{branch.stats.studentCount}</p>
+        <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-500 dark:bg-slate-800">
+          <p className="text-sm text-gray-500 dark:text-slate-400">Total Students</p>
+          <p className="text-3xl font-bold text-gray-900 mt-1 dark:text-slate-100">{branch.stats.studentCount}</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-green-500">
-          <p className="text-sm text-gray-500">Active Courses</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">{branch.stats.courseCount}</p>
+        <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-green-500 dark:bg-slate-800">
+          <p className="text-sm text-gray-500 dark:text-slate-400">Active Courses</p>
+          <p className="text-3xl font-bold text-gray-900 mt-1 dark:text-slate-100">{branch.stats.courseCount}</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-purple-500">
-          <p className="text-sm text-gray-500">Total Revenue</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">${(branch.stats?.totalRevenue ?? 0).toLocaleString()}</p>
+        <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-purple-500 dark:bg-slate-800">
+          <p className="text-sm text-gray-500 dark:text-slate-400">Total Revenue</p>
+          <p className="text-3xl font-bold text-gray-900 mt-1 dark:text-slate-100">${(branch.stats?.totalRevenue ?? 0).toLocaleString()}</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-orange-500">
-          <p className="text-sm text-gray-500">Member Since</p>
-          <p className="text-lg font-bold text-gray-900 mt-1">{new Date(branch.created_at).toLocaleDateString()}</p>
+        <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-orange-500 dark:bg-slate-800">
+          <p className="text-sm text-gray-500 dark:text-slate-400">Member Since</p>
+          <p className="text-lg font-bold text-gray-900 mt-1 dark:text-slate-100">{new Date(branch.created_at).toLocaleDateString()}</p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-slate-600">
         <nav className="flex space-x-8 overflow-x-auto" role="tablist" aria-label="Branch details tabs">
           {tabs.map((tab) => (
             <button
@@ -521,7 +521,7 @@ export default function BranchDetailPage() {
                 activeTab === tab.key
                   ? 'border-indigo-600 text-indigo-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              } dark:text-slate-200 dark:border-slate-500`}
             >
               {tab.label}
             </button>
@@ -533,23 +533,23 @@ export default function BranchDetailPage() {
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Branch Info */}
-          <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div className="bg-white p-6 rounded-lg shadow-sm dark:bg-slate-800">
             <h3 className="text-lg font-semibold mb-4">Branch Information</h3>
             <dl className="space-y-3">
               <div className="flex justify-between">
-                <dt className="text-sm text-gray-500">Branch Name</dt>
-                <dd className="text-sm font-medium text-gray-900">{branch.name}</dd>
+                <dt className="text-sm text-gray-500 dark:text-slate-400">Branch Name</dt>
+                <dd className="text-sm font-medium text-gray-900 dark:text-slate-100">{branch.name}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-sm text-gray-500">Location</dt>
-                <dd className="text-sm font-medium text-gray-900">{branch.location || 'N/A'}</dd>
+                <dt className="text-sm text-gray-500 dark:text-slate-400">Location</dt>
+                <dd className="text-sm font-medium text-gray-900 dark:text-slate-100">{branch.location || 'N/A'}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-sm text-gray-500">Contact</dt>
-                <dd className="text-sm font-medium text-gray-900">{branch.contact_number || 'N/A'}</dd>
+                <dt className="text-sm text-gray-500 dark:text-slate-400">Contact</dt>
+                <dd className="text-sm font-medium text-gray-900 dark:text-slate-100">{branch.contact_number || 'N/A'}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-sm text-gray-500">Status</dt>
+                <dt className="text-sm text-gray-500 dark:text-slate-400">Status</dt>
                 <dd>
                   <span
                     className={`px-2 py-1 text-xs font-medium rounded-full ${
@@ -561,8 +561,8 @@ export default function BranchDetailPage() {
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-sm text-gray-500">Created</dt>
-                <dd className="text-sm font-medium text-gray-900">
+                <dt className="text-sm text-gray-500 dark:text-slate-400">Created</dt>
+                <dd className="text-sm font-medium text-gray-900 dark:text-slate-100">
                   {new Date(branch.created_at).toLocaleString()}
                 </dd>
               </div>
@@ -570,7 +570,7 @@ export default function BranchDetailPage() {
           </div>
 
           {/* Payment Summary */}
-          <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div className="bg-white p-6 rounded-lg shadow-sm dark:bg-slate-800">
             <h3 className="text-lg font-semibold mb-4">Payment Summary</h3>
             <div className="space-y-3">
               {(() => {
@@ -609,45 +609,45 @@ export default function BranchDetailPage() {
       )}
 
       {activeTab === 'students' && (
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-6 border-b border-gray-200">
+        <div className="bg-white rounded-lg shadow-sm dark:bg-slate-800">
+          <div className="p-6 border-b border-gray-200 dark:border-slate-600">
             <h3 className="text-lg font-semibold">Students in {branch.name}</h3>
-            <p className="text-sm text-gray-500 mt-1">{students.length} students found</p>
+            <p className="text-sm text-gray-500 mt-1 dark:text-slate-400">{students.length} students found</p>
           </div>
           <DataTable columns={studentColumns} data={students} />
         </div>
       )}
 
       {activeTab === 'payments' && (
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-6 border-b border-gray-200">
+        <div className="bg-white rounded-lg shadow-sm dark:bg-slate-800">
+          <div className="p-6 border-b border-gray-200 dark:border-slate-600">
             <h3 className="text-lg font-semibold">Payment History</h3>
-            <p className="text-sm text-gray-500 mt-1">All payments from {branch.name}</p>
+            <p className="text-sm text-gray-500 mt-1 dark:text-slate-400">All payments from {branch.name}</p>
           </div>
           <DataTable columns={paymentColumns} data={payments} />
         </div>
       )}
 
       {activeTab === 'activity' && (
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-6 border-b border-gray-200">
+        <div className="bg-white rounded-lg shadow-sm dark:bg-slate-800">
+          <div className="p-6 border-b border-gray-200 dark:border-slate-600">
             <h3 className="text-lg font-semibold">Recent Activity</h3>
           </div>
           <div className="p-6">
             {branch.stats.recentActivities.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">No recent activity found</p>
+              <p className="text-center text-gray-500 py-8 dark:text-slate-400">No recent activity found</p>
             ) : (
               <div className="space-y-4">
                 {branch.stats.recentActivities.map((activity, idx) => (
-                  <div key={idx} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <div key={idx} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg dark:bg-slate-800">
                     <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
                       <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">
+                      <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{activity.action}</p>
+                      <p className="text-xs text-gray-500 mt-0.5 dark:text-slate-400">
                         {activity.created_at ? new Date(activity.created_at).toLocaleString() : 'N/A'}
                       </p>
                     </div>

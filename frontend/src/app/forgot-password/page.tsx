@@ -31,7 +31,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4 dark:bg-slate-800">
       <div className="w-full max-w-md mx-auto">
         {/* Logo and Title */}
         <div className="text-center mb-8">
@@ -45,12 +45,12 @@ export default function ForgotPasswordPage() {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
-          <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-heading)' }}>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100" style={{ fontFamily: 'var(--font-heading)' }}>
             {config.name}
           </h1>
         </div>
 
-        <div className="bg-white p-8 rounded-base shadow-lg">
+        <div className="bg-white p-8 rounded-base shadow-lg dark:bg-slate-800">
           {submitted ? (
             <div className="text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -58,8 +58,8 @@ export default function ForgotPasswordPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h2 className="text-xl font-semibold text-gray-800 mb-2">Check Your Email</h2>
-              <p className="text-gray-600 text-sm">
+              <h2 className="text-xl font-semibold text-gray-800 mb-2 dark:text-slate-100">Check Your Email</h2>
+              <p className="text-gray-600 text-sm dark:text-slate-300">
                 If this email exists, a reset link has been sent.
               </p>
               <Link
@@ -72,8 +72,8 @@ export default function ForgotPasswordPage() {
             </div>
           ) : (
             <>
-              <h2 className="text-xl font-semibold text-gray-800 mb-2">Reset Password</h2>
-              <p className="text-gray-600 text-sm mb-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-2 dark:text-slate-100">Reset Password</h2>
+              <p className="text-gray-600 text-sm mb-6 dark:text-slate-300">
                 Enter your email address and we&apos;ll send you a link to reset your password.
               </p>
 
