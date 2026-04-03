@@ -20,6 +20,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.dark body {
+  color: #f1f5f9; /* slate-100 — ensure all text is light in dark mode by default */
+}
+
 /* Reduce all rem-based text and spacing by 50% on mobile (below md breakpoint) */
 @media (max-width: 767px) {
   html {
