@@ -154,14 +154,14 @@ export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
       {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-60 transform transition-transform duration-300 lg:transform-none ${
+        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 lg:transform-none ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
         style={{ backgroundColor: 'var(--color-sidebar-bg)', color: 'var(--color-sidebar-text)' }}
@@ -185,22 +185,31 @@ export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-4">
+          <nav className="flex-1 overflow-y-auto py-4 scrollbar-thin">
+            <p className="px-4 mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/40">Menu</p>
             <ul className="space-y-0.5 px-2">
               {filteredNavItems.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive =
+                  item.href === (role === 'admin' ? '/admin' : '/dashboard')
+                    ? pathname === item.href
+                    : pathname === item.href || pathname.startsWith(item.href + '/');
                 return (
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      className={`flex items-center space-x-3 px-3 py-2 rounded-base transition-colors text-sm ${
+                      className={`relative flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-sm ${
                         isActive
-                          ? 'text-white font-medium'
-                          : 'text-white/70 hover:text-white hover:bg-white/10'
+                          ? 'text-white font-medium bg-white/10'
+                          : 'text-white/65 hover:text-white hover:bg-white/8'
                       }`}
-                      style={isActive ? { backgroundColor: 'var(--color-primary)' } : {}}
                       onClick={onClose}
                     >
+                      {isActive && (
+                        <span
+                          className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full"
+                          style={{ backgroundColor: 'var(--color-primary-light)' }}
+                        />
+                      )}
                       {getIcon(item.icon)}
                       <span>{item.label}</span>
                     </Link>
@@ -209,6 +218,24 @@ export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
               })}
             </ul>
           </nav>
+
+          {/* User profile footer */}
+          {user && (
+            <div className="p-4 border-t border-white/10">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
+                  style={{ backgroundColor: 'var(--color-primary)', color: '#fff' }}
+                >
+                  {user.name?.charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-white truncate">{user.name}</p>
+                  <p className="text-xs text-white/50 truncate capitalize">{user.role?.replace('_', ' ')}</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </aside>
     </>

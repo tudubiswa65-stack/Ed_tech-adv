@@ -4,25 +4,43 @@ import { ReactNode } from 'react';
 
 interface CardProps {
   title?: string;
+  subtitle?: string;
   children: ReactNode;
   className?: string;
   onClick?: () => void;
+  actions?: ReactNode;
+  accent?: string;
+  noPadding?: boolean;
 }
 
-export default function Card({ title, children, className = '', onClick }: CardProps) {
+export default function Card({
+  title,
+  subtitle,
+  children,
+  className = '',
+  onClick,
+  actions,
+  accent,
+  noPadding = false,
+}: CardProps) {
   return (
     <div
-      className={`bg-white rounded-base shadow-md border border-gray-100 ${
-        onClick ? 'cursor-pointer hover:shadow-lg transition-shadow duration-200' : ''
+      className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden ${
+        onClick ? 'cursor-pointer hover:shadow-md transition-shadow duration-200' : ''
       } ${className}`}
       onClick={onClick}
     >
-      {title && (
-        <div className="px-4 py-3 border-b border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+      {accent && <div className="h-1 w-full" style={{ backgroundColor: accent }} />}
+      {(title || actions) && (
+        <div className="px-5 py-4 border-b border-gray-100 flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-base font-semibold text-gray-800 leading-snug">{title}</h3>
+            {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
+          </div>
+          {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
         </div>
       )}
-      <div className="p-4">{children}</div>
+      <div className={noPadding ? '' : 'p-5'}>{children}</div>
     </div>
   );
 }

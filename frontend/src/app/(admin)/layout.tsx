@@ -66,7 +66,7 @@ export default function AdminRootLayout({ children }: { children: React.ReactNod
     (pathname.startsWith('/admin/results/') ? 'Result Details' : 'Admin Dashboard');
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="min-h-screen flex bg-gray-50/80">
       <Sidebar role="admin" isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0">
         <Navbar title={title} onMenuClick={() => setSidebarOpen(true)} />
