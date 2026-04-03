@@ -168,16 +168,17 @@ export default function MobileBottomNav({ role }: { role: Role }) {
   const tabs = getTabsForRole(role);
 
   const isStudentRole = role === 'student';
+  const isAdminRole = role === 'admin' || role === 'branch_admin';
 
   return (
     <nav
-      className={`fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t ${isStudentRole ? '' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 shadow-[0_-4px_12px_rgba(0,0,0,0.08)]'}`}
-      style={isStudentRole
-        ? { background: '#13151f', borderColor: '#2d3044', paddingBottom: 'env(safe-area-inset-bottom)' }
+      className={`fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t ${isStudentRole || isAdminRole ? '' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 shadow-[0_-4px_12px_rgba(0,0,0,0.08)]'}`}
+      style={(isStudentRole || isAdminRole)
+        ? { background: '#0b1120', borderColor: 'rgba(255,255,255,0.06)', paddingBottom: 'env(safe-area-inset-bottom)' }
         : undefined}
       aria-label="Mobile navigation"
     >
-      <div className="flex h-16 items-stretch">
+      <div className="flex items-stretch" style={{ paddingTop: 10, paddingBottom: 14 }}>
         {tabs.map((tab) => {
           // Exact match for root paths (e.g. /admin, /super-admin, /dashboard)
           // to avoid /admin matching /admin/students etc.
@@ -189,9 +190,10 @@ export default function MobileBottomNav({ role }: { role: Role }) {
             ? pathname === tab.href
             : pathname === tab.href || pathname.startsWith(tab.href + '/');
 
-          if (isStudentRole) {
-            const iconColor = isActive ? '#3b82f6' : '#6b7280';
-            const labelColor = isActive ? '#3b82f6' : '#6b7280';
+          if (isStudentRole || isAdminRole) {
+            const activeColor = isAdminRole ? '#60a5fa' : '#3b82f6';
+            const iconColor = isActive ? activeColor : 'rgba(255,255,255,0.3)';
+            const labelColor = isActive ? activeColor : 'rgba(255,255,255,0.3)';
             return (
               <Link
                 key={tab.href}
@@ -201,13 +203,16 @@ export default function MobileBottomNav({ role }: { role: Role }) {
                 aria-current={isActive ? 'page' : undefined}
               >
                 <div
-                  style={
-                    isActive
-                      ? { background: '#1e3a5f', borderRadius: 10, padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }
-                      : { padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }
-                  }
+                  style={{
+                    padding: 4,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: iconColor,
+                  }}
                 >
-                  {tab.icon}
+                  {/* Clone icon with correct stroke color via CSS currentColor */}
+                  <span style={{ display: 'contents' }}>{tab.icon}</span>
                 </div>
                 <span
                   className="text-[10px] leading-none"
