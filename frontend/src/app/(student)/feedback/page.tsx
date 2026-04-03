@@ -94,7 +94,7 @@ export default function FeedbackPage() {
                 star <= (interactive && hoveredRating ? hoveredRating : rating)
                   ? 'text-yellow-400'
                   : 'text-gray-300'
-              }`}
+              } dark:text-slate-500`}
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -129,8 +129,8 @@ export default function FeedbackPage() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Feedback</h1>
-            <p className="text-gray-500">Share your thoughts and help us improve</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Feedback</h1>
+            <p className="text-gray-500 dark:text-slate-400">Share your thoughts and help us improve</p>
           </div>
           <Button onClick={() => { resetForm(); setShowModal(true); }}>
             + Give Feedback
@@ -146,7 +146,7 @@ export default function FeedbackPage() {
                 <Spinner />
               </div>
             ) : feedbackHistory.length === 0 ? (
-              <div className="text-center text-gray-500 py-8">
+              <div className="text-center text-gray-500 py-8 dark:text-slate-400">
                 No feedback submitted yet. We&apos;d love to hear from you!
               </div>
             ) : (
@@ -157,7 +157,7 @@ export default function FeedbackPage() {
                       <Badge variant={getTypeColor(item.type)}>{item.type}</Badge>
                       <div>
                         <p className="font-medium">{item.subject || 'General Feedback'}</p>
-                        <p className="text-sm text-gray-500">{formatDate(item.created_at)}</p>
+                        <p className="text-sm text-gray-500 dark:text-slate-400">{formatDate(item.created_at)}</p>
                       </div>
                     </div>
                     {renderStars(item.rating)}
@@ -173,11 +173,11 @@ export default function FeedbackPage() {
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); resetForm(); }} title="Share Your Feedback">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Feedback Type</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Feedback Type</label>
             <select
               value={formData.type}
               onChange={(e) => setFormData(f => ({ ...f, type: e.target.value as any }))}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
             >
               <option value="platform">Platform</option>
               <option value="course">Course</option>
@@ -187,9 +187,9 @@ export default function FeedbackPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-slate-200">Rating</label>
             {renderStars(formData.rating, true)}
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-gray-500 mt-1 dark:text-slate-400">
               {formData.rating === 5 ? 'Excellent!' :
                formData.rating === 4 ? 'Good' :
                formData.rating === 3 ? 'Average' :
@@ -205,13 +205,13 @@ export default function FeedbackPage() {
           />
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Your Feedback</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Your Feedback</label>
             <textarea
               value={formData.message}
               onChange={(e) => setFormData(f => ({ ...f, message: e.target.value }))}
               rows={4}
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
               placeholder="Tell us more about your experience..."
             />
           </div>

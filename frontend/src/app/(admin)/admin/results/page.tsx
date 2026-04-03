@@ -168,13 +168,13 @@ export default function ResultsPage() {
           <div className="p-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
                   Filter by Test
                 </label>
                 <select
                   value={filters.testId}
                   onChange={(e) => handleFilterChange('testId', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                 >
                   <option value="">All Tests</option>
                   {tests.map(test => (
@@ -185,13 +185,13 @@ export default function ResultsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
                   Status
                 </label>
                 <select
                   value={filters.status}
                   onChange={(e) => handleFilterChange('status', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                 >
                   <option value="">All Status</option>
                   <option value="passed">Passed</option>
@@ -199,13 +199,13 @@ export default function ResultsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
                   Sort By
                 </label>
                 <select
                   value={filters.sortBy}
                   onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                 >
                   <option value="submitted_at">Submitted Date</option>
                   <option value="score">Score</option>
@@ -235,7 +235,7 @@ export default function ResultsPage() {
                 <Spinner />
               </div>
             ) : results.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">No results found</p>
+              <p className="text-center text-gray-500 py-8 dark:text-slate-400">No results found</p>
             ) : (
               <>
                 <Table
@@ -243,7 +243,7 @@ export default function ResultsPage() {
                     { key: 'student', label: 'Student', render: (result: Result) => (
                       <div>
                         <div className="font-medium">{result.students?.name || 'N/A'}</div>
-                        <div className="text-sm text-gray-500">{result.students?.email}</div>
+                        <div className="text-sm text-gray-500 dark:text-slate-400">{result.students?.email}</div>
                       </div>
                     )},
                     { key: 'rollno', label: 'Roll No.', render: (result: Result) => result.students?.roll_number || 'N/A' },

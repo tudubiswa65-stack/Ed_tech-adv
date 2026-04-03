@@ -151,8 +151,8 @@ export default function ComplaintsPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Complaints & Grievances</h1>
-          <p className="text-gray-500">View and respond to student complaints</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Complaints & Grievances</h1>
+          <p className="text-gray-500 dark:text-slate-400">View and respond to student complaints</p>
         </div>
 
         {/* Stats */}
@@ -162,7 +162,7 @@ export default function ComplaintsPage() {
               <p className="text-2xl font-bold text-red-600">
                 {complaints.filter(c => c.status === 'open').length}
               </p>
-              <p className="text-sm text-gray-500">Open</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">Open</p>
             </div>
           </Card>
           <Card>
@@ -170,7 +170,7 @@ export default function ComplaintsPage() {
               <p className="text-2xl font-bold text-yellow-600">
                 {complaints.filter(c => c.status === 'in_progress').length}
               </p>
-              <p className="text-sm text-gray-500">In Progress</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">In Progress</p>
             </div>
           </Card>
           <Card>
@@ -178,7 +178,7 @@ export default function ComplaintsPage() {
               <p className="text-2xl font-bold text-green-600">
                 {complaints.filter(c => c.status === 'resolved').length}
               </p>
-              <p className="text-sm text-gray-500">Resolved</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">Resolved</p>
             </div>
           </Card>
           <Card>
@@ -186,7 +186,7 @@ export default function ComplaintsPage() {
               <p className="text-2xl font-bold text-blue-600">
                 {complaints.filter(c => c.status === 'closed').length}
               </p>
-              <p className="text-sm text-gray-500">Closed</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">Closed</p>
             </div>
           </Card>
         </div>
@@ -196,11 +196,11 @@ export default function ComplaintsPage() {
           <div className="p-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Status</label>
                 <select
                   value={filters.status}
                   onChange={(e) => setFilters(f => ({ ...f, status: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                 >
                   <option value="">All Status</option>
                   <option value="open">Open</option>
@@ -210,11 +210,11 @@ export default function ComplaintsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Category</label>
                 <select
                   value={filters.category}
                   onChange={(e) => setFilters(f => ({ ...f, category: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                 >
                   <option value="">All Categories</option>
                   <option value="academic">Academic</option>
@@ -234,18 +234,18 @@ export default function ComplaintsPage() {
 
         {/* Complaints List */}
         <Card>
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-200 dark:divide-slate-700">
             {loading ? (
               <div className="flex justify-center py-12">
                 <Spinner />
               </div>
             ) : complaints.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">No complaints found.</div>
+              <div className="p-8 text-center text-gray-500 dark:text-slate-400">No complaints found.</div>
             ) : (
               complaints.map(complaint => (
                 <div
                   key={complaint.id}
-                  className="p-4 hover:bg-gray-50 cursor-pointer"
+                  className="p-4 hover:bg-gray-50 cursor-pointer dark:bg-slate-800 dark:hover:bg-slate-700"
                   onClick={() => viewComplaint(complaint.id)}
                 >
                   <div className="flex items-start justify-between">
@@ -253,11 +253,11 @@ export default function ComplaintsPage() {
                       <div className="flex items-center gap-2 mb-1">
                         <Badge variant={getStatusColor(complaint.status)}>{complaint.status}</Badge>
                         <Badge variant={getPriorityColor(complaint.priority)}>{complaint.priority}</Badge>
-                        <span className="text-xs text-gray-400">{complaint.category}</span>
+                        <span className="text-xs text-gray-400 dark:text-slate-500">{complaint.category}</span>
                       </div>
-                      <h3 className="font-semibold text-gray-900">{complaint.title}</h3>
-                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">{complaint.description}</p>
-                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                      <h3 className="font-semibold text-gray-900 dark:text-slate-100">{complaint.title}</h3>
+                      <p className="text-sm text-gray-600 mt-1 line-clamp-2 dark:text-slate-300">{complaint.description}</p>
+                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-400 dark:text-slate-500">
                         <span>From: {complaint.students?.name} ({complaint.students?.roll_number})</span>
                         <span>{formatDate(complaint.created_at)}</span>
                       </div>
@@ -294,16 +294,16 @@ export default function ComplaintsPage() {
         {selectedComplaint && (
           <div className="space-y-4">
             {/* Complaint Info */}
-            <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="bg-gray-50 p-4 rounded-lg dark:bg-slate-800">
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant={getStatusColor(selectedComplaint.status)}>{selectedComplaint.status}</Badge>
                 <Badge variant={getPriorityColor(selectedComplaint.priority)}>{selectedComplaint.priority}</Badge>
               </div>
-              <p className="text-gray-700">{selectedComplaint.description}</p>
-              <div className="mt-2 text-sm text-gray-500">
+              <p className="text-gray-700 dark:text-slate-200">{selectedComplaint.description}</p>
+              <div className="mt-2 text-sm text-gray-500 dark:text-slate-400">
                 From: {selectedComplaint.students?.name} ({selectedComplaint.students?.email})
               </div>
-              <div className="text-sm text-gray-400">
+              <div className="text-sm text-gray-400 dark:text-slate-500">
                 Submitted: {formatDate(selectedComplaint.created_at)}
               </div>
             </div>
@@ -311,16 +311,16 @@ export default function ComplaintsPage() {
             {/* Replies */}
             {selectedComplaint.complaint_replies && selectedComplaint.complaint_replies.length > 0 && (
               <div className="space-y-3">
-                <h4 className="font-medium text-gray-900">Replies</h4>
+                <h4 className="font-medium text-gray-900 dark:text-slate-100">Replies</h4>
                 {selectedComplaint.complaint_replies.map(reply => (
                   <div key={reply.id} className="bg-blue-50 p-3 rounded-lg">
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-sm font-medium text-blue-800">
                         {reply.admins?.name || 'Admin'}
                       </span>
-                      <span className="text-xs text-gray-400">{formatDate(reply.created_at)}</span>
+                      <span className="text-xs text-gray-400 dark:text-slate-500">{formatDate(reply.created_at)}</span>
                     </div>
-                    <p className="text-sm text-gray-700">{reply.message}</p>
+                    <p className="text-sm text-gray-700 dark:text-slate-200">{reply.message}</p>
                   </div>
                 ))}
               </div>
@@ -329,11 +329,11 @@ export default function ComplaintsPage() {
             {/* Reply Form */}
             <div className="border-t pt-4">
               <div className="mb-3">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Update Status</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Update Status</label>
                 <select
                   value={replyStatus}
                   onChange={(e) => setReplyStatus(e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                 >
                   <option value="open">Open</option>
                   <option value="in_progress">In Progress</option>
@@ -342,13 +342,13 @@ export default function ComplaintsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Your Reply</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Your Reply</label>
                 <textarea
                   value={replyMessage}
                   onChange={(e) => setReplyMessage(e.target.value)}
                   rows={3}
                   placeholder="Type your response..."
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                 />
               </div>
               <div className="flex justify-end gap-3 mt-4">

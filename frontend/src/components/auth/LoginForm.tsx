@@ -142,15 +142,15 @@ export default function LoginForm({ role, onSuccess }: LoginFormProps) {
             (e.target as HTMLImageElement).style.display = 'none';
           }}
         />
-        <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-heading)' }}>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100" style={{ fontFamily: 'var(--font-heading)' }}>
           {config.name}
         </h1>
-        <p className="text-gray-600 mt-1">{config.tagline}</p>
+        <p className="text-gray-600 mt-1 dark:text-slate-300">{config.tagline}</p>
       </div>
 
       {/* Login Form */}
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-base shadow-lg">
-        <h2 className="text-xl font-semibold text-gray-800 mb-6">
+      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-base shadow-lg dark:bg-slate-800">
+        <h2 className="text-xl font-semibold text-gray-800 mb-6 dark:text-slate-100">
           {role === 'admin' ? 'Admin Login' : 'Student Login'}
         </h2>
 
@@ -182,7 +182,7 @@ export default function LoginForm({ role, onSuccess }: LoginFormProps) {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-8 text-gray-500 hover:text-gray-700"
+              className="absolute right-3 top-8 text-gray-500 hover:text-gray-700 dark:text-slate-200"
             >
               {showPassword ? (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -204,7 +204,7 @@ export default function AdminDashboard() {
         {statCards.map((card) => (
           <div
             key={card.label}
-            className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200"
+            className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200 dark:bg-slate-800 dark:border-slate-700"
           >
             <div className="h-1 w-full" style={{ backgroundColor: card.accentColor }} />
             <div className="p-5 flex items-center gap-4">
@@ -215,8 +215,8 @@ export default function AdminDashboard() {
                 {card.icon}
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 truncate">{card.label}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-0.5 leading-none">{card.value}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 truncate dark:text-slate-400">{card.label}</p>
+                <p className="text-2xl font-bold text-gray-900 mt-0.5 leading-none dark:text-slate-100">{card.value}</p>
               </div>
             </div>
           </div>
@@ -251,8 +251,8 @@ export default function AdminDashboard() {
                     style={{ backgroundColor: activity.user_type === 'admin' ? 'var(--color-primary)' : '#16A34A' }}
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-800 truncate">{activity.action}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-sm text-gray-800 truncate dark:text-slate-100">{activity.action}</p>
+                    <p className="text-xs text-gray-400 mt-0.5 dark:text-slate-500">
                       {new Date(activity.created_at).toLocaleString()}
                     </p>
                   </div>
@@ -264,11 +264,11 @@ export default function AdminDashboard() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-10 text-center">
-              <svg className="w-10 h-10 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-10 h-10 text-gray-300 mb-3 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p className="text-sm text-gray-400">No recent activity to show</p>
-              <p className="text-xs text-gray-300 mt-1">Activity will appear here as you use the platform</p>
+              <p className="text-sm text-gray-400 dark:text-slate-500">No recent activity to show</p>
+              <p className="text-xs text-gray-300 mt-1 dark:text-slate-500">Activity will appear here as you use the platform</p>
             </div>
           )}
         </Card>

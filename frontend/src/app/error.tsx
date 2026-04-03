@@ -14,11 +14,11 @@ export default function Error({ error, reset }: ErrorProps) {
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8 dark:bg-slate-800">
       <div className="text-center max-w-md">
         <div className="mb-8">
           <div className="relative">
-            <span className="text-[150px] font-bold text-gray-100">500</span>
+            <span className="text-[150px] font-bold text-gray-100 dark:text-slate-700">500</span>
             <div className="absolute inset-0 flex items-center justify-center">
               <svg
                 className="h-24 w-24 text-red-500"
@@ -36,10 +36,10 @@ export default function Error({ error, reset }: ErrorProps) {
             </div>
           </div>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2 dark:text-slate-100">
           Something went wrong
         </h1>
-        <p className="text-gray-600 mb-8">
+        <p className="text-gray-600 mb-8 dark:text-slate-300">
           {error.message || 'An unexpected error occurred. Our team has been notified and is working on a fix.'}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -51,7 +51,7 @@ export default function Error({ error, reset }: ErrorProps) {
           </button>
           <Link
             href="/"
-            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium dark:text-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600"
           >
             Go Home
           </Link>

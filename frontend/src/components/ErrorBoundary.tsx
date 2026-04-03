@@ -58,16 +58,16 @@ export class ErrorBoundary extends Component<Props, State> {
                 />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2 dark:text-slate-100">
               Something went wrong
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 mb-6 dark:text-slate-300">
               {this.state.error?.message || 'An unexpected error occurred. Please try again.'}
             </p>
             <div className="flex gap-4 justify-center">
               <button
                 onClick={this.handleReset}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors dark:text-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600"
               >
                 Try Again
               </button>

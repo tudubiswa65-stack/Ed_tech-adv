@@ -136,10 +136,10 @@ export default function TakeTestPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-slate-700">
         <div className="text-center">
           <Spinner size="lg" />
-          <p className="mt-4 text-gray-600">Loading test...</p>
+          <p className="mt-4 text-gray-600 dark:text-slate-300">Loading test...</p>
         </div>
       </div>
     );
@@ -150,16 +150,16 @@ export default function TakeTestPage() {
   const marked = markedForReview.size;
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-slate-700">
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
+      <header className="bg-white shadow-sm sticky top-0 z-10 dark:bg-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-gray-900">Test in Progress</h1>
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Test in Progress</h1>
           <div className="flex items-center gap-4">
             <div
               className={`text-2xl font-bold font-mono ${
                 timeLeft < 300 ? 'text-red-600 animate-pulse' : 'text-gray-900'
-              }`}
+              } dark:text-slate-100`}
             >
               {formatTime(timeLeft)}
             </div>
@@ -173,8 +173,8 @@ export default function TakeTestPage() {
       <div className="max-w-7xl mx-auto px-4 py-6 flex gap-6">
         {/* Question Navigator */}
         <aside className="w-20 md:w-32 shrink-0">
-          <div className="bg-white rounded-base shadow p-3 sticky top-24">
-            <p className="text-sm font-medium text-gray-700 mb-2 text-center">Questions</p>
+          <div className="bg-white rounded-base shadow p-3 sticky top-24 dark:bg-slate-800">
+            <p className="text-sm font-medium text-gray-700 mb-2 text-center dark:text-slate-200">Questions</p>
             <div className="grid grid-cols-4 md:grid-cols-5 gap-1">
               {questions.map((q, index) => {
                 const isAnswered = answers[q.id];
@@ -195,7 +195,7 @@ export default function TakeTestPage() {
                         : isAnswered
                         ? 'text-white'
                         : 'bg-gray-100 text-gray-600'
-                    }`}
+                    } dark:text-slate-300 dark:bg-slate-700`}
                   >
                     {index + 1}
                   </button>
@@ -208,12 +208,12 @@ export default function TakeTestPage() {
         {/* Main Content */}
         <main className="flex-1">
           {currentQuestion && (
-            <div className="bg-white rounded-base shadow p-6">
+            <div className="bg-white rounded-base shadow p-6 dark:bg-slate-800">
               <div className="mb-6">
-                <p className="text-sm text-gray-500 mb-2">
+                <p className="text-sm text-gray-500 mb-2 dark:text-slate-400">
                   Question {currentIndex + 1} of {questions.length}
                 </p>
-                <h2 className="text-lg font-medium text-gray-900">
+                <h2 className="text-lg font-medium text-gray-900 dark:text-slate-100">
                   {currentQuestion.question_text}
                 </h2>
               </div>
@@ -232,10 +232,10 @@ export default function TakeTestPage() {
                         isSelected
                           ? 'border-current bg-gray-50'
                           : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                      } dark:bg-slate-800 dark:border-slate-600`}
                       style={isSelected ? { borderColor: 'var(--color-primary)' } : {}}
                     >
-                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-200 text-sm font-medium mr-3">
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-200 text-sm font-medium mr-3 dark:bg-slate-600">
                         {option.toUpperCase()}
                       </span>
                       {optionText}
@@ -251,7 +251,7 @@ export default function TakeTestPage() {
                     markedForReview.has(currentQuestion.id)
                       ? 'text-amber-600'
                       : 'text-gray-500 hover:text-gray-700'
-                  }`}
+                  } dark:text-slate-200`}
                 >
                   {markedForReview.has(currentQuestion.id) ? '★ Marked for Review' : '☆ Mark for Review'}
                 </button>
@@ -288,19 +288,19 @@ export default function TakeTestPage() {
         size="md"
       >
         <div className="space-y-4">
-          <p className="text-gray-600">Are you sure you want to submit your test?</p>
-          <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-base text-center">
+          <p className="text-gray-600 dark:text-slate-300">Are you sure you want to submit your test?</p>
+          <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-base text-center dark:bg-slate-800">
             <div>
               <p className="text-2xl font-bold text-green-600">{answered}</p>
-              <p className="text-sm text-gray-500">Answered</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">Answered</p>
             </div>
             <div>
               <p className="text-2xl font-bold text-amber-600">{marked}</p>
-              <p className="text-sm text-gray-500">Marked</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">Marked</p>
             </div>
             <div>
               <p className="text-2xl font-bold text-red-600">{unanswered}</p>
-              <p className="text-sm text-gray-500">Unanswered</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">Unanswered</p>
             </div>
           </div>
           {unanswered > 0 && (

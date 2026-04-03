@@ -46,12 +46,12 @@ export function StatCard({ title, value, icon, color }: StatCardProps) {
   const scheme = colors[color];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden dark:bg-slate-800 dark:border-slate-700">
       <div className="h-1 w-full" style={{ backgroundColor: scheme.bar }} />
       <div className="p-5 flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 truncate">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 truncate dark:text-slate-400">{title}</p>
+          <p className="text-2xl font-bold text-gray-900 mt-1 dark:text-slate-100">{value}</p>
         </div>
         <div className={`p-3 rounded-xl shrink-0 ${scheme.bg} ${scheme.text}`}>
           {icons[icon] ?? icons.courses}

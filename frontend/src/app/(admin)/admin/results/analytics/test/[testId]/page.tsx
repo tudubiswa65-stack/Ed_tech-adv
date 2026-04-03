@@ -87,7 +87,7 @@ export default function TestAnalyticsPage() {
       <PageWrapper title="Analytics Not Found">
         <Card>
           <div className="p-6 text-center">
-            <p className="text-gray-500">Analytics data could not be loaded.</p>
+            <p className="text-gray-500 dark:text-slate-400">Analytics data could not be loaded.</p>
             <Button onClick={() => router.back()} className="mt-4">Go Back</Button>
           </div>
         </Card>
@@ -107,7 +107,7 @@ export default function TestAnalyticsPage() {
               <p className="text-3xl font-bold text-[var(--primary-color)]">
                 {analytics.summary.totalAttempts}
               </p>
-              <p className="text-sm text-gray-500">Total Attempts</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">Total Attempts</p>
             </div>
           </Card>
           <Card>
@@ -115,7 +115,7 @@ export default function TestAnalyticsPage() {
               <p className="text-3xl font-bold text-green-600">
                 {analytics.summary.passedAttempts}
               </p>
-              <p className="text-sm text-gray-500">Passed</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">Passed</p>
             </div>
           </Card>
           <Card>
@@ -123,7 +123,7 @@ export default function TestAnalyticsPage() {
               <p className="text-3xl font-bold">
                 {analytics.summary.passRate.toFixed(1)}%
               </p>
-              <p className="text-sm text-gray-500">Pass Rate</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">Pass Rate</p>
             </div>
           </Card>
           <Card>
@@ -131,7 +131,7 @@ export default function TestAnalyticsPage() {
               <p className="text-3xl font-bold">
                 {analytics.summary.averagePercentage.toFixed(1)}%
               </p>
-              <p className="text-sm text-gray-500">Average Score</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">Average Score</p>
             </div>
           </Card>
         </div>
@@ -144,23 +144,23 @@ export default function TestAnalyticsPage() {
               <h3 className="text-lg font-semibold mb-4">Test Information</h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Test Title</span>
+                  <span className="text-gray-500 dark:text-slate-400">Test Title</span>
                   <span className="font-medium">{analytics.test.title}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Total Marks</span>
+                  <span className="text-gray-500 dark:text-slate-400">Total Marks</span>
                   <span className="font-medium">{analytics.test.totalMarks}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Passing Marks</span>
+                  <span className="text-gray-500 dark:text-slate-400">Passing Marks</span>
                   <span className="font-medium">{analytics.test.passingMarks}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Average Score</span>
+                  <span className="text-gray-500 dark:text-slate-400">Average Score</span>
                   <span className="font-medium">{analytics.summary.averageScore.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Average Time</span>
+                  <span className="text-gray-500 dark:text-slate-400">Average Time</span>
                   <span className="font-medium">{formatTime(analytics.summary.averageTimeSeconds)}</span>
                 </div>
               </div>
@@ -174,8 +174,8 @@ export default function TestAnalyticsPage() {
               <div className="space-y-3">
                 {analytics.scoreDistribution.map((range) => (
                   <div key={range.range} className="flex items-center gap-3">
-                    <span className="w-16 text-sm text-gray-500">{range.range}%</span>
-                    <div className="flex-1 bg-gray-200 rounded-full h-6 overflow-hidden">
+                    <span className="w-16 text-sm text-gray-500 dark:text-slate-400">{range.range}%</span>
+                    <div className="flex-1 bg-gray-200 rounded-full h-6 overflow-hidden dark:bg-slate-600">
                       <div
                         className="h-full bg-[var(--primary-color)] rounded-full transition-all duration-300"
                         style={{ width: `${(range.count / maxScoreCount) * 100}%` }}
@@ -197,16 +197,16 @@ export default function TestAnalyticsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Question #</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Correct Responses</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Total Responses</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Accuracy</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Difficulty</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-slate-400">Question #</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-slate-400">Correct Responses</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-slate-400">Total Responses</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-slate-400">Accuracy</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-slate-400">Difficulty</th>
                   </tr>
                 </thead>
                 <tbody>
                   {analytics.questionStats.map((stat) => (
-                    <tr key={stat.questionNumber} className="border-b hover:bg-gray-50">
+                    <tr key={stat.questionNumber} className="border-b hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700">
                       <td className="px-4 py-3 text-sm font-medium">
                         Question {stat.questionNumber}
                       </td>
@@ -218,7 +218,7 @@ export default function TestAnalyticsPage() {
                       </td>
                       <td className="px-4 py-3 text-sm">
                         <div className="flex items-center gap-2">
-                          <div className="w-20 bg-gray-200 rounded-full h-2">
+                          <div className="w-20 bg-gray-200 rounded-full h-2 dark:bg-slate-600">
                             <div
                               className={`h-full rounded-full ${
                                 stat.accuracy >= 70 ? 'bg-green-500' :
@@ -268,8 +268,8 @@ export default function TestAnalyticsPage() {
                     }`}
                   >
                     <p className="text-2xl font-bold">{count}</p>
-                    <p className="text-sm text-gray-500 capitalize">{difficulty} Questions</p>
-                    <p className="text-xs text-gray-400">{percentage.toFixed(0)}% of total</p>
+                    <p className="text-sm text-gray-500 capitalize dark:text-slate-400">{difficulty} Questions</p>
+                    <p className="text-xs text-gray-400 dark:text-slate-500">{percentage.toFixed(0)}% of total</p>
                   </div>
                 );
               })}

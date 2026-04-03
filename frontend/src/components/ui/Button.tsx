@@ -23,7 +23,7 @@ export default function Button({
 
   const variantStyles = {
     primary: 'text-white focus:ring-[var(--color-primary)] hover:opacity-90',
-    outline: 'border-2 bg-transparent focus:ring-[var(--color-primary)] hover:bg-gray-50',
+    outline: 'border-2 bg-transparent focus:ring-[var(--color-primary)] hover:bg-gray-50 dark:hover:bg-slate-700',
     danger: 'bg-red-600 text-white focus:ring-red-500 hover:bg-red-700',
   };
 

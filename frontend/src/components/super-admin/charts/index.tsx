@@ -31,8 +31,8 @@ const PIE_COLORS = ['#10b981', '#f59e0b', '#ef4444', '#6366f1', '#8b5cf6'];
 function CurrencyTooltip({ active, payload, label }: TooltipProps<number, string>) {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
-        <p className="text-sm font-medium text-gray-600 mb-1">{label}</p>
+      <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 dark:bg-slate-800 dark:border-slate-600">
+        <p className="text-sm font-medium text-gray-600 mb-1 dark:text-slate-300">{label}</p>
         {payload.map((entry, i) => (
           <p key={i} className="text-sm font-bold" style={{ color: entry.color }}>
             ${Number(entry.value ?? 0).toLocaleString()}
@@ -48,8 +48,8 @@ function CurrencyTooltip({ active, payload, label }: TooltipProps<number, string
 function CountTooltip({ active, payload, label }: TooltipProps<number, string>) {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
-        <p className="text-sm font-medium text-gray-600 mb-1">{label}</p>
+      <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 dark:bg-slate-800 dark:border-slate-600">
+        <p className="text-sm font-medium text-gray-600 mb-1 dark:text-slate-300">{label}</p>
         {payload.map((entry, i) => (
           <p key={i} className="text-sm font-bold" style={{ color: entry.color }}>
             {Number(entry.value ?? 0).toLocaleString()}
@@ -67,7 +67,7 @@ export function BarChart({ data, xKey, yKey, color = '#6366f1', currency = false
 
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[300px] text-gray-400 text-sm">
+      <div className="flex items-center justify-center h-[300px] text-gray-400 text-sm dark:text-slate-500">
         No data available
       </div>
     );
@@ -106,7 +106,7 @@ export function LineChart({ data, xKey, yKey, color = '#10b981', currency = fals
 
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[300px] text-gray-400 text-sm">
+      <div className="flex items-center justify-center h-[300px] text-gray-400 text-sm dark:text-slate-500">
         No data available
       </div>
     );
@@ -194,12 +194,12 @@ function PieTooltip({ active, payload }: TooltipProps<number, string>) {
   if (active && payload && payload.length) {
     const entry = payload[0];
     return (
-      <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
-        <p className="text-sm font-semibold text-gray-800">{entry.name}</p>
-        <p className="text-sm text-gray-600">
+      <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 dark:bg-slate-800 dark:border-slate-600">
+        <p className="text-sm font-semibold text-gray-800 dark:text-slate-100">{entry.name}</p>
+        <p className="text-sm text-gray-600 dark:text-slate-300">
           Count: <span className="font-bold" style={{ color: entry.payload.fill }}>{entry.value}</span>
         </p>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-slate-400">
           {((entry.payload.percent ?? 0) * 100).toFixed(1)}% of total
         </p>
       </div>
@@ -211,7 +211,7 @@ function PieTooltip({ active, payload }: TooltipProps<number, string>) {
 export function PieChart({ data }: { data: any[] }) {
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[300px] text-gray-400 text-sm">
+      <div className="flex items-center justify-center h-[300px] text-gray-400 text-sm dark:text-slate-500">
         No data available
       </div>
     );

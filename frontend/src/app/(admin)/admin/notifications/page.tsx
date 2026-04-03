@@ -162,8 +162,8 @@ export default function NotificationsPage() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-            <p className="text-gray-500">Manage and send notifications to students</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Notifications</h1>
+            <p className="text-gray-500 dark:text-slate-400">Manage and send notifications to students</p>
           </div>
           {hasPermission('broadcast_message') && (
             <Button onClick={() => { resetForm(); setShowModal(true); }}>
@@ -177,11 +177,11 @@ export default function NotificationsPage() {
           <div className="p-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Type</label>
                 <select
                   value={filters.type}
                   onChange={(e) => setFilters(f => ({ ...f, type: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                 >
                   <option value="">All Types</option>
                   <option value="info">Info</option>
@@ -191,11 +191,11 @@ export default function NotificationsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Target Audience</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Target Audience</label>
                 <select
                   value={filters.targetAudience}
                   onChange={(e) => setFilters(f => ({ ...f, targetAudience: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                 >
                   <option value="">All Audiences</option>
                   <option value="all">All Users</option>
@@ -218,18 +218,18 @@ export default function NotificationsPage() {
 
         {/* Notifications List */}
         <Card>
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-200 dark:divide-slate-700">
             {loading ? (
               <div className="flex justify-center py-12">
                 <Spinner />
               </div>
             ) : notifications.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
+              <div className="p-8 text-center text-gray-500 dark:text-slate-400">
                 No notifications found. Click &quot;Create Notification&quot; to add one.
               </div>
             ) : (
               notifications.map(notification => (
-                <div key={notification.id} className="p-4 hover:bg-gray-50">
+                <div key={notification.id} className="p-4 hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
@@ -239,9 +239,9 @@ export default function NotificationsPage() {
                           <Badge variant="success">Sent</Badge>
                         )}
                       </div>
-                      <h3 className="font-semibold text-gray-900">{notification.title}</h3>
-                      <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
-                      <p className="text-xs text-gray-400 mt-2">
+                      <h3 className="font-semibold text-gray-900 dark:text-slate-100">{notification.title}</h3>
+                      <p className="text-sm text-gray-600 mt-1 dark:text-slate-300">{notification.message}</p>
+                      <p className="text-xs text-gray-400 mt-2 dark:text-slate-500">
                         Created: {formatDate(notification.created_at)}
                         {notification.scheduled_at && ` • Scheduled: ${formatDate(notification.scheduled_at)}`}
                       </p>
@@ -288,23 +288,23 @@ export default function NotificationsPage() {
           />
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Message</label>
             <textarea
               value={formData.message}
               onChange={(e) => setFormData(f => ({ ...f, message: e.target.value }))}
               rows={4}
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Type</label>
               <select
                 value={formData.type}
                 onChange={(e) => setFormData(f => ({ ...f, type: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
               >
                 <option value="info">Info</option>
                 <option value="warning">Warning</option>
@@ -313,11 +313,11 @@ export default function NotificationsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Target Audience</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Target Audience</label>
               <select
                 value={formData.targetAudience}
                 onChange={(e) => setFormData(f => ({ ...f, targetAudience: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
               >
                 <option value="all">All Users</option>
                 <option value="students">Students Only</option>

@@ -116,8 +116,8 @@ export default function StudyMaterialsPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Study Materials</h1>
-          <p className="text-gray-500">Access learning resources and study materials</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Study Materials</h1>
+          <p className="text-gray-500 dark:text-slate-400">Access learning resources and study materials</p>
         </div>
 
         {/* Filters */}
@@ -125,21 +125,21 @@ export default function StudyMaterialsPage() {
           <div className="p-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Search</label>
                 <input
                   type="text"
                   value={filters.search}
                   onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
                   placeholder="Search materials..."
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Type</label>
                 <select
                   value={filters.type}
                   onChange={(e) => setFilters(f => ({ ...f, type: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                 >
                   <option value="">All Types</option>
                   <option value="pdf">PDF</option>
@@ -166,17 +166,17 @@ export default function StudyMaterialsPage() {
         {recentMaterials.length > 0 && (
           <Card>
             <div className="p-4">
-              <h3 className="font-semibold text-gray-900 mb-3">Recently Viewed</h3>
+              <h3 className="font-semibold text-gray-900 mb-3 dark:text-slate-100">Recently Viewed</h3>
               <div className="flex gap-4 overflow-x-auto pb-2">
                 {recentMaterials.slice(0, 5).map(material => (
                   <div
                     key={material.id}
                     onClick={() => openMaterial(material)}
-                    className="flex-shrink-0 w-48 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100"
+                    className="flex-shrink-0 w-48 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-700"
                   >
                     <div className="text-2xl mb-2">{getTypeIcon(material.type)}</div>
                     <p className="font-medium text-sm truncate">{material.title}</p>
-                    <p className="text-xs text-gray-500 mt-1">{material.subjects?.name}</p>
+                    <p className="text-xs text-gray-500 mt-1 dark:text-slate-400">{material.subjects?.name}</p>
                   </div>
                 ))}
               </div>
@@ -191,7 +191,7 @@ export default function StudyMaterialsPage() {
           </div>
         ) : materials.length === 0 ? (
           <Card>
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-gray-500 dark:text-slate-400">
               No study materials found.
             </div>
           </Card>
@@ -204,15 +204,15 @@ export default function StudyMaterialsPage() {
                     <span className="text-3xl">{getTypeIcon(material.type)}</span>
                     <Badge variant="info">{material.type.toUpperCase()}</Badge>
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-1">{material.title}</h3>
-                  <p className="text-sm text-gray-500 mb-2 line-clamp-2">
+                  <h3 className="font-semibold text-gray-900 mb-1 dark:text-slate-100">{material.title}</h3>
+                  <p className="text-sm text-gray-500 mb-2 line-clamp-2 dark:text-slate-400">
                     {material.description || 'No description'}
                   </p>
-                  <div className="flex justify-between items-center text-xs text-gray-400">
+                  <div className="flex justify-between items-center text-xs text-gray-400 dark:text-slate-500">
                     <span>{material.subjects?.name || 'General'}</span>
                     {material.file_size && <span>{formatFileSize(material.file_size)}</span>}
                   </div>
-                  <div className="mt-3 text-xs text-gray-400">
+                  <div className="mt-3 text-xs text-gray-400 dark:text-slate-500">
                     Added: {formatDate(material.created_at)}
                   </div>
                 </div>
@@ -235,13 +235,13 @@ export default function StudyMaterialsPage() {
               <span className="text-3xl">{getTypeIcon(selectedMaterial.type)}</span>
               <Badge variant="info">{selectedMaterial.type.toUpperCase()}</Badge>
               {selectedMaterial.file_size && (
-                <span className="text-sm text-gray-500">{formatFileSize(selectedMaterial.file_size)}</span>
+                <span className="text-sm text-gray-500 dark:text-slate-400">{formatFileSize(selectedMaterial.file_size)}</span>
               )}
             </div>
 
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <p className="text-sm text-gray-600">{selectedMaterial.description || 'No description available'}</p>
-              <p className="text-xs text-gray-400 mt-2">
+            <div className="bg-gray-50 p-3 rounded-lg dark:bg-slate-800">
+              <p className="text-sm text-gray-600 dark:text-slate-300">{selectedMaterial.description || 'No description available'}</p>
+              <p className="text-xs text-gray-400 mt-2 dark:text-slate-500">
                 Subject: {selectedMaterial.subjects?.name || 'General'}
               </p>
             </div>
@@ -273,7 +273,7 @@ export default function StudyMaterialsPage() {
             )}
 
             {selectedMaterial.type === 'text' && (
-              <div className="prose max-w-none p-4 bg-gray-50 rounded-lg">
+              <div className="prose max-w-none p-4 bg-gray-50 rounded-lg dark:bg-slate-800">
                 <p className="whitespace-pre-wrap">Content would be displayed here from the server.</p>
               </div>
             )}

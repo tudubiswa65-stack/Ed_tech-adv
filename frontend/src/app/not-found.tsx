@@ -4,11 +4,11 @@ import Link from 'next/link';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8 dark:bg-slate-800">
       <div className="text-center max-w-md">
         <div className="mb-8">
           <div className="relative">
-            <span className="text-[180px] font-bold text-gray-100">404</span>
+            <span className="text-[180px] font-bold text-gray-100 dark:text-slate-700">404</span>
             <div className="absolute inset-0 flex items-center justify-center">
               <svg
                 className="h-32 w-32 text-primary-500"
@@ -26,10 +26,10 @@ export default function NotFound() {
             </div>
           </div>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2 dark:text-slate-100">
           Page Not Found
         </h1>
-        <p className="text-gray-600 mb-8">
+        <p className="text-gray-600 mb-8 dark:text-slate-300">
           The page you&apos;re looking for doesn&apos;t exist or has been moved.
           Let&apos;s get you back on track.
         </p>
@@ -42,7 +42,7 @@ export default function NotFound() {
           </Link>
           <Link
             href="/dashboard"
-            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium dark:text-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600"
           >
             Go to Dashboard
           </Link>

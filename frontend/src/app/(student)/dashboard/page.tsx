@@ -240,7 +240,7 @@ export default function StudentProfileDashboard() {
                 aria-label="Change profile photo"
               >
                 {avatarUploading ? (
-                  <svg className="w-3 h-3 animate-spin text-gray-500" fill="none" viewBox="0 0 24 24">
+                  <svg className="w-3 h-3 animate-spin text-gray-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
@@ -261,14 +261,14 @@ export default function StudentProfileDashboard() {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-bold text-gray-900 truncate">{profile?.name || '—'}</h2>
-              <p className="text-gray-500 text-sm mt-0.5">{profile?.email || '—'}</p>
+              <h2 className="text-xl font-bold text-gray-900 truncate dark:text-slate-100">{profile?.name || '—'}</h2>
+              <p className="text-gray-500 text-sm mt-0.5 dark:text-slate-400">{profile?.email || '—'}</p>
               <div className="flex flex-wrap items-center gap-2 mt-2">
                 {profile?.roll_number && (
                   <Badge variant="info">{profile.roll_number}</Badge>
                 )}
                 {profile?.phone && (
-                  <span className="text-sm text-gray-600">📞 {profile.phone}</span>
+                  <span className="text-sm text-gray-600 dark:text-slate-300">📞 {profile.phone}</span>
                 )}
                 <Badge variant={profile?.is_active ? 'success' : 'danger'}>
                   {profile?.is_active ? 'Active' : 'Inactive'}
@@ -278,7 +278,7 @@ export default function StudentProfileDashboard() {
                 )}
               </div>
               {profile?.created_at && (
-                <p className="text-xs text-gray-400 mt-1">Member since {formatDate(profile.created_at)}</p>
+                <p className="text-xs text-gray-400 mt-1 dark:text-slate-500">Member since {formatDate(profile.created_at)}</p>
               )}
             </div>
             <div className="flex gap-2 flex-shrink-0">
@@ -294,7 +294,7 @@ export default function StudentProfileDashboard() {
 
         {/* ── 2. Performance Overview ── */}
         <div>
-          <h3 className="text-base font-semibold text-gray-700 mb-3">📊 Performance Overview</h3>
+          <h3 className="text-base font-semibold text-gray-700 mb-3 dark:text-slate-200">📊 Performance Overview</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {(
               [
@@ -314,7 +314,7 @@ export default function StudentProfileDashboard() {
             ).map((stat) => (
               <Card key={stat.label}>
                 <div className="text-center p-4">
-                  <p className="text-xs text-gray-500 mb-1">{stat.label}</p>
+                  <p className="text-xs text-gray-500 mb-1 dark:text-slate-400">{stat.label}</p>
                   <p className={`text-2xl font-bold ${stat.color}`}
                     style={stat.color ? undefined : { color: 'var(--color-primary)' }}>
                     {stat.value}
@@ -328,20 +328,20 @@ export default function StudentProfileDashboard() {
         {/* ── 3. Leaderboard Ranking ── */}
         <Card>
           <div className="p-4 md:p-6">
-            <h3 className="text-base font-semibold text-gray-700 mb-4">🏆 Leaderboard Ranking</h3>
+            <h3 className="text-base font-semibold text-gray-700 mb-4 dark:text-slate-200">🏆 Leaderboard Ranking</h3>
             {leaderboard.rank !== null ? (
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <div className="text-center">
                   <p className="text-4xl font-extrabold" style={{ color: 'var(--color-primary)' }}>
                     #{leaderboard.rank}
                   </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-gray-500 mt-0.5 dark:text-slate-400">
                     of {leaderboard.totalStudents} students
                   </p>
                 </div>
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Total Points:</span>
+                    <span className="text-sm text-gray-600 dark:text-slate-300">Total Points:</span>
                     <span className="font-bold">{leaderboard.totalPoints} pts</span>
                   </div>
                   {leaderboard.rankBadge && (
@@ -355,7 +355,7 @@ export default function StudentProfileDashboard() {
                 </Button>
               </div>
             ) : (
-              <p className="text-gray-500 text-sm">
+              <p className="text-gray-500 text-sm dark:text-slate-400">
                 Complete a test to appear on the leaderboard.
               </p>
             )}
@@ -366,13 +366,13 @@ export default function StudentProfileDashboard() {
         {todayTests.length > 0 && (
           <Card>
             <div className="p-4 md:p-6">
-              <h3 className="text-base font-semibold text-gray-700 mb-4">📝 Today's Tests</h3>
+              <h3 className="text-base font-semibold text-gray-700 mb-4 dark:text-slate-200">📝 Today's Tests</h3>
               <div className="space-y-3">
                 {todayTests.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl dark:bg-slate-800">
                     <div>
-                      <p className="font-medium text-gray-900">{item.tests?.title}</p>
-                      <p className="text-sm text-gray-500">{item.tests?.courses?.name}</p>
+                      <p className="font-medium text-gray-900 dark:text-slate-100">{item.tests?.title}</p>
+                      <p className="text-sm text-gray-500 dark:text-slate-400">{item.tests?.courses?.name}</p>
                     </div>
                     <Button size="sm" onClick={() => router.push(`/tests/${item.tests?.id}`)}>
                       Start
@@ -387,35 +387,35 @@ export default function StudentProfileDashboard() {
         {/* ── 5. Recent Test History ── */}
         <Card>
           <div className="p-4 md:p-6">
-            <h3 className="text-base font-semibold text-gray-700 mb-4">🧾 Recent Test History</h3>
+            <h3 className="text-base font-semibold text-gray-700 mb-4 dark:text-slate-200">🧾 Recent Test History</h3>
             {recentTests.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-left text-gray-500 border-b">
+                    <tr className="text-left text-gray-500 border-b dark:text-slate-400">
                       <th className="pb-2 pr-4 font-medium">Test Name</th>
                       <th className="pb-2 pr-4 font-medium">Score</th>
                       <th className="pb-2 pr-4 font-medium">Status</th>
                       <th className="pb-2 font-medium">Date</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
                     {recentTests.map((result) => (
-                      <tr key={result.id} className="hover:bg-gray-50 cursor-pointer"
+                      <tr key={result.id} className="hover:bg-gray-50 cursor-pointer dark:bg-slate-800 dark:hover:bg-slate-700"
                         onClick={() => router.push(`/results/${result.id}`)}>
-                        <td className="py-3 pr-4 font-medium text-gray-900">
+                        <td className="py-3 pr-4 font-medium text-gray-900 dark:text-slate-100">
                           {result.tests?.title || '—'}
                         </td>
                         <td className="py-3 pr-4">
                           <span className="font-semibold">{result.score}/{result.total_marks}</span>
-                          <span className="text-gray-500 ml-1">({Math.round(result.percentage)}%)</span>
+                          <span className="text-gray-500 ml-1 dark:text-slate-400">({Math.round(result.percentage)}%)</span>
                         </td>
                         <td className="py-3 pr-4">
                           <Badge variant={result.status === 'passed' ? 'success' : result.status === 'failed' ? 'danger' : 'info'}>
                             {result.status.charAt(0).toUpperCase() + result.status.slice(1)}
                           </Badge>
                         </td>
-                        <td className="py-3 text-gray-500">
+                        <td className="py-3 text-gray-500 dark:text-slate-400">
                           {formatDate(result.submitted_at)}
                         </td>
                       </tr>
@@ -424,7 +424,7 @@ export default function StudentProfileDashboard() {
                 </table>
               </div>
             ) : (
-              <p className="text-gray-500 text-center py-6">No tests completed yet.</p>
+              <p className="text-gray-500 text-center py-6 dark:text-slate-400">No tests completed yet.</p>
             )}
             {recentTests.length > 0 && (
               <div className="mt-4 text-right">
@@ -440,13 +440,13 @@ export default function StudentProfileDashboard() {
         {upcomingTests.length > 0 && (
           <Card>
             <div className="p-4 md:p-6">
-              <h3 className="text-base font-semibold text-gray-700 mb-4">📅 Upcoming Tests</h3>
+              <h3 className="text-base font-semibold text-gray-700 mb-4 dark:text-slate-200">📅 Upcoming Tests</h3>
               <div className="space-y-3">
                 {upcomingTests.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl dark:bg-slate-800">
                     <div>
-                      <p className="font-medium text-gray-900">{item.tests?.title}</p>
-                      <p className="text-sm text-gray-500">{item.tests?.courses?.name}</p>
+                      <p className="font-medium text-gray-900 dark:text-slate-100">{item.tests?.title}</p>
+                      <p className="text-sm text-gray-500 dark:text-slate-400">{item.tests?.courses?.name}</p>
                     </div>
                     <Badge variant="info">Scheduled</Badge>
                   </div>

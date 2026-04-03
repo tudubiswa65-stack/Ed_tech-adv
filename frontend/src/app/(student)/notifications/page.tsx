@@ -140,8 +140,8 @@ export default function NotificationsPage() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-            <p className="text-gray-500">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Notifications</h1>
+            <p className="text-gray-500 dark:text-slate-400">
               {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All caught up!'}
             </p>
           </div>
@@ -177,11 +177,11 @@ export default function NotificationsPage() {
               <Spinner />
             </div>
           ) : notifications.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-gray-500 dark:text-slate-400">
               {filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-200 dark:divide-slate-700">
               {notifications.map(notification => (
                 <div
                   key={notification.id}
@@ -195,11 +195,11 @@ export default function NotificationsPage() {
                         )}
                         <Badge variant={getTypeColor(notification.type)}>{notification.type}</Badge>
                       </div>
-                      <h3 className={`font-medium ${!notification.is_read ? 'text-gray-900' : 'text-gray-700'}`}>
+                      <h3 className={`font-medium ${!notification.is_read ? 'text-gray-900' : 'text-gray-700'} dark:text-slate-100`}>
                         {notification.title}
                       </h3>
-                      <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
-                      <p className="text-xs text-gray-400 mt-2">{formatDate(notification.created_at)}</p>
+                      <p className="text-sm text-gray-600 mt-1 dark:text-slate-300">{notification.message}</p>
+                      <p className="text-xs text-gray-400 mt-2 dark:text-slate-500">{formatDate(notification.created_at)}</p>
                     </div>
                     {!notification.is_read && (
                       <Button

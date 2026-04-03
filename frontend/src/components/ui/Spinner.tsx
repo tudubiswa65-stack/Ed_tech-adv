@@ -14,7 +14,7 @@ export default function Spinner({ size = 'md', className = '' }: SpinnerProps) {
 
   return (
     <div
-      className={`animate-spin rounded-full border-gray-200 ${sizeStyles[size]} ${className}`}
+      className={`animate-spin rounded-full border-gray-200 ${sizeStyles[size]} ${className} dark:border-slate-600`}
       style={{
         borderTopColor: 'var(--color-primary)',
       }}

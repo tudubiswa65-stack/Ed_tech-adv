@@ -232,8 +232,8 @@ export default function MaterialsPage() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Study Materials</h1>
-            <p className="text-gray-500">Manage learning resources for students</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Study Materials</h1>
+            <p className="text-gray-500 dark:text-slate-400">Manage learning resources for students</p>
           </div>
           <Button onClick={() => { resetForm(); setShowModal(true); }}>
             + Add Material
@@ -245,7 +245,7 @@ export default function MaterialsPage() {
           <div className="p-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
                   Search
                 </label>
                 <input
@@ -253,17 +253,17 @@ export default function MaterialsPage() {
                   value={filters.search}
                   onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
                   placeholder="Search materials..."
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
                   Type
                 </label>
                 <select
                   value={filters.type}
                   onChange={(e) => setFilters(f => ({ ...f, type: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                 >
                   <option value="">All Types</option>
                   <option value="pdf">PDF</option>
@@ -274,13 +274,13 @@ export default function MaterialsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
                   Subject
                 </label>
                 <select
                   value={filters.subjectId}
                   onChange={(e) => setFilters(f => ({ ...f, subjectId: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                 >
                   <option value="">All Subjects</option>
                   {courses.map(course => 
@@ -314,7 +314,7 @@ export default function MaterialsPage() {
           </div>
         ) : materials.length === 0 ? (
           <Card>
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-gray-500 dark:text-slate-400">
               No study materials found. Click &quot;Add Material&quot; to create one.
             </div>
           </Card>
@@ -332,14 +332,14 @@ export default function MaterialsPage() {
                     </div>
                     <Badge variant="info">{material.type.toUpperCase()}</Badge>
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-1">{material.title}</h3>
-                  <p className="text-sm text-gray-500 mb-2 line-clamp-2">
+                  <h3 className="font-semibold text-gray-900 mb-1 dark:text-slate-100">{material.title}</h3>
+                  <p className="text-sm text-gray-500 mb-2 line-clamp-2 dark:text-slate-400">
                     {material.description || 'No description'}
                   </p>
-                  <div className="text-xs text-gray-400 mb-3">
+                  <div className="text-xs text-gray-400 mb-3 dark:text-slate-500">
                     {material.subjects?.modules?.courses?.name} / {material.subjects?.name}
                   </div>
-                  <div className="flex justify-between items-center text-xs text-gray-400">
+                  <div className="flex justify-between items-center text-xs text-gray-400 dark:text-slate-500">
                     <span>{material.file_size ? formatFileSize(material.file_size) : 'No file'}</span>
                     <span>{new Date(material.created_at).toLocaleDateString()}</span>
                   </div>
@@ -416,21 +416,21 @@ export default function MaterialsPage() {
           />
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Description</label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData(f => ({ ...f, description: e.target.value }))}
               rows={3}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Type</label>
             <select
               value={formData.type}
               onChange={(e) => setFormData(f => ({ ...f, type: e.target.value }))}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
             >
               <option value="pdf">PDF</option>
               <option value="video">Video</option>
@@ -441,10 +441,10 @@ export default function MaterialsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Course</label>
             <select
               onChange={(e) => handleSubjectChange(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
             >
               <option value="">Select Course</option>
               {courses.map(course => (
@@ -454,12 +454,12 @@ export default function MaterialsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Subject</label>
             <select
               value={formData.subjectId}
               onChange={(e) => setFormData(f => ({ ...f, subjectId: e.target.value }))}
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
             >
               <option value="">Select Subject</option>
               {subjects.map(subject => (
@@ -480,12 +480,12 @@ export default function MaterialsPage() {
 
           {formData.type === 'text' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Content</label>
               <textarea
                 value={formData.content}
                 onChange={(e) => setFormData(f => ({ ...f, content: e.target.value }))}
                 rows={6}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
               />
             </div>
           )}
@@ -496,9 +496,9 @@ export default function MaterialsPage() {
               id="isPublished"
               checked={formData.isPublished}
               onChange={(e) => setFormData(f => ({ ...f, isPublished: e.target.checked }))}
-              className="rounded border-gray-300"
+              className="rounded border-gray-300 dark:border-slate-500"
             />
-            <label htmlFor="isPublished" className="text-sm text-gray-700">
+            <label htmlFor="isPublished" className="text-sm text-gray-700 dark:text-slate-200">
               Publish immediately
             </label>
           </div>

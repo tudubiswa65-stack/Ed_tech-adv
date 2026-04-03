@@ -136,7 +136,7 @@ export default function CoursesPage() {
       advanced: 'bg-red-100 text-red-700',
     };
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${map[level] || 'bg-gray-100 text-gray-600'}`}>
+      <span className={`px-2 py-1 text-xs font-medium rounded-full ${map[level] || 'bg-gray-100 text-gray-600'} dark:text-slate-300 dark:bg-slate-700`}>
         {level}
       </span>
     );
@@ -148,8 +148,8 @@ export default function CoursesPage() {
       header: 'Name / Description',
       render: (row: Course) => (
         <div className="max-w-xs">
-          <p className="font-medium text-gray-900">{row.name}</p>
-          <p className="text-xs text-gray-500 truncate">{row.description}</p>
+          <p className="font-medium text-gray-900 dark:text-slate-100">{row.name}</p>
+          <p className="text-xs text-gray-500 truncate dark:text-slate-400">{row.description}</p>
         </div>
       ),
     },
@@ -173,7 +173,7 @@ export default function CoursesPage() {
       key: 'is_active',
       header: 'Status',
       render: (row: Course) => (
-        <span className={`px-2 py-1 text-xs font-medium rounded-full ${row.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+        <span className={`px-2 py-1 text-xs font-medium rounded-full ${row.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'} dark:text-slate-300 dark:bg-slate-700`}>
           {row.is_active ? 'Active' : 'Inactive'}
         </span>
       ),
@@ -207,7 +207,7 @@ export default function CoursesPage() {
   ];
 
   if (loading && courses.length === 0) {
-    return <div className="flex items-center justify-center h-64 text-gray-500">Loading courses...</div>;
+    return <div className="flex items-center justify-center h-64 text-gray-500 dark:text-slate-400">Loading courses...</div>;
   }
 
   if (error) {
@@ -217,7 +217,7 @@ export default function CoursesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Courses</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Courses</h1>
         <button
           onClick={() => { setSelectedCourse(null); setFormData(defaultForm); setIsModalOpen(true); }}
           className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
@@ -230,7 +230,7 @@ export default function CoursesPage() {
         <select
           value={branchFilter}
           onChange={e => setBranchFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
         >
           <option value="">All Branches</option>
           {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -238,7 +238,7 @@ export default function CoursesPage() {
         <select
           value={statusFilter}
           onChange={e => setStatusFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
         >
           <option value="">All Status</option>
           <option value="active">Active</option>
@@ -247,7 +247,7 @@ export default function CoursesPage() {
         <select
           value={levelFilter}
           onChange={e => setLevelFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
         >
           <option value="">All Levels</option>
           <option value="beginner">Beginner</option>
@@ -259,7 +259,7 @@ export default function CoursesPage() {
           placeholder="Search courses..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-48"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-48 dark:border-slate-500"
         />
       </div>
 
@@ -269,46 +269,46 @@ export default function CoursesPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {formError && <p className="text-sm text-red-600">{formError}</p>}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
-            <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" required />
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Course Name</label>
+            <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500" required />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Description</label>
+            <textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
-            <select value={formData.branch_id} onChange={e => setFormData({ ...formData, branch_id: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Branch</label>
+            <select value={formData.branch_id} onChange={e => setFormData({ ...formData, branch_id: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500" required>
               <option value="">Select Branch</option>
               {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
-              <select value={formData.level} onChange={e => setFormData({ ...formData, level: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Level</label>
+              <select value={formData.level} onChange={e => setFormData({ ...formData, level: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500">
                 <option value="beginner">Beginner</option>
                 <option value="intermediate">Intermediate</option>
                 <option value="advanced">Advanced</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
-              <input type="number" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" required min="0" />
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Price (₹)</label>
+              <input type="number" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500" required min="0" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Duration (weeks)</label>
-              <input type="number" value={formData.duration_weeks} onChange={e => setFormData({ ...formData, duration_weeks: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" required min="1" />
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Duration (weeks)</label>
+              <input type="number" value={formData.duration_weeks} onChange={e => setFormData({ ...formData, duration_weeks: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500" required min="1" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Thumbnail URL</label>
-              <input type="text" value={formData.thumbnail_url} onChange={e => setFormData({ ...formData, thumbnail_url: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Thumbnail URL</label>
+              <input type="text" value={formData.thumbnail_url} onChange={e => setFormData({ ...formData, thumbnail_url: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500" />
             </div>
           </div>
           <div className="flex justify-end space-x-3 pt-2">
-            <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+            <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:border-slate-500 dark:hover:bg-slate-700">Cancel</button>
             <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">{selectedCourse ? 'Update' : 'Create'} Course</button>
           </div>
         </form>

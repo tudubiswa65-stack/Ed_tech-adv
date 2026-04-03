@@ -29,7 +29,7 @@ export default function Switch({ checked, onChange, disabled = false, label, des
             : 'bg-gray-200 peer-focus:ring-gray-300'
           }
           peer-focus:ring-offset-white
-        `}
+         dark:bg-slate-600`}
         style={{
           backgroundColor: checked ? 'var(--color-primary)' : undefined,
         }}
@@ -39,13 +39,13 @@ export default function Switch({ checked, onChange, disabled = false, label, des
             absolute top-[2px] left-[2px] w-5 h-5 bg-white rounded-full shadow-sm
             transition-transform duration-200 ease-in-out
             ${checked ? 'translate-x-5' : 'translate-x-0'}
-          `}
+           dark:bg-slate-800`}
         />
       </div>
       {(label || description) && (
         <div className="ml-3">
-          {label && <span className="text-sm font-medium text-gray-900">{label}</span>}
-          {description && <p className="text-xs text-gray-500">{description}</p>}
+          {label && <span className="text-sm font-medium text-gray-900 dark:text-slate-100">{label}</span>}
+          {description && <p className="text-xs text-gray-500 dark:text-slate-400">{description}</p>}
         </div>
       )}
     </label>

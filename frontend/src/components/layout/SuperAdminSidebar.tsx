@@ -144,7 +144,7 @@ export default function SuperAdminSidebar({ isOpen, onClose }: SidebarProps) {
                         isActive
                           ? 'text-white font-medium'
                           : 'text-white/70 hover:text-white hover:bg-white/10'
-                      }`}
+                      } dark:bg-slate-800`}
                       style={isActive ? { backgroundColor: '#6366f1' } : {}}
                       onClick={onClose}
                     >

@@ -127,9 +127,9 @@ export default function EditStudentPage() {
   return (
     <PageWrapper title="Edit Student">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 dark:bg-slate-800 dark:border-slate-600">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Edit Student</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-100">Edit Student</h2>
             <Button variant="outline" onClick={() => router.push('/admin/students')}>
               ← Back
             </Button>
@@ -138,7 +138,7 @@ export default function EditStudentPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
                 Full Name <span className="text-red-500">*</span>
               </label>
               <Input
@@ -152,7 +152,7 @@ export default function EditStudentPage() {
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
                 Email Address <span className="text-red-500">*</span>
               </label>
               <Input
@@ -167,14 +167,14 @@ export default function EditStudentPage() {
 
             {/* Course */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
                 Course <span className="text-red-500">*</span>
               </label>
               <select
                 name="course_id"
                 value={formData.course_id}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500"
                 required
               >
                 <option value="">Select a course</option>
@@ -188,14 +188,14 @@ export default function EditStudentPage() {
 
             {/* Branch */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
                 Branch
               </label>
               <select
                 name="branch_id"
                 value={formData.branch_id}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500"
               >
                 <option value="">No branch</option>
                 {branches.map((b) => (
@@ -208,14 +208,14 @@ export default function EditStudentPage() {
 
             {/* Status */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
                 Account Status <span className="text-red-500">*</span>
               </label>
               <select
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500"
                 required
               >
                 <option value="ACTIVE">ACTIVE – Student can log in and use the platform</option>
@@ -232,9 +232,9 @@ export default function EditStudentPage() {
 
             {/* Password (optional reset) */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
                 New Password{' '}
-                <span className="text-gray-400 font-normal">(leave blank to keep current)</span>
+                <span className="text-gray-400 font-normal dark:text-slate-500">(leave blank to keep current)</span>
               </label>
               <Input
                 name="password"
@@ -247,7 +247,7 @@ export default function EditStudentPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-100">
+            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-100 dark:border-slate-700">
               <Button
                 type="button"
                 variant="outline"

@@ -98,7 +98,7 @@ export default function NotificationsPage() {
       urgent: 'bg-red-100 text-red-700',
     };
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${map[priority] || 'bg-gray-100 text-gray-600'}`}>
+      <span className={`px-2 py-1 text-xs font-medium rounded-full ${map[priority] || 'bg-gray-100 text-gray-600'} dark:text-slate-300 dark:bg-slate-700`}>
         {priority}
       </span>
     );
@@ -114,7 +114,7 @@ export default function NotificationsPage() {
       key: 'message',
       header: 'Message',
       render: (row: Notification) => (
-        <span className="text-gray-600 text-xs">{row.message.length > 60 ? row.message.slice(0, 60) + '...' : row.message}</span>
+        <span className="text-gray-600 text-xs dark:text-slate-300">{row.message.length > 60 ? row.message.slice(0, 60) + '...' : row.message}</span>
       ),
     },
     {
@@ -149,7 +149,7 @@ export default function NotificationsPage() {
   ];
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64 text-gray-500">Loading notifications...</div>;
+    return <div className="flex items-center justify-center h-64 text-gray-500 dark:text-slate-400">Loading notifications...</div>;
   }
 
   if (error) {
@@ -159,7 +159,7 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Notifications</h1>
         <button
           onClick={() => setIsModalOpen(true)}
           className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
@@ -174,17 +174,17 @@ export default function NotificationsPage() {
         <form onSubmit={handleCreate} className="space-y-4">
           {formError && <p className="text-sm text-red-600">{formError}</p>}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-            <input type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" required />
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Title</label>
+            <input type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500" required />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-            <textarea value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} rows={4} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" required />
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Message</label>
+            <textarea value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} rows={4} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500" required />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Target Type</label>
-              <select value={formData.target_type} onChange={e => setFormData({ ...formData, target_type: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Target Type</label>
+              <select value={formData.target_type} onChange={e => setFormData({ ...formData, target_type: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500">
                 <option value="all">All</option>
                 <option value="branches">Branches</option>
                 <option value="admins">Admins</option>
@@ -192,8 +192,8 @@ export default function NotificationsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-              <select value={formData.priority} onChange={e => setFormData({ ...formData, priority: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Priority</label>
+              <select value={formData.priority} onChange={e => setFormData({ ...formData, priority: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500">
                 <option value="low">Low</option>
                 <option value="normal">Normal</option>
                 <option value="high">High</option>
@@ -203,19 +203,19 @@ export default function NotificationsPage() {
           </div>
           {formData.target_type === 'branches' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
-              <select value={formData.branch_id} onChange={e => setFormData({ ...formData, branch_id: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Branch</label>
+              <select value={formData.branch_id} onChange={e => setFormData({ ...formData, branch_id: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500">
                 <option value="">All Branches</option>
                 {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Schedule At (optional)</label>
-            <input type="datetime-local" value={formData.scheduled_at} onChange={e => setFormData({ ...formData, scheduled_at: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Schedule At (optional)</label>
+            <input type="datetime-local" value={formData.scheduled_at} onChange={e => setFormData({ ...formData, scheduled_at: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500" />
           </div>
           <div className="flex justify-end space-x-3 pt-2">
-            <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+            <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:border-slate-500 dark:hover:bg-slate-700">Cancel</button>
             <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">Create</button>
           </div>
         </form>
