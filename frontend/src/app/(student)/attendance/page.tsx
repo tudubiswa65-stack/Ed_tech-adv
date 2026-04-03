@@ -12,12 +12,6 @@ interface Attendance {
   session?: string;
 }
 
-interface DateGroup {
-  label: string;
-  present: number;
-  total: number;
-}
-
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 function getInitials(name: string): string {
@@ -42,11 +36,7 @@ function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-function fmtShort(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function fmtFull(dateStr: string): string {
+function fmtDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -54,31 +44,52 @@ function fmtFull(dateStr: string): string {
   });
 }
 
+function fmtMonthYear(date: Date): string {
+  return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+}
+
 // ── design tokens ─────────────────────────────────────────────────────────────
 
-const BG = '#0f1117';
-const CARD_BG = '#1a1d27';
-const BORDER = '0.5px solid #2d3044';
-const DIVIDER = '0.5px solid #1e2133';
-const TEXT_PRIMARY = '#f1f3f7';
-const TEXT_MUTED = '#6b7280';
-const TEXT_BODY = '#c9cdd6';
+const BG = '#0f172a';
+const CARD = '#1e293b';
+const CARD_BORDER = '0.5px solid rgba(255,255,255,0.06)';
+const DIVIDER = '0.5px solid rgba(255,255,255,0.04)';
+const TEXT_MUTED = 'rgba(255,255,255,0.35)';
 const GREEN = '#34d399';
-const RED = '#ef4444';
+const RED = '#f87171';
+const BLUE = '#60a5fa';
 
-const card: React.CSSProperties = {
-  background: CARD_BG,
-  border: BORDER,
-  borderRadius: 16,
+const cardBase: React.CSSProperties = {
+  background: CARD,
+  border: CARD_BORDER,
+  borderRadius: 12,
+};
+
+const sectionLabel: React.CSSProperties = {
+  fontSize: 11,
+  textTransform: 'uppercase',
+  letterSpacing: '0.8px',
+  color: TEXT_MUTED,
 };
 
 // ── pill style helper ─────────────────────────────────────────────────────────
 
 function getPillStyle(status: string): React.CSSProperties {
-  if (status === 'present') return { background: '#052e16', color: GREEN, border: '0.5px solid #34d39940' };
-  if (status === 'absent')  return { background: '#2d0707', color: RED,   border: '0.5px solid #ef444440' };
-  return { background: '#1c1508', color: '#f59e0b', border: '0.5px solid #f59e0b40' };
+  if (status === 'present')
+    return { background: 'rgba(52,211,153,0.12)', color: GREEN, border: '1px solid rgba(52,211,153,0.2)' };
+  if (status === 'absent')
+    return { background: 'rgba(248,113,113,0.12)', color: RED, border: '1px solid rgba(248,113,113,0.2)' };
+  // late / excused — amber fallback
+  return { background: 'rgba(245,158,11,0.12)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.2)' };
 }
+
+const pillBase: React.CSSProperties = {
+  fontSize: 11,
+  fontWeight: 500,
+  padding: '4px 12px',
+  borderRadius: 20,
+  flexShrink: 0,
+};
 
 // ── skeleton block ────────────────────────────────────────────────────────────
 
@@ -86,7 +97,7 @@ function Skeleton({ style }: { style?: React.CSSProperties }) {
   return (
     <div
       style={{
-        background: CARD_BG,
+        background: 'rgba(255,255,255,0.06)',
         borderRadius: 8,
         animation: 'att-pulse 1.5s ease-in-out infinite',
         ...style,
@@ -99,11 +110,11 @@ function Skeleton({ style }: { style?: React.CSSProperties }) {
 
 function RetryMessage({ onRetry }: { onRetry: () => void }) {
   return (
-    <p style={{ fontSize: 13, color: TEXT_MUTED, textAlign: 'center', padding: '16px 0' }}>
+    <p style={{ fontSize: 13, color: TEXT_MUTED, textAlign: 'center', padding: '16px 0', margin: 0 }}>
       Could not load data.{' '}
       <button
         onClick={onRetry}
-        style={{ color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13 }}
+        style={{ color: BLUE, background: 'none', border: 'none', cursor: 'pointer', fontSize: 13 }}
       >
         Tap to retry.
       </button>
@@ -144,20 +155,29 @@ export default function StudentAttendancePage() {
   const absentCount = attendance.filter((r) => r.status === 'absent').length;
   const attendanceRate = totalClasses > 0 ? (presentCount / totalClasses) * 100 : 0;
 
-  // circular ring
-  const RADIUS = 28;
-  const CIRC = 2 * Math.PI * RADIUS;
-  const dashOffset = CIRC * (1 - attendanceRate / 100);
+  // attendance status label
+  const rateStatus = attendanceRate >= 80 ? 'Good' : attendanceRate >= 60 ? 'Fair' : 'Poor';
+  const rateStatusStyle: React.CSSProperties =
+    rateStatus === 'Good'
+      ? { background: 'rgba(52,211,153,0.1)', color: GREEN, border: '1px solid rgba(52,211,153,0.2)' }
+      : rateStatus === 'Fair'
+      ? { background: 'rgba(245,158,11,0.1)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.2)' }
+      : { background: 'rgba(248,113,113,0.1)', color: RED, border: '1px solid rgba(248,113,113,0.2)' };
 
-  // weekly snapshot grouping
-  const dateGroupMap = attendance.reduce<Record<string, DateGroup>>((acc, rec) => {
-    const label = fmtShort(rec.date);
-    if (!acc[label]) acc[label] = { label, present: 0, total: 0 };
-    acc[label].total++;
-    if (rec.status === 'present') acc[label].present++;
-    return acc;
-  }, {});
-  const dateGroups = Object.values(dateGroupMap);
+  // month/year badge — use most recent record date or today
+  const badgeDate =
+    attendance.length > 0
+      ? new Date(attendance[attendance.length - 1].date)
+      : new Date();
+  const monthYearLabel = fmtMonthYear(badgeDate);
+
+  // session counter — auto-increment per unique date
+  const sessionCounters: Record<string, number> = {};
+  const recordsWithSession = attendance.map((rec) => {
+    const dateKey = rec.date.slice(0, 10);
+    sessionCounters[dateKey] = (sessionCounters[dateKey] || 0) + 1;
+    return { ...rec, sessionNum: sessionCounters[dateKey] };
+  });
 
   // avatar
   const userName = user?.name ?? '';
@@ -174,6 +194,33 @@ export default function StudentAttendancePage() {
     margin: '0 auto',
   };
 
+  const avatarEl = user?.avatar_url ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={user.avatar_url}
+      alt={userName}
+      style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', border: CARD_BORDER, flexShrink: 0 }}
+    />
+  ) : (
+    <div
+      style={{
+        width: 36,
+        height: 36,
+        borderRadius: '50%',
+        background: avatarColor,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 13,
+        fontWeight: 600,
+        color: '#fff',
+        flexShrink: 0,
+      }}
+    >
+      {initials}
+    </div>
+  );
+
   // ── loading state ─────────────────────────────────────────────────────────────
 
   if (loading) {
@@ -181,29 +228,33 @@ export default function StudentAttendancePage() {
       <div style={outer}>
         <style>{`@keyframes att-pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
         {/* header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-          <div>
-            <Skeleton style={{ width: 130, height: 11, marginBottom: 8 }} />
-            <Skeleton style={{ width: 160, height: 22 }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <Skeleton style={{ width: 120, height: 14 }} />
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <Skeleton style={{ width: 72, height: 24, borderRadius: 20 }} />
+            <Skeleton style={{ width: 36, height: 36, borderRadius: '50%' }} />
           </div>
-          <Skeleton style={{ width: 40, height: 40, borderRadius: '50%' }} />
         </div>
         {/* stats row */}
-        <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-          <Skeleton style={{ flex: 1, height: 80, borderRadius: 16 }} />
-          <Skeleton style={{ flex: 1, height: 80, borderRadius: 16 }} />
-          <Skeleton style={{ flex: 1, height: 80, borderRadius: 16 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
+          <Skeleton style={{ height: 78, borderRadius: 12 }} />
+          <Skeleton style={{ height: 78, borderRadius: 12 }} />
+          <Skeleton style={{ height: 78, borderRadius: 12 }} />
         </div>
-        {/* snapshot */}
-        <Skeleton style={{ height: 96, borderRadius: 16, marginBottom: 16 }} />
-        {/* log rows */}
-        <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
+        {/* rate card */}
+        <Skeleton style={{ height: 88, borderRadius: 12, marginBottom: 12 }} />
+        {/* log */}
+        <div style={{ ...cardBase, padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '10px 14px', borderBottom: '0.5px solid rgba(255,255,255,0.05)' }}>
+            <Skeleton style={{ width: 80, height: 10 }} />
+          </div>
           {[1, 2, 3].map((i) => (
-            <div key={i} style={{ padding: '14px 16px', borderBottom: DIVIDER }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Skeleton style={{ width: 110, height: 14 }} />
-                <Skeleton style={{ width: 64, height: 22, borderRadius: 99 }} />
+            <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, padding: '13px 14px', borderBottom: DIVIDER }}>
+              <div>
+                <Skeleton style={{ width: 100, height: 13, marginBottom: 6 }} />
+                <Skeleton style={{ width: 60, height: 10 }} />
               </div>
+              <Skeleton style={{ width: 64, height: 22, borderRadius: 20 }} />
             </div>
           ))}
         </div>
@@ -218,184 +269,157 @@ export default function StudentAttendancePage() {
       <style>{`@keyframes att-pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
 
       {/* ── HEADER ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-        <div>
-          <p style={{ fontSize: 11, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4, fontWeight: 500, margin: '0 0 4px' }}>
-            Student Dashboard
-          </p>
-          <h1 style={{ fontSize: 20, fontWeight: 500, color: TEXT_PRIMARY, margin: 0 }}>My Attendance</h1>
-        </div>
-        {user?.avatar_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={user.avatar_url}
-            alt={userName}
-            style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', border: BORDER, flexShrink: 0 }}
-          />
-        ) : (
-          <div
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <h1 style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.9)', margin: 0 }}>My Attendance</h1>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <span
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              background: avatarColor,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#fff',
-              flexShrink: 0,
+              background: 'rgba(59,130,246,0.12)',
+              border: '1px solid rgba(59,130,246,0.2)',
+              color: BLUE,
+              fontSize: 11,
+              borderRadius: 20,
+              padding: '4px 10px',
+              fontWeight: 500,
             }}
           >
-            {initials}
-          </div>
-        )}
+            {monthYearLabel}
+          </span>
+          {avatarEl}
+        </div>
       </div>
 
       {/* ── STATS ROW ── */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
         {/* Total */}
-        <div style={{ ...card, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '12px 8px' }}>
-          <span style={{ fontSize: 10, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Total</span>
-          <span style={{ fontSize: 24, fontWeight: 700, color: TEXT_PRIMARY, lineHeight: 1 }}>{totalClasses}</span>
+        <div style={{ ...cardBase, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px 12px' }}>
+          <span style={{ ...sectionLabel, marginBottom: 6 }}>Total</span>
+          <span style={{ fontSize: 22, fontWeight: 700, color: '#fff', lineHeight: 1 }}>{totalClasses}</span>
           <span style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 5 }}>classes</span>
         </div>
 
-        {/* Present / Absent */}
-        <div style={{ ...card, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '12px 8px' }}>
-          <span style={{ fontSize: 10, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Present</span>
-          <span style={{ fontSize: 24, fontWeight: 700, color: GREEN, lineHeight: 1 }}>{presentCount}</span>
-          <span style={{ fontSize: 10, color: RED, marginTop: 5 }}>{absentCount} absent</span>
+        {/* Present */}
+        <div style={{ ...cardBase, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px 12px' }}>
+          <span style={{ ...sectionLabel, marginBottom: 6 }}>Present</span>
+          <span style={{ fontSize: 22, fontWeight: 700, color: GREEN, lineHeight: 1 }}>{presentCount}</span>
+          <span style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 5 }}>days</span>
         </div>
 
-        {/* Rate ring */}
-        <div style={{ ...card, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '12px 8px' }}>
-          <span style={{ fontSize: 10, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Rate</span>
-          <div style={{ position: 'relative', width: 56, height: 56 }}>
-            <svg width="56" height="56" viewBox="0 0 56 56" style={{ transform: 'rotate(-90deg)' }}>
-              <circle cx="28" cy="28" r={RADIUS} fill="none" stroke="#2d3044" strokeWidth="5" />
-              <circle
-                cx="28"
-                cy="28"
-                r={RADIUS}
-                fill="none"
-                stroke={GREEN}
-                strokeWidth="5"
-                strokeLinecap="round"
-                strokeDasharray={CIRC}
-                strokeDashoffset={dashOffset}
-                style={{ transition: 'stroke-dashoffset 0.6s ease' }}
-              />
-            </svg>
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 11,
-                fontWeight: 700,
-                color: TEXT_PRIMARY,
-              }}
-            >
-              {Math.round(attendanceRate)}%
-            </div>
-          </div>
+        {/* Absent */}
+        <div style={{ ...cardBase, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px 12px' }}>
+          <span style={{ ...sectionLabel, marginBottom: 6 }}>Absent</span>
+          <span style={{ fontSize: 22, fontWeight: 700, color: RED, lineHeight: 1 }}>{absentCount}</span>
+          <span style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 5 }}>days</span>
         </div>
       </div>
 
-      {/* ── WEEKLY SNAPSHOT ── */}
-      <div style={{ ...card, padding: 16, marginBottom: 16 }}>
-        <p style={{ fontSize: 11, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 12px', fontWeight: 600 }}>
-          Weekly Snapshot
-        </p>
-        {error ? (
-          <RetryMessage onRetry={fetchAttendance} />
-        ) : dateGroups.length === 0 ? (
-          <p style={{ fontSize: 13, color: TEXT_MUTED, textAlign: 'center', padding: '8px 0', margin: 0 }}>
-            No attendance records yet.
-          </p>
-        ) : (
-          <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}>
-            {dateGroups.map((grp) => {
-              const ratio = grp.total > 0 ? grp.present / grp.total : 0;
-              const barColor = ratio > 0.5 ? GREEN : RED;
-              return (
-                <div key={grp.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 48, flex: '0 0 auto' }}>
-                  <div style={{ width: '100%', height: 6, background: '#2d3044', borderRadius: 99, marginBottom: 6, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${ratio * 100}%`, background: barColor, borderRadius: 99 }} />
-                  </div>
-                  <span style={{ fontSize: 10, color: TEXT_MUTED, marginBottom: 2 }}>{grp.label}</span>
-                  <span style={{ fontSize: 10, color: barColor, fontWeight: 600 }}>
-                    {grp.present}/{grp.total}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* ── CLASS LOG ── */}
-      <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
-        {/* card header */}
+      {/* ── ATTENDANCE RATE CARD ── */}
+      <div style={{ ...cardBase, padding: '14px 16px', marginBottom: 12 }}>
+        {/* top row */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <span style={{ fontSize: 12, color: TEXT_MUTED }}>Attendance rate</span>
+          <span style={{ fontSize: 20, fontWeight: 500, color: GREEN }}>{Math.round(attendanceRate)}%</span>
+        </div>
+        {/* progress bar */}
         <div
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '14px 16px',
-            borderBottom: DIVIDER,
+            height: 8,
+            background: 'rgba(255,255,255,0.07)',
+            borderRadius: 8,
+            overflow: 'hidden',
+            marginBottom: 10,
           }}
         >
-          <span style={{ fontSize: 11, color: TEXT_MUTED, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
-            Class Log
-          </span>
-          <span style={{ fontSize: 12, color: TEXT_MUTED }}>{attendance.length} entries</span>
+          <div
+            style={{
+              height: '100%',
+              width: `${attendanceRate}%`,
+              background: GREEN,
+              borderRadius: 8,
+              transition: 'width 0.6s ease',
+            }}
+          />
+        </div>
+        {/* legend row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: GREEN, display: 'inline-block', flexShrink: 0 }} />
+            <span style={{ fontSize: 11, color: TEXT_MUTED }}>
+              Present {presentCount}/{totalClasses}
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: RED, display: 'inline-block', flexShrink: 0 }} />
+            <span style={{ fontSize: 11, color: TEXT_MUTED }}>
+              Absent {absentCount}/{totalClasses}
+            </span>
+          </div>
+          <div style={{ marginLeft: 'auto' }}>
+            <span
+              style={{
+                ...rateStatusStyle,
+                fontSize: 11,
+                fontWeight: 500,
+                padding: '3px 10px',
+                borderRadius: 20,
+              }}
+            >
+              {rateStatus}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── SESSION LOG ── */}
+      <div style={{ ...cardBase, padding: 0, overflow: 'hidden' }}>
+        {/* column header */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr auto',
+            padding: '10px 14px',
+            borderBottom: '0.5px solid rgba(255,255,255,0.05)',
+          }}
+        >
+          <span style={{ ...sectionLabel }}>Date</span>
+          <span style={{ ...sectionLabel }}>Status</span>
         </div>
 
         {error ? (
-          <div style={{ padding: '20px 16px' }}>
+          <div style={{ padding: '20px 14px' }}>
             <RetryMessage onRetry={fetchAttendance} />
           </div>
         ) : attendance.length === 0 ? (
-          <div style={{ padding: '32px 16px', textAlign: 'center' }}>
+          <div style={{ padding: '32px 14px', textAlign: 'center' }}>
             <p style={{ fontSize: 13, color: TEXT_MUTED, margin: 0 }}>No attendance records yet.</p>
           </div>
         ) : (
-          attendance.map((record, idx) => {
+          recordsWithSession.map((record, idx) => {
             const pill = getPillStyle(record.status);
-
-            const session = record.period || record.session;
+            const isAbsent = record.status === 'absent';
+            const isLast = idx === recordsWithSession.length - 1;
 
             return (
               <div
                 key={record.id}
                 style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr auto',
                   alignItems: 'center',
-                  padding: '14px 16px',
-                  borderBottom: idx < attendance.length - 1 ? DIVIDER : 'none',
+                  padding: '13px 14px',
+                  borderBottom: isLast ? 'none' : DIVIDER,
+                  background: isAbsent ? 'rgba(248,113,113,0.04)' : 'transparent',
                 }}
               >
                 <div>
-                  <p style={{ fontSize: 13, color: TEXT_BODY, margin: session ? '0 0 2px' : 0 }}>{fmtFull(record.date)}</p>
-                  {session && <p style={{ fontSize: 11, color: TEXT_MUTED, margin: 0 }}>{session}</p>}
+                  <p style={{ fontSize: 13, fontWeight: 500, color: '#fff', margin: '0 0 3px' }}>
+                    {fmtDate(record.date)}
+                  </p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', margin: 0 }}>
+                    Session {record.sessionNum}
+                  </p>
                 </div>
-                <span
-                  style={{
-                    ...pill,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    padding: '3px 10px',
-                    borderRadius: 99,
-                    textTransform: 'capitalize',
-                    flexShrink: 0,
-                  }}
-                >
+                <span style={{ ...pill, ...pillBase, textTransform: 'capitalize' }}>
                   {capitalize(record.status)}
                 </span>
               </div>
