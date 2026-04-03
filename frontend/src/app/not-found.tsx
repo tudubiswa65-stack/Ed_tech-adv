@@ -4,8 +4,8 @@ import Link from 'next/link';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8 dark:bg-slate-800">
-      <div className="text-center max-w-md">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start p-8 dark:bg-slate-800">
+      <div className="text-center max-w-md mb-8">
         <div className="mb-8">
           <div className="relative">
             <span className="text-[180px] font-bold text-gray-100 dark:text-slate-700">404</span>
@@ -29,9 +29,9 @@ export default function NotFound() {
         <h1 className="text-3xl font-bold text-gray-900 mb-2 dark:text-slate-100">
           Page Not Found
         </h1>
-        <p className="text-gray-600 mb-8 dark:text-slate-300">
+        <p className="text-gray-600 mb-4 dark:text-slate-300">
           The page you&apos;re looking for doesn&apos;t exist or has been moved.
-          Let&apos;s get you back on track.
+          While you wait, play a game! 🎮
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
@@ -47,6 +47,16 @@ export default function NotFound() {
             Go to Dashboard
           </Link>
         </div>
+      </div>
+
+      <div className="w-full max-w-5xl rounded-xl overflow-hidden shadow-2xl border border-gray-200 dark:border-slate-600">
+        <iframe
+          src="/pun-shooter.html"
+          title="PUN SHOOTER: Word Attack! — Play while you wait"
+          className="w-full"
+          style={{ height: '85vh', minHeight: '500px', border: 'none' }}
+          allow="autoplay"
+        />
       </div>
     </div>
   );
