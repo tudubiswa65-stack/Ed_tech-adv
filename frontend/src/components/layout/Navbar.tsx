@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/context/ThemeContext';
+import { useToast } from '@/context/ToastContext';
 import { apiClient } from '@/lib/apiClient';
 import { validateAvatarFile } from '@/lib/avatarValidation';
 
@@ -15,6 +16,7 @@ interface NavbarProps {
 export default function Navbar({ title, onMenuClick }: NavbarProps) {
   const { user, logout, refreshUser } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { error: toastError, success: toastSuccess } = useToast();
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const adminRoles = ['admin', 'super_admin', 'branch_admin'];
@@ -33,7 +35,7 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
     if (!file) return;
     const validation = validateAvatarFile(file);
     if (!validation.valid) {
-      alert(validation.error);
+      toastError(validation.error ?? 'Invalid file.');
       return;
     }
     setUploading(true);
@@ -46,9 +48,10 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       await refreshUser();
+      toastSuccess('Profile photo updated successfully.');
     } catch (err) {
       console.error('Avatar upload failed:', err);
-      alert('Failed to upload avatar. Please try again.');
+      toastError('Failed to upload avatar. Please try again.');
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

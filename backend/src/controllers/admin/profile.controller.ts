@@ -79,7 +79,9 @@ export const uploadAdminAvatar = async (req: AuthRequest, res: Response) => {
 
     const rawExt = file.mimetype.split('/')[1];
     const ext = rawExt === 'jpeg' ? 'jpg' : rawExt;
-    const filePath = `avatars/${instituteId ?? 'admin'}/${adminId}/avatar.${ext}`;
+    // Use adminId as fallback to avoid path collisions when instituteId is absent
+    const scope = instituteId ?? adminId;
+    const filePath = `avatars/${scope}/${adminId}/avatar.${ext}`;
 
     const { error: uploadError } = await supabaseAdmin.storage
       .from('avatars')

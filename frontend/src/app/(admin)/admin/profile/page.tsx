@@ -6,6 +6,7 @@ import PageWrapper from '@/components/layout/PageWrapper';
 import { Card, Button, Input, Spinner } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/context/ToastContext';
 import { validateAvatarFile } from '@/lib/avatarValidation';
 
 interface AdminProfile {
@@ -20,6 +21,7 @@ interface AdminProfile {
 
 export default function AdminProfilePage() {
   const { refreshUser } = useAuth();
+  const { error: toastError, success: toastSuccess } = useToast();
   const [profile, setProfile] = useState<AdminProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -52,9 +54,10 @@ export default function AdminProfilePage() {
       await apiClient.put('/admin/profile', { name: editName.trim() });
       setProfile((p) => p ? { ...p, name: editName.trim() } : p);
       await refreshUser();
+      toastSuccess('Profile updated successfully.');
     } catch (err) {
       console.error('Failed to update profile:', err);
-      alert('Failed to update profile. Please try again.');
+      toastError('Failed to update profile. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -65,7 +68,7 @@ export default function AdminProfilePage() {
     if (!file) return;
     const validation = validateAvatarFile(file);
     if (!validation.valid) {
-      alert(validation.error);
+      toastError(validation.error ?? 'Invalid file.');
       return;
     }
     setUploading(true);
@@ -79,10 +82,11 @@ export default function AdminProfilePage() {
       if (newUrl) {
         setProfile((p) => p ? { ...p, avatar_url: newUrl } : p);
         await refreshUser();
+        toastSuccess('Profile photo updated successfully.');
       }
     } catch (err) {
       console.error('Avatar upload failed:', err);
-      alert('Failed to upload avatar. Please try again.');
+      toastError('Failed to upload avatar. Please try again.');
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

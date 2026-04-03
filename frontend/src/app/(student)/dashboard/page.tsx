@@ -7,6 +7,7 @@ import PageWrapper from '@/components/layout/PageWrapper';
 import { Card, Button, Badge, Spinner, Modal, Input } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/context/ToastContext';
 import { validateAvatarFile } from '@/lib/avatarValidation';
 
 interface Profile {
@@ -91,6 +92,7 @@ export default function StudentProfileDashboard() {
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarFileRef = useRef<HTMLInputElement>(null);
   const { refreshUser } = useAuth();
+  const { error: toastError, success: toastSuccess } = useToast();
   const router = useRouter();
 
   useEffect(() => {
@@ -130,7 +132,7 @@ export default function StudentProfileDashboard() {
       setShowEditModal(false);
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Failed to update profile');
+      toastError('Failed to update profile');
     } finally {
       setSaving(false);
     }
@@ -138,11 +140,11 @@ export default function StudentProfileDashboard() {
 
   const handleChangePassword = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert('Passwords do not match');
+      toastError('Passwords do not match');
       return;
     }
     if (passwordData.newPassword.length < 8) {
-      alert('Password must be at least 8 characters');
+      toastError('Password must be at least 8 characters');
       return;
     }
     setSaving(true);
@@ -151,11 +153,11 @@ export default function StudentProfileDashboard() {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
       });
-      alert('Password changed successfully');
+      toastSuccess('Password changed successfully');
       setShowPasswordModal(false);
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to change password');
+      toastError(error.response?.data?.error || 'Failed to change password');
     } finally {
       setSaving(false);
     }
@@ -166,7 +168,7 @@ export default function StudentProfileDashboard() {
     if (!file) return;
     const validation = validateAvatarFile(file);
     if (!validation.valid) {
-      alert(validation.error);
+      toastError(validation.error ?? 'Invalid file.');
       return;
     }
     setAvatarUploading(true);
@@ -182,10 +184,11 @@ export default function StudentProfileDashboard() {
           prev && prev.profile ? { ...prev, profile: { ...prev.profile, avatar_url: newUrl } } : prev
         );
         await refreshUser();
+        toastSuccess('Profile photo updated successfully.');
       }
     } catch (err) {
       console.error('Avatar upload failed:', err);
-      alert('Failed to upload avatar. Please try again.');
+      toastError('Failed to upload avatar. Please try again.');
     } finally {
       setAvatarUploading(false);
       if (avatarFileRef.current) avatarFileRef.current.value = '';
