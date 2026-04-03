@@ -277,14 +277,30 @@ export const uploadAvatar = async (req: AuthRequest, res: Response) => {
       .from('avatars')
       .getPublicUrl(filePath);
 
-    const { error: updateError } = await supabaseAdmin
-      .from('students')
+    // Update the users table so the auth context (/auth/me) returns the new avatar_url.
+    // This is the source of truth for the navbar and auth state.
+    const { error: usersUpdateError } = await supabaseAdmin
+      .from('users')
       .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
       .eq('id', studentId)
-      .eq('institute_id', instituteId);
+      .eq('role', 'student');
 
-    if (updateError) {
+    if (usersUpdateError) {
+      console.error('Failed to update users table avatar_url:', usersUpdateError);
       return res.status(500).json({ success: false, error: 'Failed to update profile' });
+    }
+
+    // Also update the students table for the student profile page.
+    // Use only studentId as the filter since instituteId may not be in the JWT payload.
+    const { error: studentsUpdateError } = await supabaseAdmin
+      .from('students')
+      .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+      .eq('id', studentId);
+
+    if (studentsUpdateError) {
+      // Non-fatal: the users table (auth source of truth) was already updated.
+      // Log so that any data-sync issues are visible in server logs.
+      console.error('Failed to sync avatar_url to students table:', studentsUpdateError);
     }
 
     res.json({ success: true, data: { avatar_url: publicUrl } });

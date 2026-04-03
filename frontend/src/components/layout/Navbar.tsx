@@ -14,7 +14,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ title, onMenuClick }: NavbarProps) {
-  const { user, logout, refreshUser } = useAuth();
+  const { user, logout, updateUserAvatar } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { error: toastError, success: toastSuccess } = useToast();
   const [uploading, setUploading] = useState(false);
@@ -44,10 +44,11 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
       formData.append('avatar', file);
       const isAdmin = user?.role && adminRoles.includes(user.role);
       const endpoint = isAdmin ? '/admin/profile/avatar' : '/student/profile/avatar';
-      await apiClient.post(endpoint, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      await refreshUser();
+      const res = await apiClient.post(endpoint, formData);
+      const newUrl = res.data?.data?.avatar_url;
+      if (newUrl) {
+        updateUserAvatar(newUrl);
+      }
       toastSuccess('Profile photo updated successfully.');
     } catch (err) {
       console.error('Avatar upload failed:', err);

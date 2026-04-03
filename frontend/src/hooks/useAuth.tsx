@@ -18,6 +18,7 @@ interface AuthContextType {
   login: (email: string, password: string, role: 'admin' | 'student') => Promise<User | null>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  updateUserAvatar: (url: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,10 +34,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await apiClient.get('/auth/me');
       console.log('[AuthProvider] STEP C: User authenticated', { user: response.data.data?.user });
-      setUser(response.data.data?.user ?? null);
-    } catch (error) {
+      const freshUser = response.data.data?.user;
+      if (freshUser) {
+        setUser(freshUser);
+      }
+    } catch (error: any) {
       console.log('[AuthProvider] STEP D: No authenticated user found', error);
-      setUser(null);
+      // Only clear user state on genuine authentication failure (401).
+      // Transient errors (network, 500, etc.) must not log the user out.
+      if (error?.response?.status === 401) {
+        setUser(null);
+      }
     } finally {
       console.log('[AuthProvider] STEP E: refreshUser complete, setting isLoading=false');
       setIsLoading(false);
@@ -110,10 +118,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log('[useAuth] STEP Y: logout completed');
   };
 
+  const updateUserAvatar = useCallback((url: string) => {
+    setUser((prev) => (prev ? { ...prev, avatar_url: url } : prev));
+  }, []);
+
   console.log('[AuthProvider] STEP Z: Rendering with state:', { user: !!user, isLoading });
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout, refreshUser, updateUserAvatar }}>
       {children}
     </AuthContext.Provider>
   );
