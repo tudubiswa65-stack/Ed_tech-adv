@@ -15,44 +15,49 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
 
   return (
     <html lang="en">
-      <body>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8 dark:bg-slate-800">
-          <div className="text-center max-w-md">
-            <div className="mb-8">
-              <svg
-                className="mx-auto h-24 w-24 text-red-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2 dark:text-slate-100">
-              Critical Error
-            </h1>
-            <p className="text-gray-600 mb-8 dark:text-slate-300">
-              Something went critically wrong. Please try refreshing the page or contact support if the problem persists.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={reset}
-                className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
-              >
-                Try Again
-              </button>
-              <Link
-                href="/"
-                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium dark:text-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600"
-              >
-                Go Home
-              </Link>
-            </div>
+      <body style={{ margin: 0, padding: 0, overflow: 'hidden', width: '100vw', height: '100vh', position: 'relative' }}>
+        {/* Full-screen shooter game */}
+        <iframe
+          src="/pun-shooter.html"
+          title="PUN SHOOTER: Word Attack! — Play while you wait"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
+          allow="autoplay"
+        />
+
+        {/* Compact overlay banner at the top */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem',
+          padding: '0.5rem 1rem',
+          background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', color: '#fff',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
+            <span style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f87171', flexShrink: 0 }}>Critical Error</span>
+            <span style={{ fontSize: '0.875rem', color: '#d1d5db', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              Something went critically wrong — take it out on some words! 🎮
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+            <button
+              onClick={reset}
+              style={{
+                padding: '0.375rem 0.75rem', fontSize: '0.75rem', fontWeight: 600,
+                background: 'rgba(255,255,255,0.2)', color: '#fff', border: 'none',
+                borderRadius: '0.5rem', cursor: 'pointer',
+              }}
+            >
+              Try Again
+            </button>
+            <Link
+              href="/"
+              style={{
+                padding: '0.375rem 0.75rem', fontSize: '0.75rem', fontWeight: 600,
+                background: '#f87171', color: '#000', borderRadius: '0.5rem',
+                textDecoration: 'none',
+              }}
+            >
+              Home
+            </Link>
           </div>
         </div>
       </body>
