@@ -171,9 +171,9 @@ export default function MobileBottomNav({ role }: { role: Role }) {
 
   return (
     <nav
-      className={`fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t shadow-[0_-4px_12px_rgba(0,0,0,0.08)] ${isStudentRole ? '' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700'}`}
+      className={`fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t ${isStudentRole ? '' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 shadow-[0_-4px_12px_rgba(0,0,0,0.08)]'}`}
       style={isStudentRole
-        ? { background: '#0f172a', borderColor: 'rgba(255,255,255,0.06)' }
+        ? { background: '#13151f', borderColor: '#2d3044', paddingBottom: 'env(safe-area-inset-bottom)' }
         : undefined}
       aria-label="Mobile navigation"
     >
@@ -190,16 +190,31 @@ export default function MobileBottomNav({ role }: { role: Role }) {
             : pathname === tab.href || pathname.startsWith(tab.href + '/');
 
           if (isStudentRole) {
+            const iconColor = isActive ? '#3b82f6' : '#6b7280';
+            const labelColor = isActive ? '#3b82f6' : '#6b7280';
             return (
               <Link
                 key={tab.href}
                 href={tab.href}
                 className="flex flex-1 flex-col items-center justify-center gap-1 transition-colors"
-                style={{ color: isActive ? '#60a5fa' : 'rgba(255,255,255,0.3)' }}
+                style={{ color: iconColor }}
                 aria-current={isActive ? 'page' : undefined}
               >
-                {tab.icon}
-                <span className="text-[10px] font-medium leading-none">{tab.label}</span>
+                <div
+                  style={
+                    isActive
+                      ? { background: '#1e3a5f', borderRadius: 10, padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }
+                      : { padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }
+                  }
+                >
+                  {tab.icon}
+                </div>
+                <span
+                  className="text-[10px] leading-none"
+                  style={{ color: labelColor, fontWeight: isActive ? 500 : 400 }}
+                >
+                  {tab.label}
+                </span>
               </Link>
             );
           }
