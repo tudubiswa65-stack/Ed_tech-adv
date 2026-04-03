@@ -123,7 +123,7 @@ export default function StudyMaterialsPage() {
         {/* Filters */}
         <Card>
           <div className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Search</label>
                 <input
@@ -131,7 +131,7 @@ export default function StudyMaterialsPage() {
                   value={filters.search}
                   onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
                   placeholder="Search materials..."
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                  className="w-full rounded-full border border-gray-300 px-4 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
                 />
               </div>
               <div>

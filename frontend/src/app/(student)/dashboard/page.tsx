@@ -212,7 +212,7 @@ export default function StudentProfileDashboard() {
 
   return (
     <PageWrapper title="My Profile">
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
 
         {/* ── 1. Student Basic Information ── */}
         <Card>
@@ -261,7 +261,7 @@ export default function StudentProfileDashboard() {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-bold text-gray-900 truncate dark:text-slate-100">{profile?.name || '—'}</h2>
+              <h2 className="text-base sm:text-xl font-bold text-gray-900 truncate dark:text-slate-100">{profile?.name || '—'}</h2>
               <p className="text-gray-500 text-sm mt-0.5 dark:text-slate-400">{profile?.email || '—'}</p>
               <div className="flex flex-wrap items-center gap-2 mt-2">
                 {profile?.roll_number && (
@@ -281,11 +281,11 @@ export default function StudentProfileDashboard() {
                 <p className="text-xs text-gray-400 mt-1 dark:text-slate-500">Member since {formatDate(profile.created_at)}</p>
               )}
             </div>
-            <div className="flex gap-2 flex-shrink-0">
-              <Button size="sm" variant="outline" onClick={() => setShowEditModal(true)}>
+            <div className="flex flex-wrap gap-2 flex-shrink-0">
+              <Button size="sm" variant="outline" onClick={() => setShowEditModal(true)} className="w-full sm:w-auto">
                 Edit Profile
               </Button>
-              <Button size="sm" variant="outline" onClick={() => setShowPasswordModal(true)}>
+              <Button size="sm" variant="outline" onClick={() => setShowPasswordModal(true)} className="w-full sm:w-auto">
                 Change Password
               </Button>
             </div>
@@ -295,7 +295,7 @@ export default function StudentProfileDashboard() {
         {/* ── 2. Performance Overview ── */}
         <div>
           <h3 className="text-base font-semibold text-gray-700 mb-3 dark:text-slate-200">📊 Performance Overview</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {(
               [
                 { label: 'Total Tests', value: performance.totalTests, color: '' },
@@ -313,9 +313,9 @@ export default function StudentProfileDashboard() {
               ] as { label: string; value: string | number; color: string }[]
             ).map((stat) => (
               <Card key={stat.label}>
-                <div className="text-center p-4">
+                <div className="text-center p-3 sm:p-4">
                   <p className="text-xs text-gray-500 mb-1 dark:text-slate-400">{stat.label}</p>
-                  <p className={`text-2xl font-bold ${stat.color}`}
+                  <p className={`text-xl sm:text-2xl font-bold ${stat.color}`}
                     style={stat.color ? undefined : { color: 'var(--color-primary)' }}>
                     {stat.value}
                   </p>
@@ -332,7 +332,7 @@ export default function StudentProfileDashboard() {
             {leaderboard.rank !== null ? (
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <div className="text-center">
-                  <p className="text-4xl font-extrabold" style={{ color: 'var(--color-primary)' }}>
+                  <p className="text-2xl sm:text-4xl font-extrabold" style={{ color: 'var(--color-primary)' }}>
                     #{leaderboard.rank}
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5 dark:text-slate-400">
@@ -386,43 +386,78 @@ export default function StudentProfileDashboard() {
 
         {/* ── 5. Recent Test History ── */}
         <Card>
-          <div className="p-4 md:p-6">
+          <div className="p-3 sm:p-5">
             <h3 className="text-base font-semibold text-gray-700 mb-4 dark:text-slate-200">🧾 Recent Test History</h3>
             {recentTests.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-gray-500 border-b dark:text-slate-400">
-                      <th className="pb-2 pr-4 font-medium">Test Name</th>
-                      <th className="pb-2 pr-4 font-medium">Score</th>
-                      <th className="pb-2 pr-4 font-medium">Status</th>
-                      <th className="pb-2 font-medium">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
-                    {recentTests.map((result) => (
-                      <tr key={result.id} className="hover:bg-gray-50 cursor-pointer dark:bg-slate-800 dark:hover:bg-slate-700"
-                        onClick={() => router.push(`/results/${result.id}`)}>
-                        <td className="py-3 pr-4 font-medium text-gray-900 dark:text-slate-100">
-                          {result.tests?.title || '—'}
-                        </td>
-                        <td className="py-3 pr-4">
-                          <span className="font-semibold">{result.score}/{result.total_marks}</span>
+              <>
+                {/* Mobile cards — visible below sm breakpoint */}
+                <div className="block sm:hidden space-y-3">
+                  {recentTests.map((result) => (
+                    <div
+                      key={result.id}
+                      className="p-3 bg-gray-50 rounded-xl cursor-pointer dark:bg-slate-800"
+                      onClick={() => router.push(`/results/${result.id}`)}
+                    >
+                      <p className="font-medium text-gray-900 dark:text-slate-100 mb-2">
+                        {result.tests?.title || '—'}
+                      </p>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-500 dark:text-slate-400">Score</span>
+                        <span className="font-semibold">
+                          {result.score}/{result.total_marks}
                           <span className="text-gray-500 ml-1 dark:text-slate-400">({Math.round(result.percentage)}%)</span>
-                        </td>
-                        <td className="py-3 pr-4">
-                          <Badge variant={result.status === 'passed' ? 'success' : result.status === 'failed' ? 'danger' : 'info'}>
-                            {result.status.charAt(0).toUpperCase() + result.status.slice(1)}
-                          </Badge>
-                        </td>
-                        <td className="py-3 text-gray-500 dark:text-slate-400">
-                          {formatDate(result.submitted_at)}
-                        </td>
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm mt-1">
+                        <span className="text-gray-500 dark:text-slate-400">Status</span>
+                        <Badge variant={result.status === 'passed' ? 'success' : result.status === 'failed' ? 'danger' : 'info'}>
+                          {result.status.charAt(0).toUpperCase() + result.status.slice(1)}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center text-sm mt-1">
+                        <span className="text-gray-500 dark:text-slate-400">Date</span>
+                        <span className="text-gray-500 dark:text-slate-400">{formatDate(result.submitted_at)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop table — hidden below sm breakpoint */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-gray-500 border-b dark:text-slate-400">
+                        <th className="pb-2 pr-4 font-medium">Test Name</th>
+                        <th className="pb-2 pr-4 font-medium">Score</th>
+                        <th className="pb-2 pr-4 font-medium">Status</th>
+                        <th className="pb-2 font-medium">Date</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
+                      {recentTests.map((result) => (
+                        <tr key={result.id} className="hover:bg-gray-50 cursor-pointer dark:bg-slate-800 dark:hover:bg-slate-700"
+                          onClick={() => router.push(`/results/${result.id}`)}>
+                          <td className="py-3 pr-4 font-medium text-gray-900 dark:text-slate-100">
+                            {result.tests?.title || '—'}
+                          </td>
+                          <td className="py-3 pr-4">
+                            <span className="font-semibold">{result.score}/{result.total_marks}</span>
+                            <span className="text-gray-500 ml-1 dark:text-slate-400">({Math.round(result.percentage)}%)</span>
+                          </td>
+                          <td className="py-3 pr-4">
+                            <Badge variant={result.status === 'passed' ? 'success' : result.status === 'failed' ? 'danger' : 'info'}>
+                              {result.status.charAt(0).toUpperCase() + result.status.slice(1)}
+                            </Badge>
+                          </td>
+                          <td className="py-3 text-gray-500 dark:text-slate-400">
+                            {formatDate(result.submitted_at)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             ) : (
               <p className="text-gray-500 text-center py-6 dark:text-slate-400">No tests completed yet.</p>
             )}
