@@ -58,11 +58,21 @@ function StatCell({
   );
 }
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+const CHART_MONTHS  = 6;
+const MAX_BAR_HEIGHT = 60;
+const DONUT_RADIUS   = 35;
+
 // ─── Mini bar chart ───────────────────────────────────────────────────────────
+interface ChartDataPoint {
+  month: string;
+  [key: string]: number | string;
+}
+
 function MiniBarChart({
   data, valueKey, max, activeColor, inactiveColor, activeLabelColor, inactiveLabelColor,
 }: {
-  data: any[];
+  data: ChartDataPoint[];
   valueKey: string;
   max: number;
   activeColor: string;
@@ -70,14 +80,13 @@ function MiniBarChart({
   activeLabelColor: string;
   inactiveLabelColor: string;
 }) {
-  const MAX_BAR_H = 60;
-  const display = data.length > 0 ? data : Array.from({ length: 6 }, (_, i) => ({ month: `M${i + 1}`, [valueKey]: 0 }));
+  const display = data.length > 0 ? data : Array.from({ length: CHART_MONTHS }, (_, i) => ({ month: `M${i + 1}`, [valueKey]: 0 }));
 
   return (
-    <div style={{ display: 'flex', gap: 4, alignItems: 'flex-end', height: MAX_BAR_H + 20 }}>
+    <div style={{ display: 'flex', gap: 4, alignItems: 'flex-end', height: MAX_BAR_HEIGHT + 20 }}>
       {display.map((item, idx) => {
         const isActive = idx === display.length - 1;
-        const barH = isActive ? Math.max(8, Math.round((item[valueKey] / max) * MAX_BAR_H)) : 8;
+        const barH = isActive ? Math.max(8, Math.round((Number(item[valueKey]) / max) * MAX_BAR_HEIGHT)) : 8;
         const label = String(item.month ?? '').slice(0, 3);
         return (
           <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
@@ -238,7 +247,13 @@ export default function SuperAdminDashboard() {
   };
 
   // ── Derived user display values ──────────────────────────────────────────────
-  const initials = user?.name?.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() ?? '?';
+  const initials = user?.name
+    ?.split(' ')
+    .filter(Boolean)
+    .map(n => n[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() ?? '?';
   const roleLabel = user?.role === 'super_admin' ? 'Super Admin' : 'Admin';
 
   if (loading) {
@@ -268,14 +283,14 @@ export default function SuperAdminDashboard() {
   const absentPct  = Math.round(((attMap['absent']  ?? 0) / attTotal) * 100);
   const latePct    = Math.round(((attMap['late']    ?? 0) / attTotal) * 100);
 
-  // ── SVG donut math (r=35) ────────────────────────────────────────────────────
-  const C = 2 * Math.PI * 35;          // ≈ 219.91
-  const presentDash = (presentPct / 100) * C;
-  const absentDash  = ((100 - presentPct) / 100) * C;   // amber covers the rest
+  // ── SVG donut math (r=DONUT_RADIUS) ─────────────────────────────────────────
+  const C = 2 * Math.PI * DONUT_RADIUS;
+  const presentDash       = (presentPct / 100) * C;
+  const remainingDash     = ((100 - presentPct) / 100) * C;   // amber covers absent + late
 
-  // ── Chart slices (last 6 months) ─────────────────────────────────────────────
-  const growthSlice  = studentGrowth.slice(-6);
-  const revenueSlice = revenueData.slice(-6);
+  // ── Chart slices (last CHART_MONTHS months) ──────────────────────────────────
+  const growthSlice  = studentGrowth.slice(-CHART_MONTHS);
+  const revenueSlice = revenueData.slice(-CHART_MONTHS);
   const growthMax    = Math.max(...growthSlice.map(d => d.count   ?? 0), 1);
   const revenueMax   = Math.max(...revenueSlice.map(d => d.revenue ?? 0), 1);
   const growthTotal  = growthSlice.reduce((a, d) => a + (d.count ?? 0), 0);
@@ -412,21 +427,21 @@ export default function SuperAdminDashboard() {
             {/* Right: SVG donut (r=35, stroke-width=10, cx/cy=45) */}
             <svg width="90" height="90" viewBox="0 0 90 90" aria-hidden="true">
               {/* Track */}
-              <circle cx="45" cy="45" r="35" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="10" />
+              <circle cx="45" cy="45" r={DONUT_RADIUS} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="10" />
               {/* Present — green */}
               <circle
-                cx="45" cy="45" r="35" fill="none"
+                cx="45" cy="45" r={DONUT_RADIUS} fill="none"
                 stroke="#34d399" strokeWidth="10"
                 strokeDasharray={`${presentDash} ${C}`}
                 strokeDashoffset={0}
                 transform="rotate(-90 45 45)"
                 strokeLinecap="butt"
               />
-              {/* Absent — amber (covers remainder) */}
+              {/* Remaining (absent + late) — amber */}
               <circle
-                cx="45" cy="45" r="35" fill="none"
+                cx="45" cy="45" r={DONUT_RADIUS} fill="none"
                 stroke="#fbbf24" strokeWidth="10"
-                strokeDasharray={`${absentDash} ${C}`}
+                strokeDasharray={`${remainingDash} ${C}`}
                 strokeDashoffset={-presentDash}
                 transform="rotate(-90 45 45)"
                 strokeLinecap="butt"
