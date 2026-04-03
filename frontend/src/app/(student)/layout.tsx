@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Sidebar from '@/components/layout/Sidebar';
 import Navbar from '@/components/layout/Navbar';
+import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import { useAuth } from '@/hooks/useAuth';
 import { Spinner } from '@/components/ui';
 
@@ -27,7 +28,6 @@ function getPageTitle(pathname: string): string {
 }
 
 export default function StudentRootLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -64,11 +64,17 @@ export default function StudentRootLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-screen flex bg-gray-50 dark:bg-slate-900">
-      <Sidebar role="student" isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="flex-1 flex flex-col min-w-0">
-        <Navbar title={title} onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-auto">{children}</main>
+      {/* Sidebar — visible only on desktop (lg+) */}
+      <div className="hidden lg:block shrink-0">
+        <Sidebar role="student" />
       </div>
+      <div className="flex-1 flex flex-col min-w-0">
+        <Navbar title={title} onMenuClick={() => {}} />
+        {/* pb-16 prevents content from hiding behind the mobile bottom nav */}
+        <main className="flex-1 overflow-auto pb-16 lg:pb-0">{children}</main>
+      </div>
+      {/* Mobile bottom navigation — hidden on desktop */}
+      <MobileBottomNav role="student" />
     </div>
   );
 }

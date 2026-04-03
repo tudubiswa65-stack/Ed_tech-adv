@@ -46,11 +46,11 @@ const studentNavItems: NavItem[] = [
 
 interface SidebarProps {
   role: 'admin' | 'student';
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ role, isOpen = false, onClose = () => {} }: SidebarProps) {
   const pathname = usePathname();
   const config = useInstitute();
   const { user } = useAuth();
