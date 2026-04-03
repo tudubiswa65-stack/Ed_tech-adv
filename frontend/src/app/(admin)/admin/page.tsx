@@ -101,10 +101,7 @@ const QUICK_ACTIONS = [
   },
 ];
 
-// ── Desktop action color lookup (built once at module scope) ────────────────
-const DESKTOP_ACTION_COLOR_MAP = Object.fromEntries(
-  DESKTOP_QUICK_ACTIONS.map((a) => [a.href, a.color]),
-);
+// ── Desktop quick actions (declared before the color lookup that uses it) ───
 const DESKTOP_QUICK_ACTIONS = [
   { label: 'Add Student', href: '/admin/students', color: 'text-blue-600 bg-blue-50 hover:bg-blue-100 dark:text-blue-400 dark:bg-blue-900/20 dark:hover:bg-blue-900/30' },
   { label: 'New Test', href: '/admin/tests', color: 'text-yellow-600 bg-yellow-50 hover:bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-900/20 dark:hover:bg-yellow-900/30' },
@@ -113,6 +110,11 @@ const DESKTOP_QUICK_ACTIONS = [
   { label: 'Payments', href: '/admin/payments', color: 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/30' },
   { label: 'Alerts', href: '/admin/notifications', color: 'text-orange-600 bg-orange-50 hover:bg-orange-100 dark:text-orange-400 dark:bg-orange-900/20 dark:hover:bg-orange-900/30' },
 ];
+
+// ── Desktop action color lookup (built once at module scope) ────────────────
+const DESKTOP_ACTION_COLOR_MAP = Object.fromEntries(
+  DESKTOP_QUICK_ACTIONS.map((a) => [a.href, a.color]),
+);
 
 function getGreeting() {
   const h = new Date().getHours();
