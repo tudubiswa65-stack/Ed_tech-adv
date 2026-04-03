@@ -9,6 +9,7 @@ import { Spinner } from '@/components/ui';
 
 const pageTitles: Record<string, string> = {
   '/admin': 'Dashboard',
+  '/admin/profile': 'My Profile',
   '/admin/students': 'Student Management',
   '/admin/courses': 'Course Management',
   '/admin/tests': 'Tests & Exams',
@@ -66,7 +67,7 @@ export default function AdminRootLayout({ children }: { children: React.ReactNod
     (pathname.startsWith('/admin/results/') ? 'Result Details' : 'Admin Dashboard');
 
   return (
-    <div className="min-h-screen flex bg-gray-50/80">
+    <div className="min-h-screen flex bg-gray-50/80 dark:bg-slate-900">
       <Sidebar role="admin" isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0">
         <Navbar title={title} onMenuClick={() => setSidebarOpen(true)} />

@@ -5,6 +5,7 @@ import { JWTPayload } from '../../types';
 
 interface AuthRequest extends Request {
   user?: JWTPayload;
+  file?: Express.Multer.File;
   cookies: {
     token?: string;
     [key: string]: any;
@@ -234,6 +235,65 @@ export const updateNotificationPreferences = async (req: AuthRequest, res: Respo
   }
 };
 
+// Upload student avatar
+// NOTE: Requires a public 'avatars' bucket in Supabase Storage.
+// Create the bucket via the Supabase dashboard: Storage → New bucket → name: "avatars" → Public: true
+export const uploadAvatar = async (req: AuthRequest, res: Response) => {
+  try {
+    const studentId = req.user?.id;
+    const instituteId = req.user?.instituteId;
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'No file uploaded' });
+    }
+
+    const file = req.file;
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.mimetype)) {
+      return res.status(400).json({ success: false, error: 'Only JPG, PNG, GIF, or WebP images are allowed' });
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      return res.status(400).json({ success: false, error: 'Image must be smaller than 5 MB' });
+    }
+
+    const rawExt = file.mimetype.split('/')[1];
+    const ext = rawExt === 'jpeg' ? 'jpg' : rawExt;
+    const filePath = `avatars/${instituteId}/${studentId}/avatar.${ext}`;
+
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from('avatars')
+      .upload(filePath, file.buffer, {
+        contentType: file.mimetype,
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.error('Supabase storage upload error:', uploadError);
+      return res.status(500).json({ success: false, error: 'Failed to upload image' });
+    }
+
+    const { data: { publicUrl } } = supabaseAdmin.storage
+      .from('avatars')
+      .getPublicUrl(filePath);
+
+    const { error: updateError } = await supabaseAdmin
+      .from('students')
+      .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+      .eq('id', studentId)
+      .eq('institute_id', instituteId);
+
+    if (updateError) {
+      return res.status(500).json({ success: false, error: 'Failed to update profile' });
+    }
+
+    res.json({ success: true, data: { avatar_url: publicUrl } });
+  } catch (error) {
+    console.error('Upload avatar error:', error);
+    res.status(500).json({ success: false, error: 'Failed to upload avatar' });
+  }
+};
+
 export default {
   getProfile,
   updateProfile,
@@ -242,4 +302,5 @@ export default {
   deleteAccount,
   getNotificationPreferences,
   updateNotificationPreferences,
+  uploadAvatar,
 };

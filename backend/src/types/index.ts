@@ -35,6 +35,7 @@ export interface JWTPayload {
 
 export interface AuthRequest extends Request {
   user?: JWTPayload;
+  file?: Express.Multer.File;
   cookies: {
     token?: string;
     [key: string]: any;

@@ -62,6 +62,6 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .text-student-muted {
-    @apply text-xs text-gray-500;
+    @apply text-xs text-gray-500 dark:text-slate-400;
   }
 }

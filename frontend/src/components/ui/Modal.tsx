@@ -51,13 +51,13 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div
-          className={`relative bg-white rounded-base shadow-xl w-full ${sizeStyles[size]} transform transition-all`}
+          className={`relative bg-white dark:bg-slate-800 rounded-base shadow-xl w-full ${sizeStyles[size]} transform transition-all`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           {title && (
-            <div className="px-6 py-4 border-b border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+            <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">{title}</h3>
               <button
                 onClick={onClose}
                 className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
