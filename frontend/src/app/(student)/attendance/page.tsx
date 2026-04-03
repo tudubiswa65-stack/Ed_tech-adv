@@ -30,11 +30,16 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
+const AVATAR_COLOR_PALETTE = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
+
 function getAvatarColor(name: string): string {
-  const palette = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
   let h = 0;
   for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
-  return palette[Math.abs(h) % palette.length];
+  return AVATAR_COLOR_PALETTE[Math.abs(h) % AVATAR_COLOR_PALETTE.length];
+}
+
+function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 function fmtShort(dateStr: string): string {
@@ -66,6 +71,14 @@ const card: React.CSSProperties = {
   border: BORDER,
   borderRadius: 16,
 };
+
+// ── pill style helper ─────────────────────────────────────────────────────────
+
+function getPillStyle(status: string): React.CSSProperties {
+  if (status === 'present') return { background: '#052e16', color: GREEN, border: '0.5px solid #34d39940' };
+  if (status === 'absent')  return { background: '#2d0707', color: RED,   border: '0.5px solid #ef444440' };
+  return { background: '#1c1508', color: '#f59e0b', border: '0.5px solid #f59e0b40' };
+}
 
 // ── skeleton block ────────────────────────────────────────────────────────────
 
@@ -116,8 +129,8 @@ export default function StudentAttendancePage() {
     try {
       const response = await apiClient.get('/student/attendance');
       setAttendance(response.data.data || []);
-    } catch {
-      console.error('Failed to load attendance');
+    } catch (err) {
+      console.error('Failed to load attendance', err);
       setError(true);
     } finally {
       setLoading(false);
@@ -353,13 +366,7 @@ export default function StudentAttendancePage() {
           </div>
         ) : (
           attendance.map((record, idx) => {
-            const isPresent = record.status === 'present';
-            const isAbsent = record.status === 'absent';
-            const pill: React.CSSProperties = isPresent
-              ? { background: '#052e16', color: GREEN, border: '0.5px solid #34d39940' }
-              : isAbsent
-              ? { background: '#2d0707', color: RED, border: '0.5px solid #ef444440' }
-              : { background: '#1c1508', color: '#f59e0b', border: '0.5px solid #f59e0b40' };
+            const pill = getPillStyle(record.status);
 
             const session = record.period || record.session;
 
@@ -389,7 +396,7 @@ export default function StudentAttendancePage() {
                     flexShrink: 0,
                   }}
                 >
-                  {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
+                  {capitalize(record.status)}
                 </span>
               </div>
             );
