@@ -422,9 +422,11 @@ CREATE TABLE IF NOT EXISTS attendance (
     recorded_by   UUID            REFERENCES users(id) ON DELETE SET NULL,
     created_at    TIMESTAMPTZ     DEFAULT NOW(),
 
-    -- Prevent double-marking for the same student/course/day
+    -- Prevent double-marking for the same student/course/day.
+    -- NULLS NOT DISTINCT ensures that (student_id, NULL, date) also conflicts
+    -- with another (student_id, NULL, date) row (requires PostgreSQL 15+).
     CONSTRAINT attendance_student_course_date_unique
-        UNIQUE (student_id, course_id, date)
+        UNIQUE NULLS NOT DISTINCT (student_id, course_id, date)
 );
 
 -- ══════════════════════════════════════════════

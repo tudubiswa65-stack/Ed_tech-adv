@@ -3,6 +3,11 @@ import { AuthRequest } from '../../types';
 import supabaseAdmin from '../../db/supabaseAdmin';
 import { getUserBranchId } from '../../utils/branchFilter';
 
+/** Builds a stable, unambiguous key for a (student, course, date) triple. */
+function attendanceKey(studentId: string, courseId: string | null | undefined, date: string): string {
+  return JSON.stringify([studentId, courseId ?? null, date]);
+}
+
 export const getAttendance = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { date, student_id, course_id } = req.query;
@@ -138,14 +143,66 @@ export const markAttendance = async (req: AuthRequest, res: Response): Promise<v
     const admin_id = req.user?.id;
     const adminBranchId = getUserBranchId(req.user);
 
-    const formattedRecords = records.map((record: any) => ({
+    // Deduplicate: if the same student appears more than once in the batch, keep the last entry
+    const deduped = new Map<string, any>();
+    for (const record of records) {
+      if (!record.student_id) continue;
+      const key = attendanceKey(record.student_id, record.course_id, record.date);
+      deduped.set(key, record);
+    }
+    const uniqueRecords = Array.from(deduped.values());
+
+    if (uniqueRecords.length === 0) {
+      res.status(400).json({ error: 'No valid attendance records provided' });
+      return;
+    }
+
+    const studentIds = uniqueRecords.map((r: any) => r.student_id);
+
+    // Pre-check: find any existing attendance records for these students on today's date.
+    // This prevents duplicate inserts that bypass the DB unique constraint
+    // (e.g. when course_id is NULL and the DB hasn't yet been migrated to NULLS NOT DISTINCT).
+    let existingQuery = supabaseAdmin
+      .from('attendance')
+      .select('id, student_id, course_id, status')
+      .eq('date', today)
+      .in('student_id', studentIds);
+
+    if (adminBranchId) {
+      existingQuery = existingQuery.eq('branch_id', adminBranchId);
+    }
+
+    const { data: existingRecords, error: existingError } = await existingQuery;
+    if (existingError) throw existingError;
+
+    // Build a set of student+course combinations that already have attendance today
+    const alreadyMarked = new Set<string>(
+      (existingRecords || []).map((r: any) => attendanceKey(r.student_id, r.course_id, today))
+    );
+
+    // Split into new records (INSERT) and updates (UPDATE existing via upsert)
+    const newRecords: any[] = [];
+    const updateRecords: any[] = [];
+
+    for (const record of uniqueRecords) {
+      const key = attendanceKey(record.student_id, record.course_id, record.date);
+      if (alreadyMarked.has(key)) {
+        updateRecords.push(record);
+      } else {
+        newRecords.push(record);
+      }
+    }
+
+    const formattedRecords = [...newRecords, ...updateRecords].map((record: any) => ({
       ...record,
       // branch_admin: override branch_id with their own to prevent cross-branch writes
       ...(adminBranchId ? { branch_id: adminBranchId } : {}),
       recorded_by: admin_id,
     }));
 
-    // Upsert uses the unique constraint (student_id, course_id, date) to prevent duplicate records
+    // Upsert handles both inserts and updates.
+    // The DB unique constraint (student_id, course_id, date) with NULLS NOT DISTINCT
+    // prevents actual duplicate rows even if the pre-check above is raced.
     const { data, error } = await supabaseAdmin
       .from('attendance')
       .upsert(formattedRecords, { onConflict: 'student_id,course_id,date' })
@@ -153,7 +210,13 @@ export const markAttendance = async (req: AuthRequest, res: Response): Promise<v
 
     if (error) throw error;
 
-    res.status(201).json({ data });
+    res.status(201).json({
+      data,
+      meta: {
+        inserted: newRecords.length,
+        updated: updateRecords.length,
+      },
+    });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

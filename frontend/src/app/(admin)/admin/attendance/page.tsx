@@ -51,6 +51,8 @@ export default function AdminAttendancePage() {
   const [showMarkModal, setShowMarkModal] = useState(false);
   const [markData, setMarkData] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  // Tracks which students already have attendance recorded for the selected date/course
+  const [alreadyMarkedIds, setAlreadyMarkedIds] = useState<Set<string>>(new Set());
 
   const isToday = selectedDate === today;
 
@@ -97,10 +99,15 @@ export default function AdminAttendancePage() {
 
       // Pre-fill mark data from existing attendance records
       const initialMarkData: Record<string, string> = {};
+      const markedIds = new Set<string>();
       studentList.forEach((s: StudentWithAttendance) => {
         initialMarkData[s.id] = s.attendance_status ?? 'present';
+        if (s.attendance_status !== null) {
+          markedIds.add(s.id);
+        }
       });
       setMarkData(initialMarkData);
+      setAlreadyMarkedIds(markedIds);
     } catch {
       toast.error('Failed to load students for attendance');
     } finally {
@@ -263,6 +270,14 @@ export default function AdminAttendancePage() {
           </div>
         ) : (
           <>
+            {/* Banner when attendance already exists for some/all students */}
+            {alreadyMarkedIds.size > 0 && (
+              <div className="mb-4 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 dark:bg-amber-900/20 dark:border-amber-700 dark:text-amber-300">
+                ⚠️ Attendance has already been recorded for {alreadyMarkedIds.size} student(s) today.
+                Saving will <strong>update</strong> those existing records — it will not create duplicates.
+              </div>
+            )}
+
             {/* Bulk actions */}
             <div className="flex items-center gap-3 mb-4">
               <span className="text-sm font-medium text-gray-700 dark:text-slate-200">Mark All:</span>
@@ -278,11 +293,12 @@ export default function AdminAttendancePage() {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Student</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Course</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-400">Recorded</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200 dark:bg-slate-800 dark:divide-slate-700">
                   {students.map((student) => (
-                    <tr key={student.id} className={markData[student.id] === 'present' ? 'bg-green-50' : markData[student.id] === 'absent' ? 'bg-red-50' : ''}>
+                    <tr key={student.id} className={markData[student.id] === 'present' ? 'bg-green-50 dark:bg-green-900/10' : markData[student.id] === 'absent' ? 'bg-red-50 dark:bg-red-900/10' : ''}>
                       <td className="px-4 py-3">
                         <div className="font-medium text-gray-900 dark:text-slate-100">{student.name}</div>
                         <div className="text-xs text-gray-500 dark:text-slate-400">{student.email}</div>
@@ -302,6 +318,17 @@ export default function AdminAttendancePage() {
                           <option value="excused">Excused</option>
                         </select>
                       </td>
+                      <td className="px-4 py-3">
+                        {alreadyMarkedIds.has(student.id) ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-100 rounded-full px-2 py-0.5 dark:bg-amber-900/30 dark:text-amber-300">
+                            ✎ Edit
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 dark:text-slate-500">
+                            New
+                          </span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -312,6 +339,7 @@ export default function AdminAttendancePage() {
               {students.length} student(s) found •{' '}
               {Object.values(markData).filter((v) => v === 'present').length} present •{' '}
               {Object.values(markData).filter((v) => v === 'absent').length} absent
+              {alreadyMarkedIds.size > 0 && ` • ${alreadyMarkedIds.size} already recorded (will update)`}
             </div>
           </>
         )}
@@ -319,7 +347,7 @@ export default function AdminAttendancePage() {
         <div className="mt-6 flex justify-end space-x-3">
           <Button variant="outline" onClick={() => setShowMarkModal(false)}>Cancel</Button>
           <Button onClick={handleMarkAttendance} disabled={saving || students.length === 0}>
-            {saving ? 'Saving…' : 'Save Attendance'}
+            {saving ? 'Saving…' : alreadyMarkedIds.size > 0 && alreadyMarkedIds.size === students.length ? 'Update Attendance' : 'Save Attendance'}
           </Button>
         </div>
       </Modal>
