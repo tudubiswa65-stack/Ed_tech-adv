@@ -38,6 +38,7 @@ import {
   deleteAccount,
   getNotificationPreferences,
   updateNotificationPreferences,
+  uploadAvatar,
 } from '../controllers/student/profile.controller';
 import { getMyAttendance } from '../controllers/student/attendance.controller';
 import { getMyPayments, getMyPaymentReceipt } from '../controllers/student/payment.controller';
@@ -45,7 +46,9 @@ import { getStreakInfo, updateStreak } from '../controllers/student/streak.contr
 import { getLeaderboard } from '../controllers/leaderboard.controller';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { requireRole } from '../middleware/roleMiddleware';
+import multer from 'multer';
 
+const upload = multer({ storage: multer.memoryStorage() });
 const router = Router();
 
 // Rate limiters for sensitive operations
@@ -113,6 +116,7 @@ router.get('/profile/activity', getActivity);
 router.delete('/profile', accountDeletionLimiter, deleteAccount);
 router.get('/profile/notification-preferences', getNotificationPreferences);
 router.put('/profile/notification-preferences', updateNotificationPreferences);
+router.post('/profile/avatar', upload.single('avatar'), uploadAvatar);
 
 // Attendance
 router.get('/attendance', getMyAttendance);

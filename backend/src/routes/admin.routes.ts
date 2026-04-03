@@ -28,6 +28,7 @@ import {
   getPaymentReceipt,
 } from '../controllers/admin/payment.controller';
 import { getMyPermissions } from '../controllers/admin/permissions.controller';
+import { getAdminProfile, updateAdminProfile, uploadAdminAvatar } from '../controllers/admin/profile.controller';
 import { requirePermission } from '../middleware/permissionMiddleware';
 import rateLimit from 'express-rate-limit';
 import { authMiddleware } from '../middleware/authMiddleware';
@@ -63,6 +64,11 @@ router.get('/dashboard', getDashboardStats);
 
 // My Permissions (for branch_admin self-check)
 router.get('/my-permissions', getMyPermissions);
+
+// Admin profile
+router.get('/profile', getAdminProfile);
+router.put('/profile', updateAdminProfile);
+router.post('/profile/avatar', upload.single('avatar'), uploadAdminAvatar);
 
 // Students
 router.get('/students', getStudents);

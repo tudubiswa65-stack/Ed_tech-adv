@@ -1,10 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Card, Button, Badge, Spinner, Modal, Input } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
+import { useAuth } from '@/hooks/useAuth';
+import { validateAvatarFile } from '@/lib/avatarValidation';
 
 interface Profile {
   id: string;
@@ -85,6 +88,9 @@ export default function StudentProfileDashboard() {
     newPassword: '',
     confirmPassword: '',
   });
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const avatarFileRef = useRef<HTMLInputElement>(null);
+  const { refreshUser } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -155,6 +161,37 @@ export default function StudentProfileDashboard() {
     }
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const validation = validateAvatarFile(file);
+    if (!validation.valid) {
+      alert(validation.error);
+      return;
+    }
+    setAvatarUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+      const res = await apiClient.post('/student/profile/avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const newUrl = res.data?.data?.avatar_url;
+      if (newUrl) {
+        setData((prev) =>
+          prev && prev.profile ? { ...prev, profile: { ...prev.profile, avatar_url: newUrl } } : prev
+        );
+        await refreshUser();
+      }
+    } catch (err) {
+      console.error('Avatar upload failed:', err);
+      alert('Failed to upload avatar. Please try again.');
+    } finally {
+      setAvatarUploading(false);
+      if (avatarFileRef.current) avatarFileRef.current.value = '';
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -179,9 +216,48 @@ export default function StudentProfileDashboard() {
         {/* ── 1. Student Basic Information ── */}
         <Card>
           <div className="p-4 md:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0"
-              style={{ backgroundColor: 'var(--color-primary)' }}>
-              {profile?.name?.charAt(0).toUpperCase() || 'S'}
+            <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0">
+              <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center text-white text-2xl font-bold"
+                style={{ backgroundColor: 'var(--color-primary)' }}>
+                {profile?.avatar_url ? (
+                  <Image
+                    src={profile.avatar_url}
+                    alt={profile.name ?? 'Avatar'}
+                    fill
+                    className="object-cover rounded-full"
+                    sizes="80px"
+                  />
+                ) : (
+                  profile?.name?.charAt(0).toUpperCase() || 'S'
+                )}
+              </div>
+              <button
+                onClick={() => avatarFileRef.current?.click()}
+                disabled={avatarUploading}
+                className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-white dark:bg-slate-700 border-2 border-gray-200 dark:border-slate-600 flex items-center justify-center shadow hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
+                title="Change profile photo"
+                aria-label="Change profile photo"
+              >
+                {avatarUploading ? (
+                  <svg className="w-3 h-3 animate-spin text-gray-500" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                ) : (
+                  <svg className="w-3 h-3 text-gray-500 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                )}
+              </button>
+              <input
+                ref={avatarFileRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                className="hidden"
+                onChange={handleAvatarUpload}
+                aria-hidden="true"
+              />
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-xl font-bold text-gray-900 truncate">{profile?.name || '—'}</h2>

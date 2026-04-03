@@ -25,17 +25,17 @@ export default function Card({
 }: CardProps) {
   return (
     <div
-      className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden ${
+      className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden ${
         onClick ? 'cursor-pointer hover:shadow-md transition-shadow duration-200' : ''
       } ${className}`}
       onClick={onClick}
     >
       {accent && <div className="h-1 w-full" style={{ backgroundColor: accent }} />}
       {(title || actions) && (
-        <div className="px-5 py-4 border-b border-gray-100 flex items-start justify-between gap-3">
+        <div className="px-5 py-4 border-b border-gray-100 dark:border-slate-700 flex items-start justify-between gap-3">
           <div>
-            <h3 className="text-base font-semibold text-gray-800 leading-snug">{title}</h3>
-            {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
+            <h3 className="text-base font-semibold text-gray-800 dark:text-slate-100 leading-snug">{title}</h3>
+            {subtitle && <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{subtitle}</p>}
           </div>
           {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
         </div>

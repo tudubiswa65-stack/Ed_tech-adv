@@ -15,6 +15,7 @@ interface NavItem {
 
 const adminNavItems: NavItem[] = [
   { label: 'Dashboard', href: '/admin', icon: 'dashboard' },
+  { label: 'My Profile', href: '/admin/profile', icon: 'profile' },
   { label: 'Branches', href: '/admin/branches', icon: 'branches' },
   { label: 'Students', href: '/admin/students', icon: 'students' },
   { label: 'Courses', href: '/admin/courses', icon: 'courses' },
@@ -224,10 +225,20 @@ export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
             <div className="p-4 border-t border-white/10">
               <div className="flex items-center gap-3">
                 <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
+                  className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center shrink-0 text-xs font-bold"
                   style={{ backgroundColor: 'var(--color-primary)', color: '#fff' }}
                 >
-                  {user.name?.charAt(0).toUpperCase()}
+                  {user.avatar_url ? (
+                    <Image
+                      src={user.avatar_url}
+                      alt={user.name ?? 'Avatar'}
+                      width={32}
+                      height={32}
+                      className="object-cover w-full h-full"
+                    />
+                  ) : (
+                    user.name?.charAt(0).toUpperCase()
+                  )}
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-white truncate">{user.name}</p>
