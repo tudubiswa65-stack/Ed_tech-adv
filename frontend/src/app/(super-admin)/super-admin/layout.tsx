@@ -60,7 +60,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
       <div className="flex-1 flex flex-col min-w-0">
         <Navbar title={title} onMenuClick={() => {}} />
         {/* pb-16 prevents content from hiding behind the mobile bottom nav */}
-        <main className="flex-1 overflow-auto p-6 pb-20 lg:pb-6">{children}</main>
+        <main className="flex-1 overflow-auto p-6 pb-16 lg:pb-6">{children}</main>
       </div>
       {/* Mobile bottom navigation — hidden on desktop */}
       <MobileBottomNav role="super_admin" />
