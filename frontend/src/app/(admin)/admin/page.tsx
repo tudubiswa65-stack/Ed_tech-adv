@@ -101,7 +101,10 @@ const QUICK_ACTIONS = [
   },
 ];
 
-// ── Legacy quick-actions for desktop layout ─────────────────────────────────
+// ── Desktop action color lookup (built once at module scope) ────────────────
+const DESKTOP_ACTION_COLOR_MAP = Object.fromEntries(
+  DESKTOP_QUICK_ACTIONS.map((a) => [a.href, a.color]),
+);
 const DESKTOP_QUICK_ACTIONS = [
   { label: 'Add Student', href: '/admin/students', color: 'text-blue-600 bg-blue-50 hover:bg-blue-100 dark:text-blue-400 dark:bg-blue-900/20 dark:hover:bg-blue-900/30' },
   { label: 'New Test', href: '/admin/tests', color: 'text-yellow-600 bg-yellow-50 hover:bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-900/20 dark:hover:bg-yellow-900/30' },
@@ -636,7 +639,7 @@ export default function AdminDashboard() {
               <Link
                 key={action.href}
                 href={action.href}
-                className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-colors text-center ${DESKTOP_QUICK_ACTIONS.find((a) => a.href === action.href)?.color ?? ''}`}
+                className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-colors text-center ${DESKTOP_ACTION_COLOR_MAP[action.href] ?? ''}`}
               >
                 {action.icon}
                 <span className="text-xs font-semibold leading-tight">{action.label}</span>
