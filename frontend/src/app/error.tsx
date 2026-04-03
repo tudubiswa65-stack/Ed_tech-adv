@@ -42,7 +42,7 @@ export default function Error({ error, reset }: ErrorProps) {
           </button>
           <Link
             href="/"
-            className="px-3 py-1.5 text-xs font-semibold bg-red-400 text-black hover:bg-red-300 rounded-lg transition-colors"
+            className="px-3 py-1.5 text-xs font-semibold bg-red-400 dark:bg-red-600 text-black dark:text-white hover:bg-red-300 dark:hover:bg-red-500 rounded-lg transition-colors"
           >
             Home
           </Link>

@@ -144,7 +144,7 @@ export default function NotFound() {
           </Link>
           <Link
             href="/dashboard"
-            className="shimmer-btn px-6 py-2.5 rounded-xl font-bold text-sm text-black transition-all duration-200 hover:scale-105"
+            className="shimmer-btn px-6 py-2.5 rounded-xl font-bold text-sm text-black dark:text-white transition-all duration-200 hover:scale-105"
           >
             Go to Dashboard →
           </Link>
