@@ -73,7 +73,22 @@ export default function AdminRootLayout({ children }: { children: React.ReactNod
         <Sidebar role="admin" />
       </div>
       <div className="flex-1 flex flex-col min-w-0">
-        <Navbar title={title} onMenuClick={() => {}} />
+        {/* Navbar visible on desktop only; mobile uses per-page headers + bottom nav */}
+        <div className="hidden lg:block">
+          <Navbar title={title} onMenuClick={() => {}} />
+        </div>
+        {/* Slim dark mobile header shown on pages other than the dashboard
+            (the dashboard page renders its own custom mobile header) */}
+        {pathname !== '/admin' && (
+          <div
+            className="lg:hidden flex items-center px-4 py-3 shrink-0"
+            style={{ background: '#0b1120', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}
+          >
+            <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.9)' }}>
+              {title}
+            </span>
+          </div>
+        )}
         {/* pb-16 prevents content from hiding behind the mobile bottom nav */}
         <main className="flex-1 overflow-auto pb-16 lg:pb-0">{children}</main>
       </div>
