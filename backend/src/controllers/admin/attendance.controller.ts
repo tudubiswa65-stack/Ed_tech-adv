@@ -180,32 +180,40 @@ export const markAttendance = async (req: AuthRequest, res: Response): Promise<v
       (existingRecords || []).map((r: any) => attendanceKey(r.student_id, r.course_id, today))
     );
 
-    // Split into new records (INSERT) and updates (UPDATE existing via upsert)
+    // Strict lock: once attendance is recorded for a student on today's date it cannot
+    // be overwritten.  Only brand-new records are accepted.
     const newRecords: any[] = [];
-    const updateRecords: any[] = [];
+    const skippedRecords: any[] = [];
 
     for (const record of uniqueRecords) {
       const key = attendanceKey(record.student_id, record.course_id, record.date);
       if (alreadyMarked.has(key)) {
-        updateRecords.push(record);
+        skippedRecords.push(record);
       } else {
         newRecords.push(record);
       }
     }
 
-    const formattedRecords = [...newRecords, ...updateRecords].map((record: any) => ({
+    // If every submitted record is already marked, reject the request outright
+    if (newRecords.length === 0) {
+      res.status(409).json({
+        error: "Attendance has already been marked for all submitted students today. Re-marking is not allowed.",
+        meta: { inserted: 0, skipped: skippedRecords.length },
+      });
+      return;
+    }
+
+    const formattedRecords = newRecords.map((record: any) => ({
       ...record,
       // branch_admin: override branch_id with their own to prevent cross-branch writes
       ...(adminBranchId ? { branch_id: adminBranchId } : {}),
       recorded_by: admin_id,
     }));
 
-    // Upsert handles both inserts and updates.
-    // The DB unique constraint (student_id, course_id, date) with NULLS NOT DISTINCT
-    // prevents actual duplicate rows even if the pre-check above is raced.
+    // Insert only new records — no upsert/update of existing attendance.
     const { data, error } = await supabaseAdmin
       .from('attendance')
-      .upsert(formattedRecords, { onConflict: 'student_id,course_id,date' })
+      .insert(formattedRecords)
       .select();
 
     if (error) throw error;
@@ -214,7 +222,7 @@ export const markAttendance = async (req: AuthRequest, res: Response): Promise<v
       data,
       meta: {
         inserted: newRecords.length,
-        updated: updateRecords.length,
+        skipped: skippedRecords.length,
       },
     });
   } catch (error: any) {
