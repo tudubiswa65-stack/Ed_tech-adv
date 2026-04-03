@@ -191,7 +191,7 @@ export default function MobileBottomNav({ role }: { role: Role }) {
             : pathname === tab.href || pathname.startsWith(tab.href + '/');
 
           if (isStudentRole || isAdminRole) {
-            const activeColor = isAdminRole ? '#60a5fa' : '#3b82f6';
+            const activeColor = '#60a5fa';
             const iconColor = isActive ? activeColor : 'rgba(255,255,255,0.3)';
             const labelColor = isActive ? activeColor : 'rgba(255,255,255,0.3)';
             return (
