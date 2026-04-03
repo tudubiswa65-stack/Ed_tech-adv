@@ -122,6 +122,19 @@ export const markAttendance = async (req: AuthRequest, res: Response): Promise<v
   try {
     const { records } = req.body; // Array of { student_id, branch_id, course_id, date, status }
 
+    if (!Array.isArray(records) || records.length === 0) {
+      res.status(400).json({ error: 'No attendance records provided' });
+      return;
+    }
+
+    // Attendance may only be marked for today's date (server UTC date)
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const hasInvalidDate = records.some((r: any) => r.date !== today);
+    if (hasInvalidDate) {
+      res.status(400).json({ error: "Attendance can only be marked for today's date" });
+      return;
+    }
+
     const admin_id = req.user?.id;
     const adminBranchId = getUserBranchId(req.user);
 
@@ -132,6 +145,7 @@ export const markAttendance = async (req: AuthRequest, res: Response): Promise<v
       recorded_by: admin_id,
     }));
 
+    // Upsert uses the unique constraint (student_id, course_id, date) to prevent duplicate records
     const { data, error } = await supabaseAdmin
       .from('attendance')
       .upsert(formattedRecords, { onConflict: 'student_id,course_id,date' })
