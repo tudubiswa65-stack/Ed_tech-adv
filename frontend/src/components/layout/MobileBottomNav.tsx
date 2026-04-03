@@ -167,9 +167,14 @@ export default function MobileBottomNav({ role }: { role: Role }) {
   const pathname = usePathname();
   const tabs = getTabsForRole(role);
 
+  const isStudentRole = role === 'student';
+
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700 shadow-[0_-4px_12px_rgba(0,0,0,0.08)]"
+      className={`fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t shadow-[0_-4px_12px_rgba(0,0,0,0.08)] ${isStudentRole ? '' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700'}`}
+      style={isStudentRole
+        ? { background: '#0f172a', borderColor: 'rgba(255,255,255,0.06)' }
+        : undefined}
       aria-label="Mobile navigation"
     >
       <div className="flex h-16 items-stretch">
@@ -183,6 +188,21 @@ export default function MobileBottomNav({ role }: { role: Role }) {
           const isActive = isExactRoot
             ? pathname === tab.href
             : pathname === tab.href || pathname.startsWith(tab.href + '/');
+
+          if (isStudentRole) {
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className="flex flex-1 flex-col items-center justify-center gap-1 transition-colors"
+                style={{ color: isActive ? '#60a5fa' : 'rgba(255,255,255,0.3)' }}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                {tab.icon}
+                <span className="text-[10px] font-medium leading-none">{tab.label}</span>
+              </Link>
+            );
+          }
 
           return (
             <Link
