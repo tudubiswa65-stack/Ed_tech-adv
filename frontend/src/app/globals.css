@@ -20,6 +20,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Reduce all rem-based text and spacing by 50% on mobile (below md breakpoint) */
+@media (max-width: 767px) {
+  html {
+    font-size: 8px;
+  }
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
 }
