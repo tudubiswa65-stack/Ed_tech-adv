@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button, Modal, Spinner } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
@@ -27,9 +27,25 @@ export default function TakeTestPage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [markedForReview, setMarkedForReview] = useState<Set<string>>(new Set());
   const [timeLeft, setTimeLeft] = useState(0);
+  const [timeLimitSecs, setTimeLimitSecs] = useState(3600);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [testId, setTestId] = useState<string>('');
+
+  // Ref flag: set to true after a successful submission so that the
+  // beforeunload guard does not interfere with the redirect to results.
+  const isSubmittedRef = useRef(false);
+
+  // Refs that give the timer's interval callback access to up-to-date state
+  // without needing to rebuild the interval on every state change.
+  const answersRef = useRef(answers);
+  const testIdRef = useRef(testId);
+  const timeLimitSecsRef = useRef(timeLimitSecs);
+  const timeLeftRef = useRef(timeLeft);
+  answersRef.current = answers;
+  testIdRef.current = testId;
+  timeLimitSecsRef.current = timeLimitSecs;
+  timeLeftRef.current = timeLeft;
 
   // Start test
   useEffect(() => {
@@ -39,8 +55,10 @@ export default function TakeTestPage() {
         const responseData = (response.data as any)?.success ? (response.data as any).data : response.data;
         setQuestions(responseData.questions);
         setTestId(responseData.test_id);
-        // Use the actual time limit returned by the backend
-        setTimeLeft((responseData.time_limit_mins || 60) * 60);
+        // Store both the limit (for time_taken_secs) and the countdown.
+        const limitSecs = (responseData.time_limit_mins || 60) * 60;
+        setTimeLimitSecs(limitSecs);
+        setTimeLeft(limitSecs);
       } catch (error: any) {
         toast.error(error.response?.data?.error || 'Failed to start test');
         router.push('/tests');
@@ -51,35 +69,6 @@ export default function TakeTestPage() {
 
     startTest();
   }, [params.id, router, toast]);
-
-  // Timer
-  useEffect(() => {
-    if (timeLeft <= 0 || loading) return;
-
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          handleSubmit(true);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [loading]);
-
-  // Prevent leaving page
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, []);
 
   const handleAnswer = (questionId: string, option: string) => {
     setAnswers((prev) => ({ ...prev, [questionId]: option }));
@@ -97,34 +86,94 @@ export default function TakeTestPage() {
     });
   };
 
-  const handleSubmit = useCallback(async (auto = false) => {
-    if (!auto && !showSubmitModal) {
-      setShowSubmitModal(true);
-      return;
-    }
+  // Core submit — accepts explicit snapshots so it is safe to call from both
+  // the timer (via refs) and from the modal confirm button (via state).
+  const doSubmit = useCallback(
+    async (
+      currentAnswers: Record<string, string>,
+      currentTestId: string,
+      limitSecs: number,
+      remaining: number,
+    ) => {
+      setSubmitting(true);
+      setShowSubmitModal(false);
 
-    setSubmitting(true);
-    setShowSubmitModal(false);
+      const answersArray = Object.entries(currentAnswers).map(([questionId, selectedOption]) => ({
+        question_id: questionId,
+        selected_option: selectedOption,
+      }));
 
-    const answersArray = Object.entries(answers).map(([questionId, selectedOption]) => ({
-      question_id: questionId,
-      selected_option: selectedOption,
-    }));
+      try {
+        const response = await apiClient.post(`/student/tests/${currentTestId}/submit`, {
+          answers: answersArray,
+          time_taken_secs: limitSecs - remaining,
+        });
 
-    try {
-      const response = await apiClient.post(`/student/tests/${testId}/submit`, {
-        answers: answersArray,
-        time_taken_secs: 60 * 60 - timeLeft,
+        const responseData = (response.data as any)?.success ? (response.data as any).data : response.data;
+        // Lift the beforeunload guard before navigating so the redirect is clean.
+        isSubmittedRef.current = true;
+        router.push(`/results/${responseData.result.id}`);
+      } catch (error: any) {
+        toast.error(error.response?.data?.error || 'Failed to submit test');
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [router, toast],
+  );
+
+  // Opens the confirmation modal (triggered by the Submit button).
+  const handleSubmit = () => {
+    setShowSubmitModal(true);
+  };
+
+  // Called by the "Submit Now" button inside the modal.
+  const handleConfirmSubmit = () => {
+    doSubmit(answers, testId, timeLimitSecs, timeLeft);
+  };
+
+  // Timer — auto-submit when time expires.
+  // We read state via refs so the interval callback is never stale and
+  // re-creating the interval on every tick is avoided.
+  useEffect(() => {
+    if (loading) return;
+    // Use the ref so this effect doesn't need timeLeft in its deps
+    // (adding it would restart the 1-second interval on every tick).
+    if (timeLimitSecsRef.current <= 0) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          // Auto-submit: use ref values so the closure is always current.
+          doSubmit(
+            answersRef.current,
+            testIdRef.current,
+            timeLimitSecsRef.current,
+            0,
+          );
+          return 0;
+        }
+        return prev - 1;
       });
+    }, 1000);
 
-      const responseData = (response.data as any)?.success ? (response.data as any).data : response.data;
-      router.push(`/results/${responseData.result.id}`);
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to submit test');
-    } finally {
-      setSubmitting(false);
-    }
-  }, [answers, testId, timeLeft, router, toast, showSubmitModal]);
+    return () => clearInterval(timer);
+  }, [loading, doSubmit]);
+
+  // Prevent the student from accidentally leaving during a test.
+  // The guard is lifted (via isSubmittedRef) once submission succeeds so
+  // the router.push() to the results page is never blocked.
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isSubmittedRef.current) return;
+      e.preventDefault();
+      e.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -148,6 +197,12 @@ export default function TakeTestPage() {
   const answered = Object.keys(answers).length;
   const unanswered = questions.length - answered;
   const marked = markedForReview.size;
+
+  // Collect 1-based question positions that have not been answered yet so we
+  // can tell the student exactly which questions still need attention.
+  const unansweredPositions = questions
+    .map((q, idx) => (!answers[q.id] ? idx + 1 : null))
+    .filter((n): n is number => n !== null);
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-slate-700">
@@ -303,16 +358,24 @@ export default function TakeTestPage() {
               <p className="text-sm text-gray-500 dark:text-slate-400">Unanswered</p>
             </div>
           </div>
-          {unanswered > 0 && (
-            <p className="text-amber-600 text-sm">
-              ⚠️ You have {unanswered} unanswered question(s).
-            </p>
+          {unansweredPositions.length > 0 && (
+            <div className="rounded-base border border-amber-300 bg-amber-50 p-3 dark:bg-amber-900/20 dark:border-amber-700">
+              <p className="text-amber-700 text-sm font-medium dark:text-amber-400">
+                ⚠️ The following question(s) have not been answered:
+              </p>
+              <p className="text-amber-600 text-sm mt-1 dark:text-amber-300">
+                {unansweredPositions.map((n) => `Q${n}`).join(', ')}
+              </p>
+              <p className="text-amber-600 text-xs mt-2 dark:text-amber-400">
+                You can still go back and answer them before submitting.
+              </p>
+            </div>
           )}
           <div className="flex gap-3">
             <Button variant="outline" className="flex-1" onClick={() => setShowSubmitModal(false)}>
               Continue Test
             </Button>
-            <Button className="flex-1" onClick={() => handleSubmit(true)} loading={submitting}>
+            <Button className="flex-1" onClick={handleConfirmSubmit} loading={submitting}>
               Submit Now
             </Button>
           </div>
