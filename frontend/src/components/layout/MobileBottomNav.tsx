@@ -171,7 +171,7 @@ export default function MobileBottomNav({ role }: { role: Role }) {
 
   return (
     <nav
-      className={`fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t shadow-[0_-4px_12px_rgba(0,0,0,0.08)]${isStudentRole ? '' : ' bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700'}`}
+      className={`fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t shadow-[0_-4px_12px_rgba(0,0,0,0.08)] ${isStudentRole ? '' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700'}`}
       style={isStudentRole
         ? { background: '#0f172a', borderColor: 'rgba(255,255,255,0.06)' }
         : undefined}

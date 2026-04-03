@@ -219,7 +219,6 @@ export default function StudentProfileDashboard() {
     textTransform: 'uppercase',
     letterSpacing: '0.8px',
     color: 'rgba(255,255,255,0.35)',
-    marginBottom: 10,
     margin: '0 0 10px 0',
   };
 
@@ -264,7 +263,7 @@ export default function StudentProfileDashboard() {
                   sizes="72px"
                 />
               ) : (
-                profile?.name?.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2) || 'S'
+                profile?.name?.split(' ').filter((w) => w.length > 0).map((w) => w[0]).join('').toUpperCase().slice(0, 2) || 'S'
               )}
             </div>
             <button
