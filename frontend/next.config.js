@@ -35,13 +35,20 @@ const nextConfig = {
       backendUrl = backendUrl.replace('http://', 'https://');
     }
 
-    return [
-      landingPageRewrite,
-      {
-        source: '/api/:path*',
-        destination: `${backendUrl}/api/:path*`,
-      },
-    ];
+    // beforeFiles rewrites run before Next.js page routing and public-file
+    // serving, so the landing page rewrite wins over the root page.tsx.
+    // afterFiles rewrites run after page routing, which is correct for the
+    // API proxy (we want Next.js pages to take precedence over /api/* if a
+    // real page ever exists at that path).
+    return {
+      beforeFiles: [landingPageRewrite],
+      afterFiles: [
+        {
+          source: '/api/:path*',
+          destination: `${backendUrl}/api/:path*`,
+        },
+      ],
+    };
   },
   async headers() {
     return [
