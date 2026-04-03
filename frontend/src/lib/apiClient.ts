@@ -9,7 +9,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 // Paths that are themselves login pages — the 401 interceptor must not redirect
 // here, otherwise refreshUser() on mount would trigger an infinite reload loop.
-const LOGIN_ROUTES = ['/', '/admin/login'];
+const LOGIN_ROUTES = ['/login', '/admin/login', '/super-admin/login'];
 
 console.log('[ApiClient] >>> STEP X: Initializing with API_URL:', API_URL);
 console.log('[ApiClient] STEP Xb: NEXT_PUBLIC_API_URL env var:', process.env.NEXT_PUBLIC_API_URL);
@@ -29,6 +29,9 @@ export const apiClient = axios.create({
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
+    // Prevent the browser and CDN from serving stale API responses (304 issues)
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache',
   },
 });
 
@@ -78,10 +81,10 @@ apiClient.interceptors.response.use(
         const isOnLoginPage = LOGIN_ROUTES.includes(currentPath);
         if (!isOnLoginPage) {
           console.log('[ApiClient] STEP ERR11: 401 Unauthorized, redirecting to login');
-          if (currentPath.startsWith('/admin')) {
+          if (currentPath.startsWith('/admin') || currentPath.startsWith('/super-admin')) {
             window.location.href = '/admin/login';
           } else {
-            window.location.href = '/';
+            window.location.href = '/login';
           }
         } else {
           console.log('[ApiClient] STEP ERR11: 401 on login page — skipping redirect to avoid reload loop');
