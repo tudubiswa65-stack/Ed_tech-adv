@@ -19,6 +19,10 @@ const nextConfig = {
   async rewrites() {
     let backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
 
+    // Serve the public landing page (edupro.html) at the root URL.
+    // All internal routes (login, admin, dashboard) are accessible only via their specific paths.
+    const landingPageRewrite = { source: '/', destination: '/edupro.html' };
+
     // In production, Railway (and most PaaS providers) enforce HTTPS and will
     // issue a 301 redirect for plain-HTTP requests.  A 301 causes HTTP clients
     // to follow the redirect with GET, which turns a POST into a GET and breaks
@@ -32,6 +36,7 @@ const nextConfig = {
     }
 
     return [
+      landingPageRewrite,
       {
         source: '/api/:path*',
         destination: `${backendUrl}/api/:path*`,

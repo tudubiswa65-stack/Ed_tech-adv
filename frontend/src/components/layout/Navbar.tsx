@@ -23,7 +23,7 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
 
   const handleLogout = async () => {
     await logout();
-    window.location.href = user?.role && adminRoles.includes(user.role) ? '/admin/login' : '/';
+    window.location.href = user?.role && adminRoles.includes(user.role) ? '/admin/login' : '/login';
   };
 
   const handleAvatarClick = () => {

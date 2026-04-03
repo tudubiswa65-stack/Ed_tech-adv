@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>EduPro Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;700;800&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-snap-type:none}
+:root{
+  --ink:#0c0b09;
+  --paper:#f5f0e8;
+  --red:#c0392b;
+  --red2:#e74c3c;
+  --gold:#d4a017;
+  --slate:#2c3e50;
+  --fog:#e8e2d9;
+  --mid:#7a7268;
+  --white:#ffffff;
+  --display:'Bebas Neue',sans-serif;
+  --serif:'Instrument Serif',Georgia,serif;
+  --ui:'Syne',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+body{font-family:var(--ui);background:var(--paper);color:var(--ink);overflow-x:hidden;cursor:none}
+
+/* CUSTOM CURSOR */
+.cur{position:fixed;width:12px;height:12px;background:var(--red);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .15s ease,width .2s,height .2s,background .2s;mix-blend-mode:multiply}
+.cur2{position:fixed;width:40px;height:40px;border:1px solid var(--red);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all .35s ease;opacity:.5}
+body:hover .cur{opacity:1}
+
+/* ─── NAV ─── */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 4vw;height:62px;mix-blend-mode:normal}
+nav::before{content:'';position:absolute;inset:0;background:rgba(245,240,232,.88);backdrop-filter:blur(16px);border-bottom:1px solid rgba(12,11,9,.07);z-index:-1;transition:opacity .4s}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-sq{width:32px;height:32px;background:var(--red);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--display);font-size:22px;letter-spacing:0}
+.logo-name{font-family:var(--display);font-size:22px;letter-spacing:1px;color:var(--ink);line-height:1}
+.logo-name span{color:var(--red)}
+.nav-links{display:flex;gap:0;list-style:none}
+.nav-links a{font-family:var(--ui);font-size:13px;font-weight:500;color:var(--mid);text-decoration:none;padding:8px 14px;border-radius:30px;transition:all .2s;cursor:none}
+.nav-links a:hover{color:var(--ink);background:rgba(12,11,9,.06)}
+.nav-right{display:flex;gap:10px}
+.btn-n{font-family:var(--ui);font-size:12px;font-weight:700;padding:8px 18px;border-radius:2px;cursor:none;text-decoration:none;transition:all .22s;letter-spacing:.5px;text-transform:uppercase}
+.btn-n.ghost{border:1.5px solid var(--ink);color:var(--ink);background:transparent}
+.btn-n.ghost:hover{background:var(--ink);color:var(--paper)}
+.btn-n.fill{background:var(--red);color:#fff;border:1.5px solid var(--red)}
+.btn-n.fill:hover{background:#a0281c;border-color:#a0281c}
+
+/* ─── PAGES ─── */
+.page{display:none;min-height:100vh;padding-top:62px}
+.page.active{display:block}
+
+/* ─── HERO ─── */
+#hero-section{
+  min-height:calc(100vh - 62px);
+  position:relative;
+  overflow:hidden;
+  display:grid;
+  grid-template-rows:1fr auto;
+  padding:0;
+}
+
+/* Scroll-driven marquee using @keyframes + animation-timeline */
+.marquee-track{
+  width:100%;overflow:hidden;
+  border-top:1px solid rgba(12,11,9,.1);
+  border-bottom:1px solid rgba(12,11,9,.1);
+  background:var(--ink);
+  padding:14px 0;
+  display:flex;
+}
+.marquee-inner{
+  display:flex;gap:48px;
+  white-space:nowrap;
+  animation:marquee 18s linear infinite;
+}
+.marquee-inner span{
+  font-family:var(--mono);font-size:12px;font-weight:300;
+  color:rgba(255,255,255,.55);letter-spacing:2px;text-transform:uppercase;
+  flex-shrink:0;
+}
+.marquee-inner span b{color:var(--gold);font-weight:400}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* HERO MAIN */
+.hero-main{
+  display:grid;grid-template-columns:1fr 1fr;
+  align-items:center;gap:0;
+  padding:60px 4vw 40px;
+  position:relative;
+}
+.hero-left{position:relative;z-index:2}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:11px;font-weight:400;
+  letter-spacing:3px;text-transform:uppercase;color:var(--red);
+  margin-bottom:28px;
+}
+.eyebrow-line{width:28px;height:1px;background:var(--red)}
+
+/* CSS scroll-driven text — hero headline splits */
+.hero-h1{
+  font-family:var(--display);
+  font-size:clamp(72px,9vw,140px);
+  line-height:.92;letter-spacing:1px;
+  color:var(--ink);
+  margin-bottom:32px;
+  overflow:hidden;
+}
+.h1-row{display:block;overflow:hidden}
+.h1-word{
+  display:inline-block;
+  animation:wordIn 1s cubic-bezier(.16,1,.3,1) both;
+}
+.h1-word:nth-child(1){animation-delay:.05s}
+.h1-word:nth-child(2){animation-delay:.15s}
+.h1-word:nth-child(3){animation-delay:.25s}
+.h1-word.red{color:var(--red)}
+@keyframes wordIn{from{transform:translateY(110%);opacity:0}to{transform:translateY(0);opacity:1}}
+
+.hero-body{
+  font-size:16px;color:var(--mid);line-height:1.8;
+  max-width:420px;margin-bottom:40px;
+  font-family:var(--serif);font-style:italic;
+  animation:fadeSlide .8s .5s both;
+}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.hero-actions{display:flex;gap:16px;align-items:center;margin-bottom:52px;animation:fadeSlide .8s .65s both}
+.btn-big{
+  font-family:var(--ui);font-size:13px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;
+  padding:16px 36px;border-radius:2px;
+  cursor:none;text-decoration:none;transition:all .25s;
+}
+.btn-big.primary{background:var(--red);color:#fff;box-shadow:0 6px 30px rgba(192,57,43,.25)}
+.btn-big.primary:hover{background:#a0281c;transform:translateY(-2px);box-shadow:0 12px 40px rgba(192,57,43,.35)}
+.btn-big.secondary{background:transparent;color:var(--ink);border:1.5px solid rgba(12,11,9,.2)}
+.btn-big.secondary:hover{border-color:var(--ink);background:rgba(12,11,9,.04)}
+
+.hero-nums{
+  display:flex;gap:40px;
+  animation:fadeSlide .8s .8s both;
+}
+.hnum{display:flex;flex-direction:column}
+.hnum-val{font-family:var(--display);font-size:52px;line-height:1;color:var(--ink)}
+.hnum-val span{color:var(--red);font-size:32px}
+.hnum-label{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mid);margin-top:4px}
+
+/* HERO RIGHT — big typographic composition */
+.hero-right{
+  position:relative;display:flex;align-items:center;justify-content:center;
+  padding:40px 0;
+}
+.hero-typo-bg{
+  font-family:var(--display);
+  font-size:clamp(120px,16vw,220px);
+  color:transparent;
+  -webkit-text-stroke:1px rgba(12,11,9,.06);
+  line-height:1;
+  user-select:none;
+  letter-spacing:-2px;
+  text-align:center;
+  animation:fadeSlide .8s .3s both;
+}
+.hero-card-float{
+  position:absolute;
+  background:var(--white);
+  border:1px solid rgba(12,11,9,.08);
+  border-radius:0;
+  box-shadow:8px 8px 0 rgba(12,11,9,.08);
+  padding:20px 24px;
+  animation:cardFloat 6s ease-in-out infinite;
+}
+@keyframes cardFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-10px) rotate(.5deg)}}
+.fc1{top:8%;left:10%;width:200px}
+.fc2{bottom:10%;right:8%;width:180px}
+.fc3{top:35%;right:5%;width:160px}
+
+.float-tag{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:6px}
+.float-val{font-family:var(--display);font-size:36px;color:var(--ink);line-height:1}
+.float-sub{font-family:var(--ui);font-size:11px;color:var(--mid);margin-top:2px}
+.float-bar{height:3px;background:var(--fog);border-radius:0;margin-top:12px;overflow:hidden}
+.float-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--gold));animation:fillAnim 2s 1s both}
+@keyframes fillAnim{from{width:0}to{width:var(--w,70%)}}
+
+/* ─── DIAGONAL SECTION BREAK ─── */
+.diag-break{
+  height:80px;position:relative;overflow:hidden;background:var(--ink);
+}
+.diag-break::before{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:var(--paper);
+  clip-path:polygon(0 0,100% 0,100% 30%,0 100%);
+}
+
+/* ─── COURSES PAGE ─── */
+.page-header{
+  padding:80px 4vw 0;
+  overflow:hidden;
+}
+.page-header-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--red);margin-bottom:12px}
+.page-header-h{font-family:var(--display);font-size:clamp(60px,8vw,110px);line-height:.9;letter-spacing:1px;color:var(--ink)}
+.page-header-h em{color:var(--red);font-style:normal}
+
+/* CSS scroll-driven animations via @property and animation-timeline */
+@supports (animation-timeline: scroll()) {
+  .scroll-reveal{
+    animation:revealUp linear both;
+    animation-timeline:view();
+    animation-range:entry 0% entry 30%;
+  }
+  .scroll-left{
+    animation:revealLeft linear both;
+    animation-timeline:view();
+    animation-range:entry 0% entry 25%;
+  }
+  .scroll-right{
+    animation:revealRight linear both;
+    animation-timeline:view();
+    animation-range:entry 0% entry 25%;
+  }
+  .scroll-scale{
+    animation:revealScale linear both;
+    animation-timeline:view();
+    animation-range:entry 0% entry 30%;
+  }
+  @keyframes revealUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes revealLeft{from{opacity:0;transform:translateX(-50px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes revealRight{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes revealScale{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+}
+
+/* Fallback for browsers without scroll-driven */
+@supports not (animation-timeline: scroll()) {
+  .scroll-reveal,.scroll-left,.scroll-right,.scroll-scale{opacity:1;transform:none}
+}
+
+/* Scroll-driven progress bar for page */
+@supports (animation-timeline: scroll()) {
+  .scroll-progress{
+    position:fixed;top:62px;left:0;right:0;height:2px;
+    background:var(--red);z-index:999;
+    transform-origin:left;
+    animation:progress linear;
+    animation-timeline:scroll();
+  }
+}
+@keyframes progress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+/* Scroll-driven parallax text */
+@supports (animation-timeline: scroll()) {
+  .parallax-slow{
+    animation:parallaxSlow linear both;
+    animation-timeline:scroll();
+    animation-range:0% 100%;
+  }
+  .parallax-fast{
+    animation:parallaxFast linear both;
+    animation-timeline:scroll();
+    animation-range:0% 100%;
+  }
+  @keyframes parallaxSlow{from{transform:translateY(0)}to{transform:translateY(-60px)}}
+  @keyframes parallaxFast{from{transform:translateY(0)}to{transform:translateY(-120px)}}
+}
+
+/* ─── COURSES GRID ─── */
+.courses-section{padding:60px 4vw 100px}
+.courses-filter{display:flex;gap:8px;margin-bottom:48px;flex-wrap:wrap}
+.filter-btn{
+  font-family:var(--mono);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
+  padding:8px 20px;border-radius:0;border:1px solid rgba(12,11,9,.15);
+  background:transparent;color:var(--mid);cursor:none;transition:all .2s;
+}
+.filter-btn.active,.filter-btn:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+.courses-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1px;background:rgba(12,11,9,.08)}
+.course-card{
+  background:var(--paper);padding:36px 32px;
+  position:relative;overflow:hidden;
+  cursor:none;transition:all .3s;
+  text-decoration:none;color:inherit;display:block;
+}
+.course-card::before{
+  content:'';position:absolute;left:0;bottom:0;width:100%;height:3px;
+  background:var(--red);transform:scaleX(0);transform-origin:left;
+  transition:transform .4s cubic-bezier(.16,1,.3,1);
+}
+.course-card:hover::before{transform:scaleX(1)}
+.course-card:hover{background:var(--white);transform:translateY(-4px);box-shadow:0 20px 60px rgba(12,11,9,.1);z-index:2;position:relative}
+
+.cc-num{font-family:var(--display);font-size:80px;color:rgba(12,11,9,.05);line-height:1;margin-bottom:-20px;user-select:none}
+.cc-cat{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--red);margin-bottom:10px}
+.cc-title{font-family:var(--serif);font-size:24px;font-style:italic;color:var(--ink);margin-bottom:10px;line-height:1.3}
+.cc-desc{font-size:13px;color:var(--mid);line-height:1.7;margin-bottom:24px}
+.cc-footer{display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid rgba(12,11,9,.08);padding-top:18px}
+.cc-price{font-family:var(--display);font-size:36px;color:var(--ink);line-height:1}
+.cc-price-old{font-family:var(--ui);font-size:12px;color:var(--mid);text-decoration:line-through;margin-top:2px}
+.cc-meta{text-align:right;font-family:var(--mono);font-size:10px;color:var(--mid);line-height:1.8;letter-spacing:.5px}
+.cc-rating{font-size:14px;color:var(--gold)}
+
+/* ─── ABOUT PAGE ─── */
+.about-hero{
+  min-height:50vh;
+  background:var(--ink);
+  display:flex;align-items:flex-end;
+  padding:80px 4vw 60px;
+  position:relative;overflow:hidden;
+}
+.about-hero-bg-text{
+  position:absolute;bottom:-40px;right:-20px;
+  font-family:var(--display);font-size:280px;
+  color:rgba(255,255,255,.025);line-height:1;
+  user-select:none;pointer-events:none;
+  letter-spacing:-4px;
+}
+.about-hero h1{font-family:var(--display);font-size:clamp(60px,8vw,100px);color:#fff;line-height:.9;z-index:1}
+.about-hero h1 em{color:var(--gold);font-style:normal}
+
+.about-body{display:grid;grid-template-columns:1fr 1fr;gap:80px;padding:80px 4vw;align-items:start}
+.about-text-col{}
+.about-big-p{
+  font-family:var(--serif);font-size:22px;font-style:italic;
+  color:var(--ink);line-height:1.7;margin-bottom:32px;
+}
+.about-regular-p{font-size:15px;color:var(--mid);line-height:1.8;margin-bottom:20px}
+.about-stats-col{}
+.about-stat-item{
+  border-top:1px solid rgba(12,11,9,.1);padding:28px 0;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.asi-num{font-family:var(--display);font-size:72px;color:var(--ink);line-height:1}
+.asi-num span{color:var(--red)}
+.asi-label{font-family:var(--ui);font-size:14px;color:var(--mid);max-width:180px;line-height:1.5;text-align:right}
+
+.about-values{background:var(--ink);padding:80px 4vw}
+.av-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.06);margin-top:48px}
+.av-item{background:var(--ink);padding:40px 32px}
+.av-num{font-family:var(--display);font-size:100px;color:rgba(255,255,255,.04);line-height:1;margin-bottom:-24px}
+.av-title{font-family:var(--serif);font-size:22px;font-style:italic;color:#fff;margin-bottom:12px}
+.av-desc{font-size:13px;color:rgba(255,255,255,.45);line-height:1.7}
+.av-section-label{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold)}
+
+/* ─── PRICING PAGE ─── */
+.pricing-hero{
+  padding:100px 4vw 60px;
+  background:var(--fog);
+  text-align:center;
+}
+.pricing-hero h1{font-family:var(--display);font-size:clamp(60px,8vw,120px);line-height:.9;color:var(--ink)}
+.pricing-hero h1 em{color:var(--red);font-style:normal}
+.pricing-sub{font-family:var(--serif);font-style:italic;font-size:18px;color:var(--mid);margin-top:16px}
+
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:rgba(12,11,9,.08);margin:60px 4vw;border:1px solid rgba(12,11,9,.08)}
+.plan-card{background:var(--paper);padding:48px 36px;position:relative;transition:background .3s}
+.plan-card.pop{background:var(--ink);color:#fff}
+.plan-card.pop *{--mid:#fff6}
+.pop-label{
+  position:absolute;top:0;left:50%;transform:translateX(-50%) translateY(-50%);
+  background:var(--red);color:#fff;
+  font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;
+  padding:6px 18px;border-radius:0;
+}
+.plan-name{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--red);margin-bottom:24px}
+.plan-card.pop .plan-name{color:var(--gold)}
+.plan-price-wrap{margin-bottom:8px}
+.plan-price{font-family:var(--display);font-size:80px;line-height:1;color:var(--ink)}
+.plan-card.pop .plan-price{color:#fff}
+.plan-curr{font-family:var(--display);font-size:36px;vertical-align:super}
+.plan-period{font-family:var(--mono);font-size:11px;color:var(--mid);letter-spacing:1px;margin-bottom:36px}
+.plan-divider{height:1px;background:rgba(12,11,9,.08);margin-bottom:28px}
+.plan-card.pop .plan-divider{background:rgba(255,255,255,.1)}
+.plan-feat{list-style:none;display:flex;flex-direction:column;gap:14px;margin-bottom:36px}
+.plan-feat li{font-size:14px;color:var(--mid);display:flex;align-items:center;gap:10px;line-height:1.4}
+.plan-feat li::before{content:'';width:16px;height:16px;border-radius:50%;background:rgba(192,57,43,.12);flex-shrink:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 8l3.5 3.5L13 5' stroke='%23c0392b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")}
+.plan-feat li.no{color:rgba(12,11,9,.25)}
+.plan-card.pop .plan-feat li{color:rgba(255,255,255,.65)}
+.plan-card.pop .plan-feat li.no{color:rgba(255,255,255,.2)}
+.plan-feat li.no::before{background:rgba(12,11,9,.05);background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 4l8 8M12 4l-8 8' stroke='%23ccc' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")}
+.btn-plan{
+  width:100%;padding:16px;border-radius:0;
+  font-family:var(--ui);font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  cursor:none;transition:all .25s;border:1.5px solid var(--ink);background:transparent;color:var(--ink);
+}
+.btn-plan:hover{background:var(--ink);color:var(--paper)}
+.plan-card.pop .btn-plan{background:var(--red);border-color:var(--red);color:#fff}
+.plan-card.pop .btn-plan:hover{background:#a0281c;border-color:#a0281c}
+.pricing-note{text-align:center;font-family:var(--mono);font-size:11px;color:var(--mid);letter-spacing:.5px;padding-bottom:80px}
+
+/* ─── BLOG PAGE ─── */
+.blog-header{padding:80px 4vw 0;display:grid;grid-template-columns:1fr auto;align-items:end}
+.blog-header h1{font-family:var(--display);font-size:clamp(60px,7vw,100px);line-height:.9;color:var(--ink)}
+.blog-header h1 span{color:var(--red)}
+.blog-count{font-family:var(--mono);font-size:11px;color:var(--mid);letter-spacing:2px}
+
+.blog-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:rgba(12,11,9,.07);margin:48px 4vw 80px;border:1px solid rgba(12,11,9,.07)}
+.blog-card{background:var(--paper);padding:36px 30px;cursor:none;transition:all .3s;text-decoration:none;color:inherit;display:block}
+.blog-card:hover{background:var(--white);transform:translateY(-3px);box-shadow:0 16px 48px rgba(12,11,9,.08);z-index:2;position:relative}
+.blog-card.featured{grid-column:1/-1;padding:52px;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.bc-date{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mid);margin-bottom:10px}
+.bc-cat{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;background:rgba(192,57,43,.1);color:var(--red);display:inline-block;margin-bottom:14px}
+.bc-title{font-family:var(--serif);font-style:italic;color:var(--ink);margin-bottom:12px;line-height:1.3}
+.blog-card.featured .bc-title{font-size:32px}
+.blog-card:not(.featured) .bc-title{font-size:20px}
+.bc-excerpt{font-size:14px;color:var(--mid);line-height:1.7;margin-bottom:20px}
+.bc-footer{display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(12,11,9,.07);padding-top:16px}
+.bc-author{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mid)}
+.bc-av{width:26px;height:26px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.bc-read{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--red)}
+.featured-visual{
+  background:var(--ink);display:flex;align-items:center;justify-content:center;
+  height:280px;font-family:var(--display);font-size:120px;color:rgba(255,255,255,.06);
+  letter-spacing:-2px;user-select:none;
+}
+
+/* ─── FAQ PAGE ─── */
+.faq-header{
+  background:var(--ink);padding:80px 4vw 60px;
+}
+.faq-header h1{font-family:var(--display);font-size:clamp(60px,7vw,100px);color:#fff;line-height:.9}
+.faq-header h1 em{color:var(--gold);font-style:normal}
+.faq-body{padding:0 4vw 80px}
+.faq-row{display:grid;grid-template-columns:1fr 1fr;gap:0 60px}
+.faq-item{border-bottom:1px solid rgba(12,11,9,.08);padding:0}
+.faq-q{
+  display:flex;justify-content:space-between;align-items:center;gap:20px;
+  padding:22px 0;cursor:none;user-select:none;
+}
+.faq-q-text{font-family:var(--ui);font-size:16px;font-weight:500;color:var(--ink);line-height:1.4}
+.faq-icon{
+  width:28px;height:28px;border-radius:50%;border:1.5px solid rgba(12,11,9,.15);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  font-size:18px;color:var(--mid);transition:all .3s;font-weight:300;line-height:1;
+}
+.faq-item.open .faq-icon{background:var(--red);border-color:var(--red);color:#fff;transform:rotate(45deg)}
+.faq-a{
+  font-size:14px;color:var(--mid);line-height:1.75;
+  max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s;
+}
+.faq-item.open .faq-a{max-height:250px;padding-bottom:20px}
+
+/* ─── CONTACT PAGE ─── */
+.contact-split{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 62px)}
+.contact-left{
+  background:var(--ink);padding:80px 6vw;
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+.contact-left h1{font-family:var(--display);font-size:clamp(52px,6vw,90px);color:#fff;line-height:.9;margin-bottom:48px}
+.contact-left h1 em{color:var(--gold);font-style:normal}
+.contact-details{display:flex;flex-direction:column;gap:32px}
+.cd-item{}
+.cd-label{font-family:var(--mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:6px}
+.cd-val{font-family:var(--ui);font-size:15px;color:rgba(255,255,255,.75);line-height:1.5}
+.contact-socials{display:flex;gap:16px;margin-top:48px}
+.social-tag{
+  font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,255,255,.35);padding:8px 16px;border:1px solid rgba(255,255,255,.1);
+  border-radius:0;text-decoration:none;transition:all .2s;cursor:none;
+}
+.social-tag:hover{color:#fff;border-color:rgba(255,255,255,.4)}
+
+.contact-right{padding:80px 6vw;background:var(--paper)}
+.contact-right h2{font-family:var(--serif);font-size:28px;font-style:italic;color:var(--ink);margin-bottom:36px;line-height:1.3}
+.form-group{margin-bottom:20px;display:flex;flex-direction:column;gap:6px}
+.form-group label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--mid)}
+.form-group input,.form-group textarea,.form-group select{
+  font-family:var(--ui);font-size:15px;color:var(--ink);
+  border:none;border-bottom:1.5px solid rgba(12,11,9,.15);
+  background:transparent;padding:10px 0;outline:none;
+  transition:border-color .2s;border-radius:0;
+  -webkit-appearance:none;
+}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--red)}
+.form-group textarea{min-height:100px;resize:none}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.btn-submit-big{
+  margin-top:12px;width:100%;padding:18px;border-radius:0;
+  background:var(--ink);color:var(--paper);border:none;
+  font-family:var(--ui);font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  cursor:none;transition:all .25s;
+}
+.btn-submit-big:hover{background:var(--red)}
+
+/* ─── TESTIMONIALS STRIP ─── */
+.testi-strip{
+  background:var(--fog);
+  padding:80px 4vw;
+  overflow:hidden;
+}
+.testi-scroll-track{
+  display:flex;gap:24px;
+  animation:tscroll 30s linear infinite;
+  width:max-content;
+}
+.testi-scroll-track:hover{animation-play-state:paused}
+@keyframes tscroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tcard{
+  width:340px;flex-shrink:0;
+  background:var(--white);border:1px solid rgba(12,11,9,.07);
+  padding:28px;border-radius:0;
+}
+.tcard-stars{color:var(--gold);font-size:13px;letter-spacing:3px;margin-bottom:14px}
+.tcard-text{font-family:var(--serif);font-style:italic;font-size:16px;color:var(--ink);line-height:1.65;margin-bottom:20px}
+.tcard-author{display:flex;align-items:center;gap:10px}
+.tcard-av{width:36px;height:36px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0}
+.tcard-name{font-size:13px;font-weight:600;color:var(--ink)}
+.tcard-role{font-family:var(--mono);font-size:10px;color:var(--mid);letter-spacing:.5px;margin-top:1px}
+
+/* ─── FOOTER ─── */
+footer{background:var(--ink);padding:60px 4vw 32px}
+.footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:60px;margin-bottom:60px}
+.footer-brand-desc{font-size:13px;color:rgba(255,255,255,.35);line-height:1.7;margin-top:16px;max-width:260px}
+.footer-col-title{font-family:var(--mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:18px}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:10px}
+.footer-links a{font-size:14px;color:rgba(255,255,255,.5);text-decoration:none;transition:color .2s;cursor:none}
+.footer-links a:hover{color:#fff}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.07);padding-top:28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.footer-copy{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.2);letter-spacing:.5px}
+
+/* ─── TOAST ─── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);z-index:9000;
+  background:var(--ink);color:#fff;padding:14px 28px;border-radius:0;
+  font-family:var(--mono);font-size:12px;letter-spacing:1px;
+  box-shadow:0 8px 40px rgba(12,11,9,.3);
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .3s;
+  opacity:0;border-left:3px solid var(--red);
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ─── SCROLL PROGRESS ─── */
+.scroll-progress{position:fixed;top:62px;left:0;height:2px;background:var(--red);z-index:999;width:0;transition:width .1s}
+
+/* ─── MOBILE ─── */
+@media(max-width:900px){
+  .hero-main{grid-template-columns:1fr}
+  .hero-right{display:none}
+  .about-body,.pricing-grid{grid-template-columns:1fr}
+  .blog-grid{grid-template-columns:1fr}
+  .blog-card.featured{grid-column:auto;grid-template-columns:1fr}
+  .featured-visual{display:none}
+  .faq-row,.contact-split,.footer-top{grid-template-columns:1fr}
+  .av-grid{grid-template-columns:1fr}
+  .courses-grid{grid-template-columns:1fr}
+  .nav-links{display:none}
+  .form-row-2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cur" id="cur"></div>
+<div class="cur2" id="cur2"></div>
+
+<!-- SCROLL PROGRESS -->
+<div class="scroll-progress" id="scrollProg"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#" onclick="return go('home')">
+    <div class="logo-sq">E</div>
+    <span class="logo-name">EduPro <span>Academy</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#" onclick="return go('home')" id="nl-home">Home</a></li>
+    <li><a href="#" onclick="return go('courses')" id="nl-courses">Courses</a></li>
+    <li><a href="#" onclick="return go('about')" id="nl-about">About</a></li>
+    <li><a href="#" onclick="return go('pricing')" id="nl-pricing">Pricing</a></li>
+    <li><a href="#" onclick="return go('blog')" id="nl-blog">Blog</a></li>
+    <li><a href="#" onclick="return go('faq')" id="nl-faq">FAQ</a></li>
+    <li><a href="#" onclick="return go('contact')" id="nl-contact">Contact</a></li>
+  </ul>
+  <div class="nav-right">
+    <a class="btn-n ghost" href="/login">Log In</a>
+    <a class="btn-n fill" href="#" onclick="return go('courses')">Enroll →</a>
+  </div>
+</nav>
+
+<!-- ════ HOME ════ -->
+<div class="page active" id="pg-home">
+  <section id="hero-section">
+    <div class="hero-main">
+      <div class="hero-left">
+        <div class="hero-eyebrow"><span class="eyebrow-line"></span>Trusted by 10,000+ learners</div>
+        <h1 class="hero-h1">
+          <span class="h1-row"><span class="h1-word">LEARN.</span></span>
+          <span class="h1-row"><span class="h1-word red">GROW.</span></span>
+          <span class="h1-row"><span class="h1-word">EXCEL.</span></span>
+        </h1>
+        <p class="hero-body">Industry-aligned courses in tech, design & competitive exams — built for real career outcomes, not just certificates.</p>
+        <div class="hero-actions">
+          <a class="btn-big primary" href="#" onclick="return go('courses')">Explore Courses</a>
+          <a class="btn-big secondary" href="#" onclick="return go('about')">Our Story</a>
+        </div>
+        <div class="hero-nums">
+          <div class="hnum"><span class="hnum-val">10K<span>+</span></span><span class="hnum-label">Students</span></div>
+          <div class="hnum"><span class="hnum-val">98<span>%</span></span><span class="hnum-label">Satisfaction</span></div>
+          <div class="hnum"><span class="hnum-val">50<span>+</span></span><span class="hnum-label">Experts</span></div>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="hero-typo-bg">EDU</div>
+        <div class="hero-card-float fc1">
+          <div class="float-tag">Placement rate</div>
+          <div class="float-val">87%</div>
+          <div class="float-sub">Of our 2024 batch placed</div>
+          <div class="float-bar"><div class="float-fill" style="--w:87%"></div></div>
+        </div>
+        <div class="hero-card-float fc2" style="animation-delay:.8s">
+          <div class="float-tag">Top course</div>
+          <div class="float-val">4.9★</div>
+          <div class="float-sub">Full Stack · 2,400 reviews</div>
+          <div class="float-bar"><div class="float-fill" style="--w:98%"></div></div>
+        </div>
+        <div class="hero-card-float fc3" style="animation-delay:1.6s">
+          <div class="float-tag">Live sessions</div>
+          <div class="float-val">3×</div>
+          <div class="float-sub">Weekly doubt clearing</div>
+        </div>
+      </div>
+    </div>
+    <div class="marquee-track">
+      <div class="marquee-inner">
+        <span>Full Stack Development</span><span>·</span>
+        <span><b>₹8,999</b> Full Stack</span><span>·</span>
+        <span>Data Science & Analytics</span><span>·</span>
+        <span>SSC CGL Coaching</span><span>·</span>
+        <span><b>10,000+</b> Students Enrolled</span><span>·</span>
+        <span>UI/UX Design Bootcamp</span><span>·</span>
+        <span>AWS Cloud Certification</span><span>·</span>
+        <span><b>7-Day</b> Money Back Guarantee</span><span>·</span>
+        <span>Full Stack Development</span><span>·</span>
+        <span><b>₹8,999</b> Full Stack</span><span>·</span>
+        <span>Data Science & Analytics</span><span>·</span>
+        <span>SSC CGL Coaching</span><span>·</span>
+        <span><b>10,000+</b> Students Enrolled</span><span>·</span>
+        <span>UI/UX Design Bootcamp</span><span>·</span>
+        <span>AWS Cloud Certification</span><span>·</span>
+        <span><b>7-Day</b> Money Back Guarantee</span><span>·</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials on homepage -->
+  <div class="testi-strip scroll-reveal">
+    <p style="font-family:var(--mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--mid);margin-bottom:28px">// Student Stories</p>
+    <div class="testi-scroll-track">
+      <div class="tcard"><div class="tcard-stars">★★★★★</div><p class="tcard-text">"EduPro changed everything. I got placed at TCS within 3 months of finishing the Full Stack course."</p><div class="tcard-author"><div class="tcard-av">R</div><div><div class="tcard-name">Rahul Sharma</div><div class="tcard-role">Full Stack · TCS, Bangalore</div></div></div></div>
+      <div class="tcard"><div class="tcard-stars">★★★★★</div><p class="tcard-text">"Cleared SSC CGL in my first attempt. The mock test series here is genuinely unbeatable."</p><div class="tcard-author"><div class="tcard-av">P</div><div><div class="tcard-name">Priya Patel</div><div class="tcard-role">SSC CGL · 2024 Topper</div></div></div></div>
+      <div class="tcard"><div class="tcard-stars">★★★★★</div><p class="tcard-text">"I learned Data Science from absolute zero and landed my dream job at Infosys. Best investment of my life."</p><div class="tcard-author"><div class="tcard-av">A</div><div><div class="tcard-name">Arjun Nair</div><div class="tcard-role">Data Analyst · Infosys</div></div></div></div>
+      <div class="tcard"><div class="tcard-stars">★★★★★</div><p class="tcard-text">"The mentors genuinely care about your progress. Not just a course — a real career partner."</p><div class="tcard-author"><div class="tcard-av">S</div><div><div class="tcard-name">Sneha Verma</div><div class="tcard-role">UI/UX · Startup Founder</div></div></div></div>
+      <div class="tcard"><div class="tcard-stars">★★★★★</div><p class="tcard-text">"EduPro changed everything. I got placed at TCS within 3 months of finishing the Full Stack course."</p><div class="tcard-author"><div class="tcard-av">R</div><div><div class="tcard-name">Rahul Sharma</div><div class="tcard-role">Full Stack · TCS, Bangalore</div></div></div></div>
+      <div class="tcard"><div class="tcard-stars">★★★★★</div><p class="tcard-text">"Cleared SSC CGL in my first attempt. The mock test series here is genuinely unbeatable."</p><div class="tcard-author"><div class="tcard-av">P</div><div><div class="tcard-name">Priya Patel</div><div class="tcard-role">SSC CGL · 2024 Topper</div></div></div></div>
+      <div class="tcard"><div class="tcard-stars">★★★★★</div><p class="tcard-text">"I learned Data Science from absolute zero and landed my dream job at Infosys. Best investment of my life."</p><div class="tcard-author"><div class="tcard-av">A</div><div><div class="tcard-name">Arjun Nair</div><div class="tcard-role">Data Analyst · Infosys</div></div></div></div>
+      <div class="tcard"><div class="tcard-stars">★★★★★</div><p class="tcard-text">"The mentors genuinely care about your progress. Not just a course — a real career partner."</p><div class="tcard-author"><div class="tcard-av">S</div><div><div class="tcard-name">Sneha Verma</div><div class="tcard-role">UI/UX · Startup Founder</div></div></div></div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-top">
+      <div>
+        <a class="nav-logo" href="#" onclick="return go('home')" style="display:inline-flex">
+          <div class="logo-sq">E</div>
+          <span class="logo-name" style="color:#fff">EduPro <span>Academy</span></span>
+        </a>
+        <p class="footer-brand-desc">Empowering learners across India with industry-aligned education and real career outcomes since 2020.</p>
+      </div>
+      <div><div class="footer-col-title">Programs</div><ul class="footer-links"><li><a href="#" onclick="return go('courses')">Full Stack Dev</a></li><li><a href="#" onclick="return go('courses')">Data Science</a></li><li><a href="#" onclick="return go('courses')">SSC Coaching</a></li><li><a href="#" onclick="return go('courses')">UI/UX Design</a></li><li><a href="#" onclick="return go('courses')">AWS Cloud</a></li></ul></div>
+      <div><div class="footer-col-title">Company</div><ul class="footer-links"><li><a href="#" onclick="return go('about')">About</a></li><li><a href="#" onclick="return go('blog')">Blog</a></li><li><a href="#" onclick="return go('pricing')">Pricing</a></li><li><a href="#" onclick="return go('faq')">FAQ</a></li><li><a href="#" onclick="return go('contact')">Contact</a></li></ul></div>
+      <div><div class="footer-col-title">Legal</div><ul class="footer-links"><li><a href="#" onclick="toast('Coming soon');return false">Privacy Policy</a></li><li><a href="#" onclick="toast('Coming soon');return false">Terms</a></li><li><a href="#" onclick="toast('Coming soon');return false">Refund Policy</a></li></ul></div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 EduPro Academy · Made in India</span>
+      <span class="footer-copy">Bhubaneswar, Odisha · hello@eduproacademy.in</span>
+    </div>
+  </footer>
+</div>
+
+<!-- ════ COURSES ════ -->
+<div class="page" id="pg-courses">
+  <div class="page-header scroll-left">
+    <div class="page-header-eyebrow">// All Programs</div>
+    <h1 class="page-header-h">Our <em>Courses</em><br/>& Programs</h1>
+  </div>
+  <div class="courses-section">
+    <div class="courses-filter">
+      <button class="filter-btn active" onclick="filterCourses('all',this)">All</button>
+      <button class="filter-btn" onclick="filterCourses('tech',this)">Technology</button>
+      <button class="filter-btn" onclick="filterCourses('exam',this)">Exam Prep</button>
+      <button class="filter-btn" onclick="filterCourses('design',this)">Design</button>
+      <button class="filter-btn" onclick="filterCourses('cloud',this)">Cloud</button>
+    </div>
+    <div class="courses-grid" id="coursesGrid">
+      <a class="course-card scroll-reveal" data-cat="tech" href="#" onclick="toast('Enrollment opens soon — register interest!');return false">
+        <div class="cc-num">01</div>
+        <div class="cc-cat">Computer Science</div>
+        <div class="cc-title">Full Stack Web Development</div>
+        <div class="cc-desc">Master the complete MERN stack — HTML to deployment, with 5 real-world projects and placement support.</div>
+        <div class="cc-footer">
+          <div><div class="cc-price">₹8,999</div><div class="cc-price-old">₹15,000</div></div>
+          <div class="cc-meta"><div class="cc-rating">★★★★★</div><div>4.9 · 2,400 reviews</div><div>6 months</div></div>
+        </div>
+      </a>
+      <a class="course-card scroll-reveal" data-cat="tech" href="#" onclick="toast('Enrollment opens soon — register interest!');return false">
+        <div class="cc-num">02</div>
+        <div class="cc-cat">Data Science</div>
+        <div class="cc-title">Python & Data Analytics</div>
+        <div class="cc-desc">Python, Pandas, Matplotlib, SQL, Power BI and intro to machine learning — from zero to job-ready.</div>
+        <div class="cc-footer">
+          <div><div class="cc-price">₹7,499</div><div class="cc-price-old">₹12,000</div></div>
+          <div class="cc-meta"><div class="cc-rating">★★★★★</div><div>4.8 · 1,800 reviews</div><div>4 months</div></div>
+        </div>
+      </a>
+      <a class="course-card scroll-reveal" data-cat="exam" href="#" onclick="toast('Enrollment opens soon — register interest!');return false">
+        <div class="cc-num">03</div>
+        <div class="cc-cat">Competitive Exams</div>
+        <div class="cc-title">SSC CGL Complete Prep</div>
+        <div class="cc-desc">Full syllabus coaching — Quant, Reasoning, English, GK — with 200+ mock tests and previous year papers.</div>
+        <div class="cc-footer">
+          <div><div class="cc-price">₹4,999</div><div class="cc-price-old">₹8,000</div></div>
+          <div class="cc-meta"><div class="cc-rating">★★★★★</div><div>4.7 · 3,100 reviews</div><div>5 months</div></div>
+        </div>
+      </a>
+      <a class="course-card scroll-reveal" data-cat="design" href="#" onclick="toast('Enrollment opens soon — register interest!');return false">
+        <div class="cc-num">04</div>
+        <div class="cc-cat">Design</div>
+        <div class="cc-title">UI/UX Design Bootcamp</div>
+        <div class="cc-desc">Figma, design thinking, user research, wireframing, prototyping, and building a portfolio that gets you hired.</div>
+        <div class="cc-footer">
+          <div><div class="cc-price">₹6,499</div><div class="cc-price-old">₹10,000</div></div>
+          <div class="cc-meta"><div class="cc-rating">★★★★★</div><div>4.8 · 980 reviews</div><div>3 months</div></div>
+        </div>
+      </a>
+      <a class="course-card scroll-reveal" data-cat="cloud" href="#" onclick="toast('Enrollment opens soon — register interest!');return false">
+        <div class="cc-num">05</div>
+        <div class="cc-cat">Cloud & DevOps</div>
+        <div class="cc-title">AWS Cloud Practitioner</div>
+        <div class="cc-desc">EC2, S3, Lambda, IAM, CloudFormation — full prep for the AWS Certified Cloud Practitioner exam.</div>
+        <div class="cc-footer">
+          <div><div class="cc-price">₹9,999</div><div class="cc-price-old">₹16,000</div></div>
+          <div class="cc-meta"><div class="cc-rating">★★★★★</div><div>4.9 · 740 reviews</div><div>2 months</div></div>
+        </div>
+      </a>
+      <a class="course-card scroll-reveal" data-cat="tech" href="#" onclick="toast('Enrollment opens soon — register interest!');return false">
+        <div class="cc-num">06</div>
+        <div class="cc-cat">Mobile Development</div>
+        <div class="cc-title">Android App Development</div>
+        <div class="cc-desc">Kotlin, Android Studio, Firebase integration, REST APIs — build and publish real apps to the Play Store.</div>
+        <div class="cc-footer">
+          <div><div class="cc-price">₹7,999</div><div class="cc-price-old">₹13,000</div></div>
+          <div class="cc-meta"><div class="cc-rating">★★★★★</div><div>4.7 · 610 reviews</div><div>4 months</div></div>
+        </div>
+      </a>
+    </div>
+  </div>
+  <div class="testi-strip"><div style="font-family:var(--mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--mid);margin-bottom:28px">// What students say</div><div class="testi-scroll-track"><div class="tcard"><div class="tcard-stars">★★★★★</div><p class="tcard-text">"Best course I've taken in my life. The project-based approach is what makes EduPro different."</p><div class="tcard-author"><div class="tcard-av">M</div><div><div class="tcard-name">Mohan Das</div><div class="tcard-role">AWS Graduate</div></div></div></div><div class="tcard"><div class="tcard-stars">★★★★★</div><p class="tcard-text">"The SSC coaching is ridiculously thorough. I felt overprepared on exam day."</p><div class="tcard-author"><div class="tcard-av">D</div><div><div class="tcard-name">Divya Menon</div><div class="tcard-role">SSC CGL 2024</div></div></div></div><div class="tcard"><div class="tcard-stars">★★★★★</div><p class="tcard-text">"Best course I've taken in my life. The project-based approach is what makes EduPro different."</p><div class="tcard-author"><div class="tcard-av">M</div><div><div class="tcard-name">Mohan Das</div><div class="tcard-role">AWS Graduate</div></div></div></div><div class="tcard"><div class="tcard-stars">★★★★★</div><p class="tcard-text">"The SSC coaching is ridiculously thorough. I felt overprepared on exam day."</p><div class="tcard-author"><div class="tcard-av">D</div><div><div class="tcard-name">Divya Menon</div><div class="tcard-role">SSC CGL 2024</div></div></div></div></div></div>
+  <footer><div class="footer-bottom" style="border-top:1px solid rgba(255,255,255,.07);padding-top:28px"><span class="footer-copy">© 2025 EduPro Academy</span><a class="btn-n fill" href="#" onclick="return go('home')" style="font-size:11px">← Back to Home</a></div></footer>
+</div>
+
+<!-- ════ ABOUT ════ -->
+<div class="page" id="pg-about">
+  <div class="about-hero">
+    <div class="about-hero-bg-text">ABOUT</div>
+    <div>
+      <h1>Built for<br/>the <em>Ambitious</em><br/>Learner.</h1>
+    </div>
+  </div>
+  <div class="about-body">
+    <div class="about-text-col scroll-left">
+      <p class="about-big-p">"We started EduPro because quality education was being gatekept by geography and price. We decided to fix that."</p>
+      <p class="about-regular-p">EduPro Academy was founded in 2020 by a group of engineers, educators and exam-toppers who believed that the gap between learning and earning was entirely fixable — with the right curriculum, the right mentors, and the right support system.</p>
+      <p class="about-regular-p">Today we serve students across 22 states in India, with courses that map directly to what employers and exam boards actually want. No fluff. No filler. Just outcomes.</p>
+      <p class="about-regular-p">Our instructors have worked at companies like Google, Amazon, TCS, Wipro, and government institutions — and they bring that real-world perspective into every single class.</p>
+      <div style="margin-top:40px">
+        <a class="btn-big primary" href="#" onclick="return go('courses')">View All Courses</a>
+      </div>
+    </div>
+    <div class="about-stats-col scroll-right">
+      <div class="about-stat-item"><div class="asi-num">10K<span>+</span></div><div class="asi-label">Students enrolled across 22 states</div></div>
+      <div class="about-stat-item"><div class="asi-num">50<span>+</span></div><div class="asi-label">Expert instructors with industry experience</div></div>
+      <div class="about-stat-item"><div class="asi-num">98<span>%</span></div><div class="asi-label">Student satisfaction across all courses</div></div>
+      <div class="about-stat-item"><div class="asi-num">87<span>%</span></div><div class="asi-label">Placement rate for tech graduates</div></div>
+    </div>
+  </div>
+  <div class="about-values">
+    <div class="av-section-label scroll-reveal">// Our Values</div>
+    <div class="av-grid" style="margin-top:48px">
+      <div class="av-item scroll-reveal"><div class="av-num">01</div><div class="av-title">Outcomes Over Certificates</div><div class="av-desc">We measure success by placements, salary hikes, and exam clears — not just course completions. Every curriculum decision is made with outcomes in mind.</div></div>
+      <div class="av-item scroll-reveal"><div class="av-num">02</div><div class="av-title">Radical Accessibility</div><div class="av-desc">World-class education shouldn't cost a fortune. Our pricing is designed so that a student in any tier-2 or tier-3 city can afford to change their life.</div></div>
+      <div class="av-item scroll-reveal"><div class="av-num">03</div><div class="av-title">Real Mentorship</div><div class="av-desc">Our instructors don't disappear after the lecture. They're in the doubt sessions, the forums, and the mock interviews — genuinely invested in your success.</div></div>
+    </div>
+  </div>
+  <footer><div class="footer-bottom" style="background:var(--ink);padding:28px 4vw;border-top:1px solid rgba(255,255,255,.07)"><span class="footer-copy">© 2025 EduPro Academy</span><a class="btn-n fill" href="#" onclick="return go('home')" style="font-size:11px">← Back to Home</a></div></footer>
+</div>
+
+<!-- ════ PRICING ════ -->
+<div class="page" id="pg-pricing">
+  <div class="pricing-hero scroll-reveal">
+    <div style="font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--mid);margin-bottom:12px">// Transparent Pricing</div>
+    <h1>Simple.<br/><em>Fair.</em> Pricing.</h1>
+    <p class="pricing-sub">No hidden fees. No locked content. Change your life at a price that makes sense.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="plan-card scroll-scale">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price-wrap"><span class="plan-price"><span class="plan-curr">₹</span>2,999</span></div>
+      <div class="plan-period">/ month · billed monthly</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-feat">
+        <li>Access to 1 course</li>
+        <li>Recorded lectures (HD)</li>
+        <li>Study materials & PDFs</li>
+        <li>Community forum access</li>
+        <li class="no">Live classes</li>
+        <li class="no">1-on-1 mentorship</li>
+        <li class="no">Placement support</li>
+      </ul>
+      <button class="btn-plan" onclick="toast('Redirecting to enrollment...')">Get Started</button>
+    </div>
+    <div class="plan-card pop scroll-scale">
+      <div class="pop-label">Most Popular</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price-wrap"><span class="plan-price"><span class="plan-curr">₹</span>5,999</span></div>
+      <div class="plan-period">/ month · billed monthly</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-feat">
+        <li>Access to 3 courses</li>
+        <li>Live + recorded classes</li>
+        <li>Premium study materials</li>
+        <li>Priority forum access</li>
+        <li>Weekly doubt sessions</li>
+        <li>Mock tests & assessments</li>
+        <li class="no">Placement support</li>
+      </ul>
+      <button class="btn-plan" onclick="toast('Redirecting to enrollment...')">Enroll Now</button>
+    </div>
+    <div class="plan-card scroll-scale">
+      <div class="plan-name">Elite</div>
+      <div class="plan-price-wrap"><span class="plan-price"><span class="plan-curr">₹</span>9,999</span></div>
+      <div class="plan-period">/ month · billed monthly</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-feat">
+        <li>Unlimited course access</li>
+        <li>Daily live sessions</li>
+        <li>All premium materials</li>
+        <li>VIP community access</li>
+        <li>Daily doubt clearing</li>
+        <li>1-on-1 monthly session</li>
+        <li>Full placement support</li>
+      </ul>
+      <button class="btn-plan" onclick="toast('Redirecting to enrollment...')">Go Elite</button>
+    </div>
+  </div>
+  <p class="pricing-note">💳 EMI available &nbsp;·&nbsp; 🔒 Razorpay secured &nbsp;·&nbsp; 7-day money-back guarantee &nbsp;·&nbsp; Cancel anytime</p>
+  <footer><div class="footer-bottom" style="background:var(--ink);padding:28px 4vw;border-top:1px solid rgba(255,255,255,.07)"><span class="footer-copy">© 2025 EduPro Academy</span><a class="btn-n fill" href="#" onclick="return go('home')" style="font-size:11px">← Back to Home</a></div></footer>
+</div>
+
+<!-- ════ BLOG ════ -->
+<div class="page" id="pg-blog">
+  <div class="blog-header scroll-left" style="padding:80px 4vw 48px">
+    <div>
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--red);margin-bottom:12px">// Insights & Guides</div>
+      <h1 style="font-family:var(--display);font-size:clamp(60px,7vw,100px);line-height:.9;color:var(--ink)">From the<br/><span style="color:var(--red)">EduPro</span> Blog</h1>
+    </div>
+    <div class="blog-count">6 Articles</div>
+  </div>
+  <div class="blog-grid" style="margin:0 4vw 80px">
+    <a class="blog-card featured scroll-reveal" href="#" onclick="toast('Article opening soon...');return false">
+      <div>
+        <div class="bc-date">June 12, 2025</div>
+        <div class="bc-cat">Career Guide</div>
+        <div class="bc-title">How to Land Your First Tech Job in 2025 — A Complete Roadmap for Freshers</div>
+        <div class="bc-excerpt">From building your portfolio to cracking tech interviews — everything you need to break in with zero experience.</div>
+        <div class="bc-footer"><div class="bc-author"><div class="bc-av">R</div>Rajesh Kumar</div><span class="bc-read">8 min read →</span></div>
+      </div>
+      <div class="featured-visual">2025</div>
+    </a>
+    <a class="blog-card scroll-reveal" href="#" onclick="toast('Article opening soon...');return false">
+      <div class="bc-date">May 28, 2025</div>
+      <div class="bc-cat">Study Tips</div>
+      <div class="bc-title">Top 5 Strategies to Crack SSC CGL in 90 Days</div>
+      <div class="bc-excerpt">A proven 90-day plan used by our most successful batches.</div>
+      <div class="bc-footer"><div class="bc-author"><div class="bc-av">A</div>Anita Singh</div><span class="bc-read">6 min →</span></div>
+    </a>
+    <a class="blog-card scroll-reveal" href="#" onclick="toast('Article opening soon...');return false">
+      <div class="bc-date">May 15, 2025</div>
+      <div class="bc-cat">Technology</div>
+      <div class="bc-title">AI Skills Every Developer Must Learn in 2025</div>
+      <div class="bc-excerpt">The AI landscape is shifting fast — here's what actually matters for your career.</div>
+      <div class="bc-footer"><div class="bc-author"><div class="bc-av">V</div>Vikram Joshi</div><span class="bc-read">5 min →</span></div>
+    </a>
+    <a class="blog-card scroll-reveal" href="#" onclick="toast('Article opening soon...');return false">
+      <div class="bc-date">May 2, 2025</div>
+      <div class="bc-cat">Data Science</div>
+      <div class="bc-title">Python vs R in 2025: Which Should You Learn First?</div>
+      <div class="bc-excerpt">The definitive comparison for aspiring data scientists in the Indian job market.</div>
+      <div class="bc-footer"><div class="bc-author"><div class="bc-av">N</div>Neha Gupta</div><span class="bc-read">7 min →</span></div>
+    </a>
+    <a class="blog-card scroll-reveal" href="#" onclick="toast('Article opening soon...');return false">
+      <div class="bc-date">Apr 18, 2025</div>
+      <div class="bc-cat">Exam Prep</div>
+      <div class="bc-title">IBPS PO 2025: Complete Preparation Strategy</div>
+      <div class="bc-excerpt">Subject-by-subject breakdown from our banking exam coaching team.</div>
+      <div class="bc-footer"><div class="bc-author"><div class="bc-av">K</div>Kiran Rao</div><span class="bc-read">9 min →</span></div>
+    </a>
+  </div>
+  <footer><div class="footer-bottom" style="background:var(--ink);padding:28px 4vw;border-top:1px solid rgba(255,255,255,.07)"><span class="footer-copy">© 2025 EduPro Academy</span><a class="btn-n fill" href="#" onclick="return go('home')" style="font-size:11px">← Back to Home</a></div></footer>
+</div>
+
+<!-- ════ FAQ ════ -->
+<div class="page" id="pg-faq">
+  <div class="faq-header">
+    <div style="font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(212,160,23,.7);margin-bottom:16px">// Questions</div>
+    <h1>Frequently<br/><em>Asked</em></h1>
+  </div>
+  <div class="faq-body" style="padding-top:60px">
+    <div class="faq-row">
+      <div>
+        <div class="faq-item scroll-reveal" onclick="toggleFaq(this)"><div class="faq-q"><span class="faq-q-text">Are courses live or recorded?</span><span class="faq-icon">+</span></div><div class="faq-a">We offer both. Pro and Elite plans include live sessions with real-time interaction. All live sessions are also recorded so you never miss a class. The Starter plan gives access to recordings only.</div></div>
+        <div class="faq-item scroll-reveal" onclick="toggleFaq(this)"><div class="faq-q"><span class="faq-q-text">Do I get a certificate on completion?</span><span class="faq-icon">+</span></div><div class="faq-a">Yes — all students who complete a course receive an EduPro Academy certificate. We're also partnered with industry bodies for additional co-certified programs that carry extra weight with employers.</div></div>
+        <div class="faq-item scroll-reveal" onclick="toggleFaq(this)"><div class="faq-q"><span class="faq-q-text">How does placement support work?</span><span class="faq-icon">+</span></div><div class="faq-a">Elite plan students get full placement support: resume review, LinkedIn audit, mock interviews with industry professionals, and direct referrals to our hiring partners. We've placed students at TCS, Infosys, Amazon, and 100+ other companies.</div></div>
+        <div class="faq-item scroll-reveal" onclick="toggleFaq(this)"><div class="faq-q"><span class="faq-q-text">Can I switch or pause my course?</span><span class="faq-icon">+</span></div><div class="faq-a">Pro and Elite students can pause for up to 30 days or switch courses anytime. Starter plan students can switch after completing 50% of their current course. We're flexible — life happens.</div></div>
+      </div>
+      <div>
+        <div class="faq-item scroll-reveal" onclick="toggleFaq(this)"><div class="faq-q"><span class="faq-q-text">What payment methods are accepted?</span><span class="faq-icon">+</span></div><div class="faq-a">We accept all UPI apps (PhonePe, GPay, Paytm), debit/credit cards, net banking, and EMI options via Razorpay. We also have institutional billing for corporate training programs.</div></div>
+        <div class="faq-item scroll-reveal" onclick="toggleFaq(this)"><div class="faq-q"><span class="faq-q-text">Is there a money-back guarantee?</span><span class="faq-icon">+</span></div><div class="faq-a">Yes — 7-day no-questions-asked refund policy. If you enroll and decide it's not right for you within 7 days, we'll refund every rupee. No conditions, no forms to fill.</div></div>
+        <div class="faq-item scroll-reveal" onclick="toggleFaq(this)"><div class="faq-q"><span class="faq-q-text">How are doubt sessions conducted?</span><span class="faq-icon">+</span></div><div class="faq-a">Doubt sessions happen on Zoom — twice a week for Pro students, daily for Elite. You can also post questions anytime on our community forum where instructors respond within 24 hours.</div></div>
+        <div class="faq-item scroll-reveal" onclick="toggleFaq(this)"><div class="faq-q"><span class="faq-q-text">Do I need prior experience?</span><span class="faq-icon">+</span></div><div class="faq-a">Most courses start from the very beginning — no prerequisites needed. For advanced modules, requirements are clearly listed on the course page. We also have free foundation modules to get you started.</div></div>
+      </div>
+    </div>
+    <div style="margin-top:60px;padding:40px;background:var(--ink);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px">
+      <div>
+        <p style="font-family:var(--display);font-size:32px;color:#fff;margin-bottom:8px">Still have questions?</p>
+        <p style="font-family:var(--serif);font-style:italic;font-size:16px;color:rgba(255,255,255,.5)">Our team replies within 24 hours.</p>
+      </div>
+      <a class="btn-big primary" href="#" onclick="return go('contact')">Contact Us →</a>
+    </div>
+  </div>
+  <footer><div class="footer-bottom" style="background:var(--ink);padding:28px 4vw;border-top:1px solid rgba(255,255,255,.07)"><span class="footer-copy">© 2025 EduPro Academy</span><a class="btn-n fill" href="#" onclick="return go('home')" style="font-size:11px">← Back to Home</a></div></footer>
+</div>
+
+<!-- ════ CONTACT ════ -->
+<div class="page" id="pg-contact">
+  <div class="contact-split">
+    <div class="contact-left">
+      <div>
+        <div style="font-family:var(--mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(212,160,23,.6);margin-bottom:16px">// Get in touch</div>
+        <h1>Let's <em>Talk</em>.<br/>We're Here.</h1>
+      </div>
+      <div class="contact-details scroll-left">
+        <div class="cd-item"><div class="cd-label">Address</div><div class="cd-val">EduPro Academy, 3rd Floor,<br/>Tech Park, Bhubaneswar,<br/>Odisha — 751024</div></div>
+        <div class="cd-item"><div class="cd-label">Phone</div><div class="cd-val">+91 98765 43210<br/><span style="font-size:12px;color:rgba(255,255,255,.3)">Mon–Sat · 9 AM to 7 PM IST</span></div></div>
+        <div class="cd-item"><div class="cd-label">Email</div><div class="cd-val">hello@eduproacademy.in<br/>admissions@eduproacademy.in</div></div>
+        <div class="cd-item"><div class="cd-label">Response Time</div><div class="cd-val">Within 24 hours · usually much faster</div></div>
+      </div>
+      <div class="contact-socials">
+        <a class="social-tag" href="#" onclick="toast('Opening YouTube...');return false">YouTube</a>
+        <a class="social-tag" href="#" onclick="toast('Opening Instagram...');return false">Instagram</a>
+        <a class="social-tag" href="#" onclick="toast('Opening LinkedIn...');return false">LinkedIn</a>
+      </div>
+    </div>
+    <div class="contact-right scroll-right">
+      <h2>Send us a message<br/>and we'll get right back.</h2>
+      <div class="form-row-2">
+        <div class="form-group"><label>First Name</label><input type="text" placeholder="Rahul"/></div>
+        <div class="form-group"><label>Last Name</label><input type="text" placeholder="Sharma"/></div>
+      </div>
+      <div class="form-group"><label>Email</label><input type="email" placeholder="rahul@email.com"/></div>
+      <div class="form-group"><label>Phone</label><input type="tel" placeholder="+91 98765 43210"/></div>
+      <div class="form-group">
+        <label>Interested in</label>
+        <select>
+          <option>Full Stack Web Development</option>
+          <option>Python & Data Analytics</option>
+          <option>SSC CGL Preparation</option>
+          <option>UI/UX Design Bootcamp</option>
+          <option>AWS Cloud Practitioner</option>
+          <option>Android App Development</option>
+          <option>General Inquiry</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Message</label><textarea placeholder="Tell us how we can help..."></textarea></div>
+      <button class="btn-submit-big" onclick="toast('Message sent! We\'ll reply within 24 hours. 🎉')">Send Message →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// CURSOR
+const cur=document.getElementById('cur'),cur2=document.getElementById('cur2');
+let cx=0,cy=0,cx2=0,cy2=0;
+document.addEventListener('mousemove',e=>{cx=e.clientX;cy=e.clientY;cur.style.left=cx+'px';cur.style.top=cy+'px'});
+setInterval(()=>{cx2+=(cx-cx2)*.12;cy2+=(cy-cy2)*.12;cur2.style.left=cx2+'px';cur2.style.top=cy2+'px'},16);
+document.querySelectorAll('a,button,.course-card,.faq-item').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.width='20px';cur.style.height='20px';cur2.style.width='60px';cur2.style.height='60px'});
+  el.addEventListener('mouseleave',()=>{cur.style.width='12px';cur.style.height='12px';cur2.style.width='40px';cur2.style.height='40px'});
+});
+
+// PAGE ROUTING
+function go(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('pg-'+name).classList.add('active');
+  const nl=document.getElementById('nl-'+name);
+  if(nl)nl.classList.add('active');
+  window.scrollTo({top:0,behavior:'instant'});
+  return false;
+}
+
+// SCROLL PROGRESS (JS fallback for browsers without scroll-driven)
+const prog=document.getElementById('scrollProg');
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement.scrollHeight-window.innerHeight;
+  if(h>0)prog.style.width=(window.scrollY/h*100)+'%';
+});
+
+// TOAST
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// FAQ TOGGLE
+function toggleFaq(el){
+  const isOpen=el.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(f=>f.classList.remove('open'));
+  if(!isOpen)el.classList.add('open');
+}
+
+// COURSE FILTER
+function filterCourses(cat,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.course-card').forEach(c=>{
+    c.style.display=(cat==='all'||c.dataset.cat===cat)?'block':'none';
+  });
+}
+
+// SCROLL-DRIVEN FALLBACK (IntersectionObserver for older browsers)
+if(!CSS.supports('animation-timeline','scroll()')){
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='none'}});
+  },{threshold:.15});
+  document.querySelectorAll('.scroll-reveal,.scroll-left,.scroll-right,.scroll-scale').forEach(el=>{
+    el.style.opacity='0';el.style.transition='opacity .7s ease, transform .7s ease';io.observe(el);
+  });
+}
+
+// Prevent default on # links
+document.addEventListener('click',e=>{if(e.target.closest('a')&&e.target.closest('a').getAttribute('href')==='#')e.preventDefault()});
+</script>
+</body>
+</html>

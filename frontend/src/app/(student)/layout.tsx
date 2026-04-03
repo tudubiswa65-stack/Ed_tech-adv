@@ -37,7 +37,7 @@ export default function StudentRootLayout({ children }: { children: React.ReactN
   useEffect(() => {
     if (!isLoading) {
       if (!user) {
-        router.push('/');
+        router.push('/login');
       } else if (!studentRoles.includes(user.role)) {
         if (user.role === 'super_admin') {
           router.push('/super-admin');

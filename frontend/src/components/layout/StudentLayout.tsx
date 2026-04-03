@@ -22,7 +22,7 @@ export default function StudentLayout({ children, title = 'Student Dashboard' }:
   useEffect(() => {
     if (!isLoading) {
       if (!user) {
-        router.push('/');
+        router.push('/login');
       } else if (!studentRoles.includes(user.role)) {
         router.push('/admin');
       }
