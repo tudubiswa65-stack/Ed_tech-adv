@@ -137,21 +137,35 @@ export default function AdminAttendancePage() {
   };
 
   const handleMarkAll = (status: string) => {
-    const all: Record<string, string> = {};
-    students.forEach((s) => { all[s.id] = status; });
+    const all: Record<string, string> = { ...markData };
+    // Only update students whose attendance has NOT been marked yet (unlocked)
+    students.forEach((s) => {
+      if (!alreadyMarkedIds.has(s.id)) {
+        all[s.id] = status;
+      }
+    });
     setMarkData(all);
   };
 
   const handleMarkAttendance = async () => {
     setSaving(true);
     try {
-      const records = Object.entries(markData).map(([studentId, status]) => ({
-        student_id: studentId,
-        branch_id: selectedBranch || undefined,
-        course_id: selectedCourse || undefined,
-        date: selectedDate,
-        status,
-      }));
+      // Only submit records for students whose attendance has NOT yet been marked today
+      const records = Object.entries(markData)
+        .filter(([studentId]) => !alreadyMarkedIds.has(studentId))
+        .map(([studentId, status]) => ({
+          student_id: studentId,
+          branch_id: selectedBranch || undefined,
+          course_id: selectedCourse || undefined,
+          date: selectedDate,
+          status,
+        }));
+
+      if (records.length === 0) {
+        toast.error('Attendance is already marked for all students. Re-marking is not allowed.');
+        return;
+      }
+
       await apiClient.post('/admin/attendance', { records });
       toast.success('Attendance saved successfully');
       setShowMarkModal(false);
@@ -272,9 +286,11 @@ export default function AdminAttendancePage() {
           <>
             {/* Banner when attendance already exists for some/all students */}
             {alreadyMarkedIds.size > 0 && (
-              <div className="mb-4 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 dark:bg-amber-900/20 dark:border-amber-700 dark:text-amber-300">
-                ⚠️ Attendance has already been recorded for {alreadyMarkedIds.size} student(s) today.
-                Saving will <strong>update</strong> those existing records — it will not create duplicates.
+              <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800 dark:bg-red-900/20 dark:border-red-700 dark:text-red-300">
+                🔒 Attendance is <strong>locked</strong> for {alreadyMarkedIds.size} student(s) — already marked today and cannot be changed.
+                {alreadyMarkedIds.size === students.length && (
+                  <span className="block mt-1 font-semibold">All students have been marked. No further action is needed.</span>
+                )}
               </div>
             )}
 
@@ -307,21 +323,34 @@ export default function AdminAttendancePage() {
                         {student.courses?.name || '–'}
                       </td>
                       <td className="px-4 py-3">
-                        <select
-                          className="border border-gray-300 rounded-lg px-2 py-1 text-sm dark:border-slate-500"
-                          value={markData[student.id] || 'present'}
-                          onChange={(e) => setMarkData({ ...markData, [student.id]: e.target.value })}
-                        >
-                          <option value="present">Present</option>
-                          <option value="absent">Absent</option>
-                          <option value="late">Late</option>
-                          <option value="excused">Excused</option>
-                        </select>
+                        {alreadyMarkedIds.has(student.id) ? (
+                          <select
+                            className="border border-gray-200 rounded-lg px-2 py-1 text-sm bg-gray-100 text-gray-400 cursor-not-allowed dark:border-slate-600 dark:bg-slate-700 dark:text-slate-500"
+                            value={markData[student.id] || 'present'}
+                            disabled
+                          >
+                            <option value="present">Present</option>
+                            <option value="absent">Absent</option>
+                            <option value="late">Late</option>
+                            <option value="excused">Excused</option>
+                          </select>
+                        ) : (
+                          <select
+                            className="border border-gray-300 rounded-lg px-2 py-1 text-sm dark:border-slate-500"
+                            value={markData[student.id] || 'present'}
+                            onChange={(e) => setMarkData({ ...markData, [student.id]: e.target.value })}
+                          >
+                            <option value="present">Present</option>
+                            <option value="absent">Absent</option>
+                            <option value="late">Late</option>
+                            <option value="excused">Excused</option>
+                          </select>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         {alreadyMarkedIds.has(student.id) ? (
-                          <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-100 rounded-full px-2 py-0.5 dark:bg-amber-900/30 dark:text-amber-300">
-                            ✎ Edit
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-red-700 bg-red-100 rounded-full px-2 py-0.5 dark:bg-red-900/30 dark:text-red-300">
+                            🔒 Locked
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 dark:text-slate-500">
@@ -339,15 +368,19 @@ export default function AdminAttendancePage() {
               {students.length} student(s) found •{' '}
               {Object.values(markData).filter((v) => v === 'present').length} present •{' '}
               {Object.values(markData).filter((v) => v === 'absent').length} absent
-              {alreadyMarkedIds.size > 0 && ` • ${alreadyMarkedIds.size} already recorded (will update)`}
+              {alreadyMarkedIds.size > 0 && ` • ${alreadyMarkedIds.size} locked (already marked)`}
             </div>
           </>
         )}
 
         <div className="mt-6 flex justify-end space-x-3">
           <Button variant="outline" onClick={() => setShowMarkModal(false)}>Cancel</Button>
-          <Button onClick={handleMarkAttendance} disabled={saving || students.length === 0}>
-            {saving ? 'Saving…' : alreadyMarkedIds.size > 0 && alreadyMarkedIds.size === students.length ? 'Update Attendance' : 'Save Attendance'}
+          <Button
+            onClick={handleMarkAttendance}
+            disabled={saving || students.length === 0 || alreadyMarkedIds.size === students.length}
+            title={alreadyMarkedIds.size === students.length ? 'Attendance is already marked for all students' : undefined}
+          >
+            {saving ? 'Saving…' : 'Save Attendance'}
           </Button>
         </div>
       </Modal>
