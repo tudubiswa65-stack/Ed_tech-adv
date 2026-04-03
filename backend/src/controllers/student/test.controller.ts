@@ -265,12 +265,27 @@ export const submitTest = async (req: StudentRequest, res: Response): Promise<vo
   try {
     const { id } = req.params;
     const studentId = req.user?.id;
-    const instituteId = req.user?.instituteId;
+    let instituteId = req.user?.instituteId;
     const { answers, time_taken_secs } = req.body;
 
-    if (!studentId || !instituteId) {
+    if (!studentId) {
       res.status(401).json({ success: false, error: 'Unauthorized' });
       return;
+    }
+
+    // instituteId may be absent in JWTs issued before the login fix was
+    // deployed.  Fall back to a DB look-up so existing sessions still work.
+    if (!instituteId) {
+      const { data: userRecord, error: userLookupError } = await supabaseAdmin
+        .from('users')
+        .select('institute_id')
+        .eq('id', studentId)
+        .single();
+      if (userLookupError || !userRecord?.institute_id) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
+      instituteId = userRecord.institute_id;
     }
 
     // Get correct answers

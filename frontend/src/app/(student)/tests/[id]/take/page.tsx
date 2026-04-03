@@ -114,6 +114,13 @@ export default function TakeTestPage() {
         isSubmittedRef.current = true;
         router.push(`/results/${responseData.result.id}`);
       } catch (error: any) {
+        // If the request returned 401 the apiClient interceptor will
+        // immediately do window.location.href = '/' (a hard navigation).
+        // Lift the beforeunload guard here so that redirect is not blocked
+        // by the browser "Changes may not be saved" popup.
+        if (error.response?.status === 401) {
+          isSubmittedRef.current = true;
+        }
         toast.error(error.response?.data?.error || 'Failed to submit test');
       } finally {
         setSubmitting(false);
