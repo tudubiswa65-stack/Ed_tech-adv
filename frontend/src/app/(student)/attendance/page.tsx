@@ -96,11 +96,11 @@ const pillBase: React.CSSProperties = {
 const ATT_STYLES = `
   @keyframes att-pulse{0%,100%{opacity:1}50%{opacity:.4}}
   .att-outer{padding:16px 16px 32px;width:100%;margin:0 auto}
-  .att-stats{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:14px}
+  .att-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
   .att-top{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:14px}
   @media(min-width:768px){
     .att-outer{padding:24px 20px 40px;max-width:1100px}
-    .att-stats{grid-template-columns:1fr 1fr 1fr}
+    .att-stats{gap:10px}
   }
   @media(min-width:900px){.att-top{grid-template-columns:1fr 1fr}}
 `;
@@ -306,23 +306,23 @@ export default function StudentAttendancePage() {
       {/* ── STATS ROW — 1 col mobile → 3 col desktop ── */}
       <div className="att-stats">
         {/* Total */}
-        <div style={{ ...cardBase, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '18px 16px' }}>
+        <div style={{ ...cardBase, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px 12px' }}>
           <span style={{ ...sectionLabel, marginBottom: 8 }}>Total</span>
-          <span style={{ fontSize: 28, fontWeight: 700, color: '#fff', lineHeight: 1 }}>{totalClasses}</span>
+          <span style={{ fontSize: 24, fontWeight: 700, color: '#fff', lineHeight: 1 }}>{totalClasses}</span>
           <span style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 6 }}>classes</span>
         </div>
 
         {/* Present */}
-        <div style={{ ...cardBase, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '18px 16px' }}>
+        <div style={{ ...cardBase, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px 12px' }}>
           <span style={{ ...sectionLabel, marginBottom: 8 }}>Present</span>
-          <span style={{ fontSize: 28, fontWeight: 700, color: GREEN, lineHeight: 1 }}>{presentCount}</span>
+          <span style={{ fontSize: 24, fontWeight: 700, color: GREEN, lineHeight: 1 }}>{presentCount}</span>
           <span style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 6 }}>days</span>
         </div>
 
         {/* Absent */}
-        <div style={{ ...cardBase, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '18px 16px' }}>
+        <div style={{ ...cardBase, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px 12px' }}>
           <span style={{ ...sectionLabel, marginBottom: 8 }}>Absent</span>
-          <span style={{ fontSize: 28, fontWeight: 700, color: RED, lineHeight: 1 }}>{absentCount}</span>
+          <span style={{ fontSize: 24, fontWeight: 700, color: RED, lineHeight: 1 }}>{absentCount}</span>
           <span style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 6 }}>days</span>
         </div>
       </div>
@@ -332,7 +332,7 @@ export default function StudentAttendancePage() {
         {/* top row */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <span style={{ fontSize: 12, color: TEXT_MUTED }}>Attendance rate</span>
-          <span style={{ fontSize: 22, fontWeight: 500, color: GREEN }}>{Math.round(attendanceRate)}%</span>
+          <span style={{ fontSize: 20, fontWeight: 500, color: GREEN }}>{Math.round(attendanceRate)}%</span>
         </div>
         {/* progress bar */}
         <div
@@ -391,7 +391,7 @@ export default function StudentAttendancePage() {
           style={{
             display: 'grid',
             gridTemplateColumns: '1fr auto',
-            padding: '12px 20px',
+            padding: '10px 14px',
             borderBottom: '0.5px solid rgba(255,255,255,0.05)',
           }}
         >
@@ -420,7 +420,7 @@ export default function StudentAttendancePage() {
                   display: 'grid',
                   gridTemplateColumns: '1fr auto',
                   alignItems: 'center',
-                  padding: '15px 20px',
+                  padding: '13px 14px',
                   borderBottom: isLast ? 'none' : DIVIDER,
                   background: isAbsent ? 'rgba(248,113,113,0.04)' : 'transparent',
                 }}
