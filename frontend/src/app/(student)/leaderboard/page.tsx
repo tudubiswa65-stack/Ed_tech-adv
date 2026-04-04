@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useStudentLeaderboard } from '@/hooks/queries/useStudentQueries';
 
@@ -8,6 +10,7 @@ interface LeaderboardEntry {
   student_id: string;
   student_name: string;
   branch_name?: string;
+  avatar_url?: string | null;
   total_score: number;
   rank: number;
 }
@@ -55,18 +58,39 @@ function levelFromScore(score: number): number {
   return Math.floor(score / 200) + 1;
 }
 
-function InitialsAvatar({
+function PlayerAvatar({
   name,
+  avatarUrl,
   className = '',
+  sizes = '64px',
 }: {
   name: string;
+  avatarUrl?: string | null;
   className?: string;
+  sizes?: string;
 }) {
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [avatarUrl]);
+
   return (
     <div
-      className={`rounded-full bg-indigo-700 flex items-center justify-center font-bold text-white flex-shrink-0 ${className}`}
+      className={`rounded-full bg-indigo-700 flex items-center justify-center font-bold text-white flex-shrink-0 overflow-hidden relative ${className}`}
     >
-      {getInitials(name)}
+      {avatarUrl && !imgError ? (
+        <Image
+          src={avatarUrl}
+          alt={name}
+          fill
+          className="object-cover"
+          sizes={sizes}
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        getInitials(name)
+      )}
     </div>
   );
 }
@@ -78,11 +102,12 @@ function PodiumCard({ entry }: { entry: LeaderboardEntry }) {
     <div className="flex flex-col items-center">
       <span className="text-2xl mb-1 leading-none">{CROWN[rank]}</span>
 
-      <div
-        className={`w-16 h-16 rounded-full border-4 ${s.border} ${s.glow} bg-indigo-800 flex items-center justify-center font-bold text-white text-lg flex-shrink-0`}
-      >
-        {getInitials(entry.student_name)}
-      </div>
+      <PlayerAvatar
+        name={entry.student_name}
+        avatarUrl={entry.avatar_url}
+        className={`w-16 h-16 border-4 ${s.border} ${s.glow} bg-indigo-800 text-lg`}
+        sizes="64px"
+      />
 
       <div
         className={`mt-2 w-7 h-7 rounded-full ${s.badge} flex items-center justify-center text-white text-xs font-bold`}
@@ -162,9 +187,11 @@ export default function LeaderboardPage() {
                     {entry.rank}
                   </span>
 
-                  <InitialsAvatar
+                  <PlayerAvatar
                     name={entry.student_name}
+                    avatarUrl={entry.avatar_url}
                     className="w-10 h-10 text-sm"
+                    sizes="40px"
                   />
 
                   <div className="flex-1 flex items-center gap-2 min-w-0">
@@ -189,9 +216,11 @@ export default function LeaderboardPage() {
       {/* Sticky current-user bar */}
       {currentUserEntry && (
         <div className="fixed bottom-0 left-0 right-0 bg-[#1a1f52]/95 backdrop-blur-sm border-t border-white/10 px-4 py-3 flex items-center gap-3 z-50">
-          <InitialsAvatar
+          <PlayerAvatar
             name={currentUserEntry.student_name}
+            avatarUrl={currentUserEntry.avatar_url}
             className="w-10 h-10 text-sm ring-2 ring-indigo-400"
+            sizes="40px"
           />
           <div className="flex-1 min-w-0">
             <p className="text-slate-400 text-xs uppercase tracking-wide font-semibold leading-none mb-0.5">
