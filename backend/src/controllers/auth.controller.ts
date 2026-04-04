@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { supabaseAdmin } from '../db/supabaseAdmin';
 import config from '../config/env';
 import { isStudentActive, resolveStudentStatus } from '../utils/studentStatus';
+import { toSignedAvatarUrl } from '../utils/avatarUrl';
 
 // Use JWT secret from centralized config - NEVER use a fallback in production
 const JWT_SECRET = config.jwtSecret;
@@ -181,7 +182,7 @@ export const adminLogin = async (req: LoginRequest, res: Response): Promise<void
           name: admin.name,
           email: admin.email,
           role: admin.role,
-          avatar_url: admin.avatar_url,
+          avatar_url: await toSignedAvatarUrl(admin.avatar_url),
         },
       },
     });
@@ -303,7 +304,7 @@ export const studentLogin = async (req: LoginRequest, res: Response): Promise<vo
           email: student.email,
           role: 'student',
           course_id: student.course_id,
-          avatar_url: student.avatar_url,
+          avatar_url: await toSignedAvatarUrl(student.avatar_url),
         },
       },
     });
@@ -374,7 +375,8 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
       userData = data;
     }
 
-    res.json({ success: true, data: { user: userData } });
+    const signedAvatarUrl = await toSignedAvatarUrl(userData.avatar_url);
+    res.json({ success: true, data: { user: { ...userData, avatar_url: signedAvatarUrl } } });
   } catch (error) {
     console.error('Get current user error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });

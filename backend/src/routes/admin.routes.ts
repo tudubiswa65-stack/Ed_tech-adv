@@ -28,7 +28,7 @@ import {
   getPaymentReceipt,
 } from '../controllers/admin/payment.controller';
 import { getMyPermissions } from '../controllers/admin/permissions.controller';
-import { getAdminProfile, updateAdminProfile, uploadAdminAvatar } from '../controllers/admin/profile.controller';
+import { getAdminProfile, updateAdminProfile, uploadAdminAvatar, getAdminAvatarUrl } from '../controllers/admin/profile.controller';
 import {
   getAggregatedDashboard,
   getAggregatedBranchOverview,
@@ -93,6 +93,7 @@ router.get('/my-permissions', getMyPermissions);
 router.get('/profile', getAdminProfile);
 router.put('/profile', updateAdminProfile);
 router.post('/profile/avatar', upload.single('avatar'), uploadAdminAvatar);
+router.get('/profile/avatar-url', getAdminAvatarUrl);
 
 // Students
 router.get('/students', getStudents);

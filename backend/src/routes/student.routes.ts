@@ -39,6 +39,7 @@ import {
   getNotificationPreferences,
   updateNotificationPreferences,
   uploadAvatar,
+  getStudentAvatarUrl,
 } from '../controllers/student/profile.controller';
 import { getMyAttendance } from '../controllers/student/attendance.controller';
 import { getMyPayments, getMyPaymentReceipt } from '../controllers/student/payment.controller';
@@ -117,6 +118,7 @@ router.delete('/profile', accountDeletionLimiter, deleteAccount);
 router.get('/profile/notification-preferences', getNotificationPreferences);
 router.put('/profile/notification-preferences', updateNotificationPreferences);
 router.post('/profile/avatar', upload.single('avatar'), uploadAvatar);
+router.get('/profile/avatar-url', getStudentAvatarUrl);
 
 // Attendance
 router.get('/attendance', getMyAttendance);
