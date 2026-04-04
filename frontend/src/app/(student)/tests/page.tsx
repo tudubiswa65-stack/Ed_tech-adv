@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Card, Button, Badge, Spinner } from '@/components/ui';
-import { apiClient } from '@/lib/apiClient';
+import { useStudentTests } from '@/hooks/queries/useStudentQueries';
 
 interface TestData {
   pending: any[];
@@ -13,29 +13,13 @@ interface TestData {
 }
 
 export default function StudentTestsPage() {
-  const [tests, setTests] = useState<TestData>({ pending: [], scheduled: [], completed: [] });
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'pending' | 'scheduled' | 'completed'>('pending');
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchTests = async () => {
-      try {
-        const response = await apiClient.get('/student/tests');
-        // Handle standardized response - use type assertion for compatibility
-        const responseData = (response.data as any).success ? (response.data as any).data : response.data;
-        setTests(responseData);
-      } catch (error) {
-        console.error('Failed to fetch tests:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data, isLoading } = useStudentTests();
+  const tests: TestData = (data as TestData) ?? { pending: [], scheduled: [], completed: [] };
 
-    fetchTests();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Spinner size="lg" />

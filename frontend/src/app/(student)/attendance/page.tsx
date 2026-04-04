@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { apiClient } from '@/lib/apiClient';
 import { useAuth } from '@/hooks/useAuth';
+import { useStudentAttendance } from '@/hooks/queries/useStudentQueries';
 
 interface Attendance {
   id: string;
@@ -140,27 +139,8 @@ function RetryMessage({ onRetry }: { onRetry: () => void }) {
 
 export default function StudentAttendancePage() {
   const { user } = useAuth();
-  const [attendance, setAttendance] = useState<Attendance[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    fetchAttendance();
-  }, []);
-
-  const fetchAttendance = async () => {
-    setLoading(true);
-    setError(false);
-    try {
-      const response = await apiClient.get('/student/attendance');
-      setAttendance(response.data.data || []);
-    } catch (err) {
-      console.error('Failed to load attendance', err);
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data, isLoading: loading, isError: error, refetch } = useStudentAttendance();
+  const attendance = data ?? [];
 
   // ── derived stats ────────────────────────────────────────────────────────────
 
@@ -401,7 +381,7 @@ export default function StudentAttendancePage() {
 
         {error ? (
           <div style={{ padding: '20px 20px' }}>
-            <RetryMessage onRetry={fetchAttendance} />
+          <RetryMessage onRetry={refetch} />
           </div>
         ) : attendance.length === 0 ? (
           <div style={{ padding: '40px 20px', textAlign: 'center' }}>

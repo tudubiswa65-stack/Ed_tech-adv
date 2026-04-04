@@ -27,57 +27,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  console.log('[AuthProvider] STEP A: Initializing AuthProvider');
-
   const refreshUser = useCallback(async () => {
-    console.log('[AuthProvider] STEP B: refreshUser called');
     try {
       const response = await apiClient.get('/auth/me');
-      console.log('[AuthProvider] STEP C: User authenticated', { user: response.data.data?.user });
       const freshUser = response.data.data?.user;
       if (freshUser) {
         setUser(freshUser);
       }
     } catch (error: any) {
-      console.log('[AuthProvider] STEP D: No authenticated user found', error);
       // Only clear user state on genuine authentication failure (401).
       // Transient errors (network, 500, etc.) must not log the user out.
       if (error?.response?.status === 401) {
         setUser(null);
       }
     } finally {
-      console.log('[AuthProvider] STEP E: refreshUser complete, setting isLoading=false');
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    console.log('[AuthProvider] STEP F: Mounting effect - checking authentication status');
     refreshUser();
   }, [refreshUser]);
 
   const login = async (email: string, password: string, role: 'admin' | 'student') => {
-    console.log('[useAuth] STEP 1: Login function entered', { 
-      email: email?.substring(0, 3) + '***', 
-      role,
-      hasApiClient: typeof apiClient !== 'undefined'
-    });
     try {
       const endpoint = role === 'admin' ? '/auth/admin/login' : '/auth/student/login';
-      console.log('[useAuth] STEP 2: Endpoint determined:', endpoint);
-      console.log('[useAuth] STEP 3: About to call apiClient.post', { 
-        fullUrl: `${apiClient.defaults.baseURL}${endpoint}`,
-        baseURL: apiClient.defaults.baseURL
-      });
-      
-      // CRITICAL: Add immediate logging after the call
       const response = await apiClient.post(endpoint, { email, password });
-      console.log('[useAuth] STEP 4: apiClient.post() returned', { 
-        status: response.status,
-        hasData: !!response.data,
-        user: response.data?.data?.user 
-      });
-      console.log('[useAuth] STEP 5: Login successful, setting user state');
       const loggedInUser = response.data.data?.user ?? null;
       setUser(loggedInUser);
 
@@ -85,44 +60,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // This guards against the case where the cookie is set in the login
       // response but not correctly stored or forwarded by the browser/proxy,
       // which would cause a redirect loop after the page navigates.
-      console.log('[useAuth] STEP 5b: Verifying session via /auth/me');
       try {
         const meResponse = await apiClient.get('/auth/me');
         const verifiedUser = meResponse.data.data?.user ?? null;
-        console.log('[useAuth] STEP 5c: Session verified', { user: verifiedUser });
         setUser(verifiedUser);
-        console.log('[useAuth] STEP 5d: Login function complete');
         return verifiedUser;
-      } catch (meError) {
-        console.warn('[useAuth] STEP 5e: Session verification failed after login', meError);
+      } catch {
         // Fall back to the user data from the login response so the caller
         // can still redirect; the session might still work for the redirect
         // target's own /auth/me check.
-        console.log('[useAuth] STEP 5f: Login function complete (session verification skipped)');
         return loggedInUser;
       }
     } catch (error: any) {
-      console.error('[useAuth] STEP 7: Login failed with error:', error);
-      console.error('[useAuth] STEP 7b: Error type:', typeof error);
-      console.error('[useAuth] STEP 7c: Is axios error:', error?.constructor?.name);
-      console.error('[useAuth] STEP 7d: Error message:', error?.message);
-      console.error('[useAuth] STEP 7e: Error response:', error?.response?.data);
       throw error;
     }
   };
 
   const logout = async () => {
-    console.log('[useAuth] STEP X: logout called');
     await apiClient.post('/auth/logout');
     setUser(null);
-    console.log('[useAuth] STEP Y: logout completed');
   };
 
   const updateUserAvatar = useCallback((url: string) => {
     setUser((prev) => (prev ? { ...prev, avatar_url: url } : prev));
   }, []);
-
-  console.log('[AuthProvider] STEP Z: Rendering with state:', { user: !!user, isLoading });
 
   return (
     <AuthContext.Provider value={{ user, isLoading, login, logout, refreshUser, updateUserAvatar }}>

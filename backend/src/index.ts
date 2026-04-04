@@ -6,6 +6,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
 
 // Import routes
 import authRoutes from './routes/auth.routes';
@@ -79,6 +80,20 @@ app.get('/api/health', (req, res) => {
     SAFE_MODE: SAFE_MODE,
   });
 });
+
+// General API rate limiter — protects all /api/* routes from excessive polling.
+// Authenticated users behind a CDN share an IP, so the limit is intentionally
+// generous (300 req / 1 min).  Tighter limits are applied per-route for
+// sensitive operations (login, bulk upload, payment recording).
+const generalApiLimiter = rateLimit({
+  windowMs: 60 * 1000,  // 1 minute
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.path === '/health',  // Health checks bypass rate limiting
+  message: { error: 'Too many requests, please slow down and try again later' },
+});
+app.use('/api', generalApiLimiter);
 
 // API Routes
 app.use('/api/auth', authRoutes);

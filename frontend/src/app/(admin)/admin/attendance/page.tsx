@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Table, Button, Modal, Badge, Spinner } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
 import { useToast } from '@/context/ToastContext';
+import { useAdminBranches, useAdminCourses, useAdminAttendance, adminQueryKeys } from '@/hooks/queries/useAdminQueries';
+import { queryClient } from '@/lib/queryClient';
 
 interface AttendanceRecord {
   id: string;
@@ -38,11 +40,7 @@ interface Course {
 }
 
 export default function AdminAttendancePage() {
-  const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
   const [students, setStudents] = useState<StudentWithAttendance[]>([]);
-  const [loading, setLoading] = useState(true);
   const [studentsLoading, setStudentsLoading] = useState(false);
   const today = new Date().toISOString().split('T')[0];
   const [selectedBranch, setSelectedBranch] = useState('');
@@ -58,31 +56,16 @@ export default function AdminAttendancePage() {
 
   const toast = useToast();
 
-  useEffect(() => {
-    Promise.all([fetchBranches(), fetchCourses()]);
-  }, []);
+  // Static reference data — cached for 30 minutes by React Query
+  const { data: branches = [] } = useAdminBranches();
+  const { data: courses = [] } = useAdminCourses();
 
-  useEffect(() => {
-    fetchAttendance();
-  }, [selectedBranch, selectedCourse, selectedDate]);
-
-  const fetchBranches = async () => {
-    try {
-      const response = await apiClient.get('/admin/branches');
-      setBranches(response.data.data || []);
-    } catch {
-      toast.error('Failed to load branches');
-    }
-  };
-
-  const fetchCourses = async () => {
-    try {
-      const response = await apiClient.get<{ courses: Course[] }>('/admin/courses');
-      setCourses(response.data.courses || []);
-    } catch {
-      toast.error('Failed to load courses');
-    }
-  };
+  // Attendance data — re-fetched when filter state changes, cached by key
+  const { data: attendance = [], isLoading: loading } = useAdminAttendance(
+    selectedBranch,
+    selectedCourse,
+    selectedDate,
+  );
 
   const fetchStudentsForAttendance = async () => {
     setStudentsLoading(true);
@@ -112,22 +95,6 @@ export default function AdminAttendancePage() {
       toast.error('Failed to load students for attendance');
     } finally {
       setStudentsLoading(false);
-    }
-  };
-
-  const fetchAttendance = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ date: selectedDate });
-      if (selectedBranch) params.set('branch_id', selectedBranch);
-      if (selectedCourse) params.set('course_id', selectedCourse);
-
-      const response = await apiClient.get(`/admin/attendance?${params}`);
-      setAttendance(response.data.data || []);
-    } catch {
-      toast.error('Failed to load attendance');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -169,7 +136,8 @@ export default function AdminAttendancePage() {
       await apiClient.post('/admin/attendance', { records });
       toast.success('Attendance saved successfully');
       setShowMarkModal(false);
-      fetchAttendance();
+      // Invalidate the cached attendance data so the table refreshes automatically
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.attendance(selectedBranch, selectedCourse, selectedDate) });
     } catch {
       toast.error('Failed to save attendance');
     } finally {
