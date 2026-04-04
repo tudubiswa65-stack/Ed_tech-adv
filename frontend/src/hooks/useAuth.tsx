@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
 import { apiClient } from '@/lib/apiClient';
+import { getCachedAvatar, setCachedAvatar, clearCachedAvatar } from '@/lib/avatarCache';
 
 interface User {
   id: string;
@@ -32,7 +33,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await apiClient.get('/auth/me');
       const freshUser = response.data.data?.user;
       if (freshUser) {
-        setUser(freshUser);
+        // Read the currently cached URL before overwriting it.
+        const cachedUrl = getCachedAvatar(freshUser.id);
+        // Always refresh the cache with the latest signed URL from the backend
+        // so that avatar changes made on another device are reflected within
+        // the next page load rather than waiting for the TTL to expire.
+        if (freshUser.avatar_url) {
+          setCachedAvatar(freshUser.id, freshUser.avatar_url);
+        }
+        // For this render, prefer the previously cached URL when still valid
+        // so the browser can serve the image from its HTTP cache (stable URL).
+        setUser({ ...freshUser, avatar_url: cachedUrl ?? freshUser.avatar_url });
       }
     } catch (error: any) {
       // Only clear user state on genuine authentication failure (401).
@@ -77,12 +88,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    if (user?.id) {
+      clearCachedAvatar(user.id);
+    }
     await apiClient.post('/auth/logout');
     setUser(null);
   };
 
   const updateUserAvatar = useCallback((url: string) => {
-    setUser((prev) => (prev ? { ...prev, avatar_url: url } : prev));
+    setUser((prev) => {
+      if (!prev) return prev;
+      // Clear the stale cache and store the new signed URL so subsequent page
+      // loads reuse this URL for the full 50-minute window.
+      clearCachedAvatar(prev.id);
+      setCachedAvatar(prev.id, url);
+      return { ...prev, avatar_url: url };
+    });
   }, []);
 
   return (

@@ -53,8 +53,8 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
       const res = await apiClient.post(endpoint, formData);
       const newUrl = res.data?.data?.avatar_url;
       if (newUrl) {
-        // The backend returns a signed URL (unique per generation), so no
-        // cache-busting is needed — every signed URL has a distinct token.
+        // updateUserAvatar clears the stale localStorage cache and stores the
+        // new signed URL so subsequent page loads reuse it for 50 minutes.
         updateUserAvatar(newUrl);
       }
       toastSuccess('Profile photo updated successfully.');
