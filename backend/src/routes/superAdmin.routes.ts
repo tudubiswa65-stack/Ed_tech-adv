@@ -89,7 +89,8 @@ import {
   getBrandingSettings,
   updateBrandingSettings,
   getFeatureFlags,
-  resetSettings
+  resetSettings,
+  getAggregateSettings
 } from '../controllers/superAdmin/settings.controller';
 
 // Audit controllers
@@ -201,6 +202,7 @@ router.get('/feedback/branch/:branch_id', requireSuperAdmin, getFeedbackByBranch
 // SETTINGS ENDPOINTS
 // ═══════════════════════════════════════════════════════════
 router.get('/settings', requireSuperAdmin, getAllSettings);
+router.get('/settings/aggregate', requireSuperAdmin, getAggregateSettings);
 router.put('/settings/:key', requireSuperAdmin, updateSetting);
 router.put('/settings', requireSuperAdmin, updateMultipleSettings);
 router.get('/settings/branding', requireSuperAdmin, getBrandingSettings);
