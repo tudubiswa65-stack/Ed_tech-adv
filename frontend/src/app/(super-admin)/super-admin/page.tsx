@@ -212,15 +212,10 @@ export default function SuperAdminDashboard() {
   const { user } = useAuth();
 
   const { data: stats, isLoading: statsLoading, isError: statsError } = useSuperAdminStats();
-  const { data: studentGrowthData } = useSuperAdminStudentGrowth();
-  const { data: revenueRawData } = useSuperAdminRevenue();
-  const { data: attendanceRawData } = useSuperAdminAttendance();
-  const { data: topBranchesData } = useSuperAdminTopBranches();
-
-  const studentGrowth = studentGrowthData ?? [];
-  const revenueData   = revenueRawData   ?? [];
-  const attendanceData = attendanceRawData ?? [];
-  const topBranches   = topBranchesData  ?? [];
+  const { data: studentGrowth = [] } = useSuperAdminStudentGrowth();
+  const { data: revenueData = [] } = useSuperAdminRevenue();
+  const { data: attendanceData = [] } = useSuperAdminAttendance();
+  const { data: topBranches = [] } = useSuperAdminTopBranches();
 
   const loading = statsLoading;
 

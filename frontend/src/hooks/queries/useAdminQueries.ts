@@ -16,8 +16,16 @@ export const adminQueryKeys = {
 
 // ── Admin Dashboard ───────────────────────────────────────────────────────────
 
+export interface AdminDashboardStats {
+  totalStudents: number;
+  activeStudents: number;
+  testsThisWeek: number;
+  avgScore: number;
+  recentActivity: unknown[];
+}
+
 export function useAdminDashboard() {
-  return useQuery({
+  return useQuery<AdminDashboardStats>({
     queryKey: adminQueryKeys.dashboard(),
     queryFn: async () => {
       const response = await apiClient.get('/admin/dashboard');
