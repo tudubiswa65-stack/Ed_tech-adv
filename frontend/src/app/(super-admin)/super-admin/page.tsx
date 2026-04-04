@@ -62,6 +62,7 @@ interface ChartDataPoint {
 
 function MiniBarChart({
   data, valueKey, max, activeColor, inactiveColor, activeLabelColor, inactiveLabelColor,
+  currentIndex,
 }: {
   data: ChartDataPoint[];
   valueKey: string;
@@ -70,6 +71,8 @@ function MiniBarChart({
   inactiveColor: string;
   activeLabelColor: string;
   inactiveLabelColor: string;
+  /** Index of the "current" bar to highlight. Defaults to the last bar. */
+  currentIndex?: number;
 }) {
   const emptyFallback = Array.from({ length: CHART_MONTHS }, (_, i) => {
     const year = new Date().getFullYear();
@@ -77,23 +80,33 @@ function MiniBarChart({
     return { month: d.toLocaleString('en-US', { month: 'short', year: '2-digit' }), [valueKey]: 0 };
   });
   const display = data.length > 0 ? data : emptyFallback;
+  const activeIdx = currentIndex !== undefined ? currentIndex : display.length - 1;
 
   return (
     <div style={{ display: 'flex', gap: 4, alignItems: 'flex-end', height: MAX_BAR_HEIGHT + 20 }}>
       {display.map((item, idx) => {
-        const isActive = idx === display.length - 1;
-        const barH = isActive ? Math.max(8, Math.round((Number(item[valueKey]) / max) * MAX_BAR_HEIGHT)) : 8;
+        const isActive = idx === activeIdx;
+        const isUpcoming = idx > activeIdx;
+        const val = Number(item[valueKey]);
+        const barH = isUpcoming
+          ? 0
+          : Math.max(isActive ? 8 : 4, max > 0 ? Math.round((val / max) * MAX_BAR_HEIGHT) : 0);
         const label = String(item.month ?? '').slice(0, 3);
         return (
           <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
             <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', width: '100%' }}>
               <div style={{
                 width: '100%', height: barH, borderRadius: '4px 4px 0 0',
-                background: isActive ? activeColor : inactiveColor,
+                background: isUpcoming ? 'transparent' : isActive ? activeColor : inactiveColor,
                 transition: 'height 0.4s',
               }} />
             </div>
-            <span style={{ fontSize: 9, color: isActive ? activeLabelColor : inactiveLabelColor }}>
+            <span style={{
+              fontSize: 9,
+              color: isUpcoming
+                ? 'rgba(255,255,255,0.12)'
+                : isActive ? activeLabelColor : inactiveLabelColor,
+            }}>
               {label}
             </span>
           </div>
@@ -387,7 +400,7 @@ export default function SuperAdminDashboard() {
         <SectionLabel>Revenue Analytics</SectionLabel>
         <div style={{ background: '#1e293b', borderRadius: 12, padding: '14px 12px', border: '0.5px solid rgba(255,255,255,0.06)', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>Monthly payments · last 5 months</span>
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>Monthly payments · 3 past + current + upcoming</span>
             <span style={{
               fontSize: 11, background: 'rgba(251,191,36,0.12)', color: '#fbbf24',
               border: '1px solid rgba(251,191,36,0.2)', borderRadius: 20, padding: '2px 8px',
@@ -400,9 +413,10 @@ export default function SuperAdminDashboard() {
             valueKey="revenue"
             max={revenueMax}
             activeColor="#6366f1"
-            inactiveColor="rgba(99,102,241,0.10)"
+            inactiveColor="rgba(99,102,241,0.28)"
             activeLabelColor="#818cf8"
             inactiveLabelColor="rgba(255,255,255,0.2)"
+            currentIndex={3}
           />
         </div>
 
