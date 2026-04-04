@@ -2,6 +2,17 @@ import { Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
 import { AuthRequest } from '../../types';
 
+/** Returns labels for the last 12 calendar months, oldest first (e.g. "Jan 24"). */
+function getLast12MonthKeys(): string[] {
+  const keys: string[] = [];
+  const now = new Date();
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    keys.push(d.toLocaleString('en-US', { month: 'short', year: '2-digit' }));
+  }
+  return keys;
+}
+
 export const getDashboardStats = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { data: branches } = await supabaseAdmin
@@ -49,31 +60,40 @@ export const getDashboardStats = async (req: AuthRequest, res: Response): Promis
 
 export const getStudentGrowth = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { months = 12 } = req.query;
+    const monthKeys = getLast12MonthKeys();
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 11);
+    startDate.setDate(1);
+    startDate.setHours(0, 0, 0, 0);
 
-    const { data, error } = await supabaseAdmin.rpc('get_student_growth', {
-      months_count: parseInt(months as string)
+    // Try the RPC first; fall back to a direct table query when it is unavailable
+    let rawCounts: Record<string, number> = {};
+
+    const { data: rpcData, error: rpcError } = await supabaseAdmin.rpc('get_student_growth', {
+      months_count: 12
     });
 
-    if (error) {
-      // Fallback query if RPC doesn't exist
+    if (!rpcError && Array.isArray(rpcData)) {
+      // RPC returns rows – normalise whatever shape it uses into our map
+      (rpcData as Array<{ month?: string; count?: number; [k: string]: unknown }>).forEach(row => {
+        if (row.month) rawCounts[row.month] = (rawCounts[row.month] || 0) + Number(row.count ?? 0);
+      });
+    } else {
+      // Fallback: query the students table directly
       const { data: students } = await supabaseAdmin
         .from('students')
         .select('created_at')
+        .gte('created_at', startDate.toISOString())
         .order('created_at', { ascending: true });
 
-      const monthlyGrowth = students?.reduce((acc, student) => {
-        const month = new Date(student.created_at).toLocaleString('default', { month: 'short', year: '2-digit' });
-        acc[month] = (acc[month] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>) || {};
-
-      res.json({
-        success: true,
-        data: Object.entries(monthlyGrowth).map(([month, count]) => ({ month, count }))
+      (students ?? []).forEach(student => {
+        const month = new Date(student.created_at).toLocaleString('en-US', { month: 'short', year: '2-digit' });
+        rawCounts[month] = (rawCounts[month] || 0) + 1;
       });
-      return;
     }
+
+    // Always return exactly 12 months, filling missing ones with 0
+    const data = monthKeys.map(month => ({ month, count: rawCounts[month] ?? 0 }));
 
     res.json({ success: true, data });
   } catch (error) {
@@ -84,10 +104,11 @@ export const getStudentGrowth = async (req: AuthRequest, res: Response): Promise
 
 export const getRevenueAnalytics = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { months = 12 } = req.query;
-
+    const monthKeys = getLast12MonthKeys();
     const startDate = new Date();
-    startDate.setMonth(startDate.getMonth() - parseInt(months as string));
+    startDate.setMonth(startDate.getMonth() - 11);
+    startDate.setDate(1);
+    startDate.setHours(0, 0, 0, 0);
 
     const { data: payments } = await supabaseAdmin
       .from('payments')
@@ -95,18 +116,18 @@ export const getRevenueAnalytics = async (req: AuthRequest, res: Response): Prom
       .gte('created_at', startDate.toISOString())
       .order('created_at', { ascending: true });
 
-    const monthlyRevenue = payments?.reduce((acc, payment) => {
+    const rawRevenue: Record<string, number> = {};
+    (payments ?? []).forEach(payment => {
       if (payment.status === 'completed') {
-        const month = new Date(payment.created_at).toLocaleString('default', { month: 'short', year: '2-digit' });
-        acc[month] = (acc[month] || 0) + (payment.amount || 0);
+        const month = new Date(payment.created_at).toLocaleString('en-US', { month: 'short', year: '2-digit' });
+        rawRevenue[month] = (rawRevenue[month] || 0) + (payment.amount || 0);
       }
-      return acc;
-    }, {} as Record<string, number>) || {};
-
-    res.json({
-      success: true,
-      data: Object.entries(monthlyRevenue).map(([month, revenue]) => ({ month, revenue }))
     });
+
+    // Always return exactly 12 months, filling missing ones with 0
+    const data = monthKeys.map(month => ({ month, revenue: rawRevenue[month] ?? 0 }));
+
+    res.json({ success: true, data });
   } catch (error) {
     console.error('Error fetching revenue analytics:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch revenue analytics' });
