@@ -4,7 +4,7 @@
  */
 
 export const AVATAR_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const;
-export const AVATAR_MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+export const AVATAR_MAX_SIZE_BYTES = 2 * 1024 * 1024; // 2 MB
 
 export interface AvatarValidationResult {
   valid: boolean;
@@ -20,7 +20,7 @@ export function validateAvatarFile(file: File): AvatarValidationResult {
     return { valid: false, error: 'Only JPG, PNG, GIF, or WebP images are allowed.' };
   }
   if (file.size > AVATAR_MAX_SIZE_BYTES) {
-    return { valid: false, error: 'Image must be smaller than 5 MB.' };
+    return { valid: false, error: 'Image is too large (max 2 MB). Please resize your image before uploading.' };
   }
   return { valid: true };
 }

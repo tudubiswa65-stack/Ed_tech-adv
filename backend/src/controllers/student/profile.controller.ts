@@ -253,8 +253,8 @@ export const uploadAvatar = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ success: false, error: 'Only JPG, PNG, GIF, or WebP images are allowed' });
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      return res.status(400).json({ success: false, error: 'Image must be smaller than 5 MB' });
+    if (file.size > 2 * 1024 * 1024) {
+      return res.status(400).json({ success: false, error: 'Image is too large (max 2 MB). Please resize your image before uploading.' });
     }
 
     const rawExt = file.mimetype.split('/')[1];

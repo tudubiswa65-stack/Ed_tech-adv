@@ -47,7 +47,10 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
       const res = await apiClient.post(endpoint, formData);
       const newUrl = res.data?.data?.avatar_url;
       if (newUrl) {
-        updateUserAvatar(newUrl);
+        // Append cache-buster so the browser fetches the fresh image even though
+        // Supabase upsert keeps the same public URL path.
+        const cacheBustedUrl = newUrl.includes('?') ? `${newUrl}&t=${Date.now()}` : `${newUrl}?t=${Date.now()}`;
+        updateUserAvatar(cacheBustedUrl);
       }
       toastSuccess('Profile photo updated successfully.');
     } catch (err) {
@@ -145,6 +148,7 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
                   src={user.avatar_url}
                   alt={user.name ?? 'Avatar'}
                   fill
+                  priority
                   className="object-cover"
                   sizes="32px"
                 />
