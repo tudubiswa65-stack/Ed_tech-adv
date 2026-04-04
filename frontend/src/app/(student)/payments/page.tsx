@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Table, Badge, Card, Button, Modal } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
+import { useStudentPayments } from '@/hooks/queries/useStudentQueries';
 
 interface Payment {
   id: string;
@@ -25,27 +26,13 @@ interface Receipt {
 }
 
 export default function StudentPaymentsPage() {
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
   const [receiptLoading, setReceiptLoading] = useState(false);
 
-  useEffect(() => {
-    fetchPayments();
-  }, []);
-
-  const fetchPayments = async () => {
-    setLoading(true);
-    try {
-      const response = await apiClient.get('/student/payments');
-      setPayments(response.data.data || []);
-    } catch (error) {
-      console.error('Failed to load payments');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // React Query hook — payments list cached 2 min
+  const { data: paymentsRaw = [], isLoading: loading } = useStudentPayments();
+  const payments = paymentsRaw as Payment[];
 
   const handleViewReceipt = async (paymentId: string) => {
     setReceiptLoading(true);

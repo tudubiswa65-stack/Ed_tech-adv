@@ -176,7 +176,7 @@ export default function AdminPaymentsPage() {
                 required
               >
                 <option value="">Choose a student</option>
-                {students.map((s) => (
+                {students.map((s: Student) => (
                   <option key={s.id} value={s.id}>
                     {s.name} ({s.email})
                   </option>

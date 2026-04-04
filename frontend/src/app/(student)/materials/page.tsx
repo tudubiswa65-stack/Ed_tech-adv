@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/apiClient';
 import Button from '@/components/ui/Button';
@@ -9,6 +9,7 @@ import Card from '@/components/ui/Card';
 import Modal from '@/components/ui/Modal';
 import Spinner from '@/components/ui/Spinner';
 import PageWrapper from '@/components/layout/PageWrapper';
+import { useStudentMaterials, useStudentRecentMaterials } from '@/hooks/queries/useStudentQueries';
 
 interface Subject {
   id: string;
@@ -35,43 +36,16 @@ interface Material {
 
 export default function StudyMaterialsPage() {
   const router = useRouter();
-  const [materials, setMaterials] = useState<Material[]>([]);
-  const [recentMaterials, setRecentMaterials] = useState<Material[]>([]);
-  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ subjectId: '', type: '', search: '' });
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
   const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    fetchMaterials();
-    fetchRecentMaterials();
-  }, [filters]);
+  // React Query hooks — materials cached 2 min, auto-refetch when filters change
+  const { data: materialsRaw = [], isLoading: loading } = useStudentMaterials(filters);
+  const { data: recentMaterialsRaw = [] } = useStudentRecentMaterials();
 
-  const fetchMaterials = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (filters.subjectId) params.append('subjectId', filters.subjectId);
-      if (filters.type) params.append('type', filters.type);
-      if (filters.search) params.append('search', filters.search);
-
-      const response = await apiClient.get(`/student/materials?${params}`);
-      setMaterials((response.data as any)?.data || []);
-    } catch (error) {
-      console.error('Error fetching materials:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchRecentMaterials = async () => {
-    try {
-      const response = await apiClient.get('/student/materials/recent');
-      setRecentMaterials((response.data as any)?.data || []);
-    } catch (error) {
-      console.error('Error fetching recent materials:', error);
-    }
-  };
+  const materials = materialsRaw as Material[];
+  const recentMaterials = recentMaterialsRaw as Material[];
 
   const openMaterial = async (material: Material) => {
     setSelectedMaterial(material);

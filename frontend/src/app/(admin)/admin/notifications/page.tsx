@@ -207,7 +207,7 @@ export default function NotificationsPage() {
                 No notifications found. Click &quot;Create Notification&quot; to add one.
               </div>
             ) : (
-              notifications.map(notification => (
+              notifications.map((notification: Notification) => (
                 <div key={notification.id} className="p-4 hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">

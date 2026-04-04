@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import apiClient from '@/lib/apiClient';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
@@ -9,6 +9,8 @@ import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Spinner from '@/components/ui/Spinner';
 import PageWrapper from '@/components/layout/PageWrapper';
+import { useStudentComplaints, studentQueryKeys } from '@/hooks/queries/useStudentQueries';
+import { queryClient } from '@/lib/queryClient';
 
 interface ComplaintReply {
   id: string;
@@ -29,8 +31,7 @@ interface Complaint {
 }
 
 export default function ComplaintsPage() {
-  const [complaints, setComplaints] = useState<Complaint[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
@@ -42,23 +43,10 @@ export default function ComplaintsPage() {
     priority: 'medium'
   });
 
-  useEffect(() => {
-    fetchComplaints();
-  }, []);
-
-  const fetchComplaints = async () => {
-    setLoading(true);
-    try {
-      const response = await apiClient.get('/student/complaints');
-      // Handle standardized response - use type assertion for compatibility
-      const responseData = (response.data as any).success ? (response.data as any).data : response.data;
-      setComplaints(responseData || []);
-    } catch (error) {
-      console.error('Error fetching complaints:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // React Query hook — complaints cached 60 s
+  const { data: complaintsRaw = [], isLoading: complaintsLoading } = useStudentComplaints();
+  const complaints = complaintsRaw as Complaint[];
+  const isBusy = complaintsLoading || loading;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +55,7 @@ export default function ComplaintsPage() {
       await apiClient.post('/student/complaints', formData);
       setShowModal(false);
       resetForm();
-      fetchComplaints();
+      queryClient.invalidateQueries({ queryKey: studentQueryKeys.complaints() });
     } catch (error) {
       console.error('Error submitting complaint:', error);
       alert('Failed to submit complaint');
@@ -148,7 +136,7 @@ export default function ComplaintsPage() {
 
         {/* Complaints List */}
         <Card>
-          {loading ? (
+          {isBusy ? (
             <div className="flex justify-center py-12">
               <Spinner />
             </div>

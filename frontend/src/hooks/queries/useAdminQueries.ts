@@ -341,11 +341,7 @@ export function useAdminTestsList(filters: { courseId?: string; type?: string } 
       if (filters.courseId) params.set('course_id', filters.courseId);
       if (filters.type) params.set('type', filters.type);
       const response = await apiClient.get(`/admin/tests?${params}`);
-      return (Array.isArray(response.data) ? response.data : response.data?.tests ?? []) as {
-        id: string;
-        title: string;
-        [key: string]: unknown;
-      }[];
+      return (Array.isArray(response.data) ? response.data : response.data?.tests ?? []) as any[];
     },
     staleTime: 60 * 1000,
   });

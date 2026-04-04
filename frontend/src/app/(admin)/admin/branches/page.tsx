@@ -33,7 +33,8 @@ export default function BranchesPage() {
   const toast = useToast();
 
   // React Query hook — branches list cached 30 min
-  const { data: branches = [], isLoading: branchesLoading } = useAdminBranches();
+  const { data: branchesRaw = [], isLoading: branchesLoading } = useAdminBranches();
+  const branches = branchesRaw as Branch[];
   const isBusy = branchesLoading || loading;
 
   const handleAddBranch = async (e: React.FormEvent) => {
