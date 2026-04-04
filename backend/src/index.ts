@@ -42,10 +42,16 @@ app.use(helmet());
 // so `origin` arrives as `undefined`.  We explicitly allow that case because
 // a request that arrives without an `Origin` header can only come from our own
 // server-side proxy (browsers always set `Origin` on cross-origin requests).
-console.log('[CORS] Configured frontend origin:', config.frontendUrl);
+console.log('[CORS] Configured frontend origin:', config.frontendUrl ?? '(not set - server-to-server allowed)');
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || origin === config.frontendUrl) {
+    // Allow undefined origins (server-to-server requests from Next.js proxy)
+    // Browsers always send Origin on cross-origin requests, so undefined = internal
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
+    if (origin === config.frontendUrl) {
       callback(null, true);
     } else {
       console.warn('[CORS] Blocked request from unexpected origin:', origin);

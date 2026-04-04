@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { authenticate, requireAdmin } from '../middleware/authMiddleware';
 import {
   getResults,
   getResultById,
@@ -11,8 +10,8 @@ import {
 
 const router = Router();
 
-// All routes require admin authentication
-router.use(authenticate, requireAdmin);
+// Authentication is handled by parent router (admin.routes.ts)
+// All admin routes already have authMiddleware + requireRole applied
 
 // Results management
 router.get('/', getResults);

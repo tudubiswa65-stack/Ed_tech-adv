@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueries } from '@tanstack/react-query';
 import { apiClient } from '@/lib/apiClient';
+import { permissionsQueryKeys, fetchMyPermissions, PermissionKey } from '@/hooks/usePermissions';
 
 // ── Query key factory ─────────────────────────────────────────────────────────
 
@@ -87,4 +88,63 @@ export function useAdminAttendance(branch: string, course: string, date: string)
     // Keep attendance results for 5 minutes; re-fetch only when the key changes
     staleTime: 5 * 60 * 1000,
   });
+}
+
+// ── Consolidated Admin Dashboard Hook ─────────────────────────────────────────
+
+export interface AdminDashboardWithPermissions {
+  dashboard: AdminDashboardStats | undefined;
+  permissions: Record<PermissionKey, boolean> | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  error: unknown;
+}
+
+interface UseAdminDashboardWithPermissionsOptions {
+  // Set to true for super_admin/admin who have all permissions (skips fetch)
+  skipPermissionsFetch?: boolean;
+}
+
+/**
+ * Fetches admin dashboard stats and permissions in parallel with a single loading state.
+ * For super_admin and admin roles, set skipPermissionsFetch=true to avoid unnecessary API call.
+ */
+export function useAdminDashboardWithPermissions(
+  options: UseAdminDashboardWithPermissionsOptions = {}
+): AdminDashboardWithPermissions {
+  const { skipPermissionsFetch = false } = options;
+
+  const results = useQueries({
+    queries: [
+      {
+        queryKey: adminQueryKeys.dashboard(),
+        queryFn: async () => {
+          const response = await apiClient.get('/admin/dashboard');
+          return response.data.data ?? response.data;
+        },
+      },
+      {
+        queryKey: permissionsQueryKeys.my(),
+        queryFn: fetchMyPermissions,
+        // 5 minute stale time for permissions
+        staleTime: 5 * 60 * 1000,
+        // Skip permissions fetch for roles that have all permissions
+        enabled: !skipPermissionsFetch,
+      },
+    ],
+  });
+
+  const [dashboardResult, permissionsResult] = results;
+
+  const isLoading = results.some((r) => r.isLoading);
+  const isError = results.some((r) => r.isError);
+  const error = results.find((r) => r.error)?.error;
+
+  return {
+    dashboard: dashboardResult.data,
+    permissions: permissionsResult.data as Record<PermissionKey, boolean> | undefined,
+    isLoading,
+    isError,
+    error,
+  };
 }

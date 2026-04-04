@@ -2,13 +2,7 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import {
-  useSuperAdminStats,
-  useSuperAdminStudentGrowth,
-  useSuperAdminRevenue,
-  useSuperAdminAttendance,
-  useSuperAdminTopBranches,
-} from '@/hooks/queries/useSuperAdminQueries';
+import { useSuperAdminDashboard } from '@/hooks/queries/useSuperAdminQueries';
 
 
 // ─── Section label ───────────────────────────────────────────────────────────
@@ -211,13 +205,15 @@ function fmtRevenue(val: number) {
 export default function SuperAdminDashboard() {
   const { user } = useAuth();
 
-  const { data: stats, isLoading: statsLoading, isError: statsError } = useSuperAdminStats();
-  const { data: studentGrowth = [] } = useSuperAdminStudentGrowth();
-  const { data: revenueData = [] } = useSuperAdminRevenue();
-  const { data: attendanceData = [] } = useSuperAdminAttendance();
-  const { data: topBranches = [] } = useSuperAdminTopBranches();
-
-  const loading = statsLoading;
+  const {
+    stats,
+    studentGrowth,
+    revenue,
+    attendance,
+    topBranches,
+    isLoading: loading,
+    isError: statsError,
+  } = useSuperAdminDashboard();
 
   // ── Derived user display values ──────────────────────────────────────────────
   const initials = user?.name
@@ -257,7 +253,7 @@ export default function SuperAdminDashboard() {
 
   // ── Attendance percentages ───────────────────────────────────────────────────
   const attMap: Record<string, number> = {};
-  attendanceData.forEach(item => {
+  attendance.forEach(item => {
     const k = String(item.label ?? '').toLowerCase();
     attMap[k] = Number(item.value ?? 0);
   });
@@ -273,7 +269,7 @@ export default function SuperAdminDashboard() {
 
   // ── Chart slices (last CHART_MONTHS months) ──────────────────────────────────
   const growthSlice  = studentGrowth.slice(-CHART_MONTHS);
-  const revenueSlice = revenueData.slice(-CHART_MONTHS);
+  const revenueSlice = revenue.slice(-CHART_MONTHS);
   const growthMax    = Math.max(...growthSlice.map(d => d.count   ?? 0), 1);
   const revenueMax   = Math.max(...revenueSlice.map(d => d.revenue ?? 0), 1);
   const growthTotal  = growthSlice.reduce((a, d) => a + (d.count ?? 0), 0);
