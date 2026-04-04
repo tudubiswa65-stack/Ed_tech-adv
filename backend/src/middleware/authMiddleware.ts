@@ -9,32 +9,38 @@ import { isStudentActive, resolveStudentStatus } from '../utils/studentStatus';
 const JWT_SECRET = config.jwtSecret;
 
 // Debug logging for JWT configuration in middleware
-console.log('[AuthMiddleware] JWT Configuration:', {
-  hasSecret: !!JWT_SECRET,
-  secretLength: JWT_SECRET?.length || 0,
-  secretPrefix: JWT_SECRET ? JWT_SECRET.substring(0, 10) + '...' : 'none',
-  isProduction: process.env.NODE_ENV === 'production',
-  safeMode: config.SAFE_MODE
-});
+if (process.env.DEBUG_AUTH === 'true') {
+  console.log('[AuthMiddleware] JWT Configuration:', {
+    hasSecret: !!JWT_SECRET,
+    secretLength: JWT_SECRET?.length || 0,
+    secretPrefix: JWT_SECRET ? JWT_SECRET.substring(0, 10) + '...' : 'none',
+    isProduction: process.env.NODE_ENV === 'production',
+    safeMode: config.SAFE_MODE
+  });
+}
 
 export const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     // Get token from cookie
     const token = req.cookies?.token;
 
-    console.log('[AuthMiddleware] Checking authentication:', {
-      path: req.path,
-      method: req.method,
-      hasCookieToken: !!token,
-      cookieTokenPrefix: token ? token.substring(0, 20) + '...' : 'none',
-      allCookies: Object.keys(req.cookies || {}),
-      origin: req.headers.origin,
-      referer: req.headers.referer,
-      host: req.headers.host,
-    });
+    if (process.env.DEBUG_AUTH === 'true') {
+      console.log('[AuthMiddleware] Checking authentication:', {
+        path: req.path,
+        method: req.method,
+        hasCookieToken: !!token,
+        cookieTokenPrefix: token ? token.substring(0, 20) + '...' : 'none',
+        allCookies: Object.keys(req.cookies || {}),
+        origin: req.headers.origin,
+        referer: req.headers.referer,
+        host: req.headers.host,
+      });
+    }
 
     if (!token) {
-      console.log('[AuthMiddleware] No token found in cookies');
+      if (process.env.DEBUG_AUTH === 'true') {
+        console.log('[AuthMiddleware] No token found in cookies');
+      }
       res.status(401).json({ error: 'Authentication required' });
       return;
     }
@@ -42,11 +48,13 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
     // Verify token
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
 
-    console.log('[AuthMiddleware] Token verified successfully:', {
-      userId: decoded.id,
-      userRole: decoded.role,
-      userEmail: decoded.email
-    });
+    if (process.env.DEBUG_AUTH === 'true') {
+      console.log('[AuthMiddleware] Token verified successfully:', {
+        userId: decoded.id,
+        userRole: decoded.role,
+        userEmail: decoded.email
+      });
+    }
 
     // For students: enforce real-time status check on every request
     // This ensures that when an admin deactivates/suspends a student,

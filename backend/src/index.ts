@@ -105,12 +105,6 @@ app.use('/api', generalApiLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/super-admin', superAdminRoutes);
-app.use('/api/admin/courses', courseRoutes);
-app.use('/api/admin/tests', testRoutes);
-app.use('/api/admin/results', resultsRoutes);
-app.use('/api/admin/materials', materialsRoutes);
-app.use('/api/admin/notifications', notificationsRoutes);
-app.use('/api/admin/settings', settingsRoutes);
 app.use('/api/student', studentRoutes);
 
 // Global error handler

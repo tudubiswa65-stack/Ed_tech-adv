@@ -14,9 +14,6 @@ import {
 
 const router = Router();
 
-// All routes require admin authentication
-router.use(authenticate, requireAdmin);
-
 // Settings
 router.get('/', getSettings);
 router.put('/', updateSettings);

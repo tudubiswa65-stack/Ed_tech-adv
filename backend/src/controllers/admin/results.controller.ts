@@ -59,7 +59,7 @@ export const getResults = async (req: AuthRequest, res: Response) => {
         tests (
           id,
           title,
-          total_marks as test_total_marks,
+          test_total_marks:total_marks,
           passing_marks
         ),
         students (
@@ -87,11 +87,10 @@ export const getResults = async (req: AuthRequest, res: Response) => {
     }
 
     // Validate sortBy against allowlist to reject invalid parameters
-    const allowedSortFields = ['submitted_at', 'score', 'percentage', 'started_at'];
-    if (sortBy && !allowedSortFields.includes(sortBy as string)) {
-      return res.status(400).json({ error: `Invalid sortBy value. Must be one of: ${allowedSortFields.join(', ')}` });
-    }
-    const sortField = (sortBy as string) || 'submitted_at';
+    const allowedSortFields = ['submitted_at', 'score', 'percentage', 'started_at', 'created_at'];
+    const currentSortBy = String(sortBy || 'submitted_at');
+    const sortField = allowedSortFields.includes(currentSortBy) ? currentSortBy : 'submitted_at';
+    
     query = query.order(sortField, { ascending: sortOrder === 'asc' });
 
     // Apply pagination
