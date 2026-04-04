@@ -29,7 +29,7 @@ interface Features {
 }
 
 const TIMEZONES = ['UTC', 'America/New_York', 'America/Los_Angeles', 'Europe/London', 'Asia/Kolkata', 'Asia/Karachi', 'Asia/Dubai'];
-const FILE_TYPES = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'mp4', 'mp3', 'docx', 'xls', 'xlsx'];
+const FILE_TYPES = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'mp4', 'mp3', 'doc', 'docx', 'xls', 'xlsx'];
 const DEFAULT_ENABLED_TYPES = ['pdf', 'jpg', 'jpeg', 'png', 'docx'];
 
 // Dot colors per file type family
@@ -37,7 +37,7 @@ const TYPE_DOT_COLORS: Record<string, string> = {
   pdf: '#f87171',
   jpg: '#60a5fa', jpeg: '#60a5fa', png: '#60a5fa', gif: '#60a5fa',
   mp4: '#a78bfa', mp3: '#a78bfa',
-  docx: '#34d399',
+  docx: '#34d399', doc: '#34d399',
   xls: '#4ade80', xlsx: '#4ade80',
 };
 
@@ -414,7 +414,7 @@ export default function SettingsPage() {
                       type="color"
                       value={primaryColor}
                       onChange={e => setSettings({ ...settings, primary_color: e.target.value })}
-                      style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
+                      style={{ position: 'absolute', opacity: 0, width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' as const }}
                       aria-label="Pick primary color"
                     />
                   </label>
