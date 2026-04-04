@@ -26,8 +26,9 @@ function getRollingStartDate(): string {
  * [3 months ago, 2 months ago, 1 month ago, current month, upcoming month].
  * The current month sits at index 3 (middle); the upcoming month at index 4 is always blank.
  */
+const REVENUE_MONTHS_BACK = 3;
+
 function getRevenueMonthKeys(): string[] {
-  const REVENUE_MONTHS_BACK = 3;
   const now = new Date();
   return Array.from({ length: 5 }, (_, i) => {
     const monthOffset = now.getUTCMonth() - REVENUE_MONTHS_BACK + i;
@@ -36,10 +37,10 @@ function getRevenueMonthKeys(): string[] {
   });
 }
 
-/** Returns the ISO string for the first day of (current month − 3) for revenue queries. */
+/** Returns the ISO string for the first day of (current month − REVENUE_MONTHS_BACK) for revenue queries. */
 function getRevenueStartDate(): string {
   const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 3, 1)).toISOString();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - REVENUE_MONTHS_BACK, 1)).toISOString();
 }
 
 export const getDashboardStats = async (req: AuthRequest, res: Response): Promise<void> => {

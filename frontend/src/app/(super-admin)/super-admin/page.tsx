@@ -90,7 +90,7 @@ function MiniBarChart({
         const val = Number(item[valueKey]);
         const barH = isUpcoming
           ? 0
-          : Math.max(isActive ? 8 : 4, Math.round((val / max) * MAX_BAR_HEIGHT));
+          : Math.max(isActive ? 8 : 4, max > 0 ? Math.round((val / max) * MAX_BAR_HEIGHT) : 0);
         const label = String(item.month ?? '').slice(0, 3);
         return (
           <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
