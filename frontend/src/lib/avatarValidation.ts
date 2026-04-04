@@ -24,3 +24,13 @@ export function validateAvatarFile(file: File): AvatarValidationResult {
   }
   return { valid: true };
 }
+
+/**
+ * Appends a cache-busting timestamp query parameter to a URL so the browser
+ * fetches the latest version of the image after an upsert (Supabase keeps the
+ * same public URL path when overwriting a file).
+ */
+export function addAvatarCacheBuster(url: string): string {
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}t=${Date.now()}`;
+}

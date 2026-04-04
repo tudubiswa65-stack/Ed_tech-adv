@@ -7,7 +7,7 @@ import { Button, Spinner, Modal, Input } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/context/ToastContext';
-import { validateAvatarFile } from '@/lib/avatarValidation';
+import { validateAvatarFile, addAvatarCacheBuster } from '@/lib/avatarValidation';
 import { useStudentDashboard, studentQueryKeys } from '@/hooks/queries/useStudentQueries';
 import { queryClient } from '@/lib/queryClient';
 
@@ -166,7 +166,7 @@ export default function StudentProfileDashboard() {
       const res = await apiClient.post('/student/profile/avatar', formData);
       const newUrl = res.data?.data?.avatar_url;
       if (newUrl) {
-        const cacheBustedUrl = newUrl.includes('?') ? `${newUrl}&t=${Date.now()}` : `${newUrl}?t=${Date.now()}`;
+        const cacheBustedUrl = addAvatarCacheBuster(newUrl);
         // Update the cached dashboard data immediately (optimistic update)
         queryClient.setQueryData(studentQueryKeys.dashboard(), (prev: DashboardData | undefined) =>
           prev && prev.profile ? { ...prev, profile: { ...prev.profile, avatar_url: cacheBustedUrl } } : prev

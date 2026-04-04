@@ -7,7 +7,7 @@ import { Card, Button, Input, Spinner } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/context/ToastContext';
-import { validateAvatarFile } from '@/lib/avatarValidation';
+import { validateAvatarFile, addAvatarCacheBuster } from '@/lib/avatarValidation';
 
 interface AdminProfile {
   id: string;
@@ -78,7 +78,7 @@ export default function AdminProfilePage() {
       const res = await apiClient.post('/admin/profile/avatar', formData);
       const newUrl = res.data?.data?.avatar_url;
       if (newUrl) {
-        const cacheBustedUrl = newUrl.includes('?') ? `${newUrl}&t=${Date.now()}` : `${newUrl}?t=${Date.now()}`;
+        const cacheBustedUrl = addAvatarCacheBuster(newUrl);
         setProfile((p) => p ? { ...p, avatar_url: cacheBustedUrl } : p);
         updateUserAvatar(cacheBustedUrl);
         toastSuccess('Profile photo updated successfully.');

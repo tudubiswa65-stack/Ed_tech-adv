@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/context/ThemeContext';
 import { useToast } from '@/context/ToastContext';
 import { apiClient } from '@/lib/apiClient';
-import { validateAvatarFile } from '@/lib/avatarValidation';
+import { validateAvatarFile, addAvatarCacheBuster } from '@/lib/avatarValidation';
 
 interface NavbarProps {
   title: string;
@@ -49,8 +49,7 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
       if (newUrl) {
         // Append cache-buster so the browser fetches the fresh image even though
         // Supabase upsert keeps the same public URL path.
-        const cacheBustedUrl = newUrl.includes('?') ? `${newUrl}&t=${Date.now()}` : `${newUrl}?t=${Date.now()}`;
-        updateUserAvatar(cacheBustedUrl);
+        updateUserAvatar(addAvatarCacheBuster(newUrl));
       }
       toastSuccess('Profile photo updated successfully.');
     } catch (err) {
