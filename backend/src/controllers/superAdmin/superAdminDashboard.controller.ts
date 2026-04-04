@@ -2,19 +2,23 @@ import { Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
 import { AuthRequest } from '../../types';
 
+/** Number of months to look back (current month + 11 previous = 12 total). */
+const MONTHS_BACK = 11;
+
 /** Returns labels for the last 12 rolling months ending at the current month (e.g. "May 25" … "Apr 26"). */
 function getLast12MonthKeys(): string[] {
   const now = new Date();
   return Array.from({ length: 12 }, (_, i) => {
-    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11 + i, 1));
+    const monthOffset = now.getUTCMonth() - MONTHS_BACK + i;
+    const d = new Date(Date.UTC(now.getUTCFullYear(), monthOffset, 1));
     return d.toLocaleString('en-US', { month: 'short', year: '2-digit', timeZone: 'UTC' });
   });
 }
 
-/** Returns the ISO string for the first day of (current month − 11 months). */
+/** Returns the ISO string for the first day of (current month − MONTHS_BACK). */
 function getRollingStartDate(): string {
   const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11, 1)).toISOString();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - MONTHS_BACK, 1)).toISOString();
 }
 
 export const getDashboardStats = async (req: AuthRequest, res: Response): Promise<void> => {
