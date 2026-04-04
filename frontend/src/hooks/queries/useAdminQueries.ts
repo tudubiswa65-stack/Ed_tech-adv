@@ -27,6 +27,9 @@ export const adminQueryKeys = {
     [...adminQueryKeys.all, 'results', { page, ...filters }] as const,
   testsList: (filters: Record<string, string>) =>
     [...adminQueryKeys.all, 'tests-list', filters] as const,
+  galleryLabel: () => [...adminQueryKeys.all, 'gallery', 'label'] as const,
+  gallerySubmissions: (status: string) =>
+    [...adminQueryKeys.all, 'gallery', 'submissions', status] as const,
 };
 
 // ── Admin Dashboard ───────────────────────────────────────────────────────────
@@ -348,6 +351,55 @@ export function useAdminTestsList(filters: { courseId?: string; type?: string } 
       if (filters.type) params.set('type', filters.type);
       const response = await apiClient.get(`/admin/tests?${params}`);
       return (Array.isArray(response.data) ? response.data : response.data?.tests ?? []) as any[];
+    },
+    staleTime: 60 * 1000,
+  });
+}
+
+// ── Gallery ───────────────────────────────────────────────────────────────────
+
+export interface GalleryLabelData {
+  id?: string;
+  title: string;
+  subtitle: string;
+  season_tag: string | null;
+  updated_at?: string;
+}
+
+export interface GallerySubmission {
+  id: string;
+  title: string;
+  description: string | null;
+  thumbnail_url: string;
+  status: 'pending' | 'approved' | 'rejected';
+  is_pinned: boolean;
+  slot_order: number | null;
+  submitted_at: string;
+  approved_at: string | null;
+  student_first_name: string;
+}
+
+/** Fetch the current gallery label (title / subtitle / season_tag). */
+export function useGalleryLabel() {
+  return useQuery<GalleryLabelData | null>({
+    queryKey: adminQueryKeys.galleryLabel(),
+    queryFn: async () => {
+      const response = await apiClient.get('/admin/gallery/label');
+      return (response.data?.data as GalleryLabelData) ?? null;
+    },
+    staleTime: 60 * 1000,
+  });
+}
+
+/** Fetch gallery submissions, optionally filtered by status. */
+export function useGallerySubmissions(status: 'all' | 'pending' | 'approved' | 'rejected' = 'all') {
+  return useQuery<GallerySubmission[]>({
+    queryKey: adminQueryKeys.gallerySubmissions(status),
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (status !== 'all') params.set('status', status);
+      const response = await apiClient.get(`/admin/gallery/submissions?${params}`);
+      return (response.data?.data as GallerySubmission[]) ?? [];
     },
     staleTime: 60 * 1000,
   });

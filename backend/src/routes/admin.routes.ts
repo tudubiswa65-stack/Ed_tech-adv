@@ -37,6 +37,14 @@ import {
   getAggregatedTestsOverview,
   getAggregatedNotificationsOverview,
 } from '../controllers/admin/aggregated.controller';
+import {
+  getGalleryLabel,
+  updateGalleryLabel,
+  listGallerySubmissions,
+  uploadGallerySubmission,
+  updateGallerySubmission,
+  deleteGallerySubmission,
+} from '../controllers/admin/gallery.controller';
 import { requirePermission } from '../middleware/permissionMiddleware';
 import rateLimit from 'express-rate-limit';
 import { authMiddleware } from '../middleware/authMiddleware';
@@ -53,6 +61,8 @@ import settingsRoutes from './settings.routes';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
+// Dedicated multer instance for gallery image uploads (10 MB limit enforced in controller)
+const galleryUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 // Rate limiters for sensitive admin operations
 const bulkUploadLimiter = rateLimit({
@@ -129,5 +139,13 @@ router.use('/results', resultsRoutes);
 router.use('/materials', materialsRoutes);
 router.use('/notifications', notificationsRoutes);
 router.use('/settings', settingsRoutes);
+
+// Gallery
+router.get('/gallery/label', getGalleryLabel);
+router.put('/gallery/label', updateGalleryLabel);
+router.get('/gallery/submissions', listGallerySubmissions);
+router.post('/gallery/submissions', galleryUpload.single('image'), uploadGallerySubmission);
+router.patch('/gallery/submissions/:id', updateGallerySubmission);
+router.delete('/gallery/submissions/:id', deleteGallerySubmission);
 
 export default router;
