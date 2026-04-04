@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useInstitute } from '@/hooks/useInstitute';
 import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
@@ -52,10 +52,16 @@ interface SidebarProps {
 
 export default function Sidebar({ role, isOpen = false, onClose = () => {} }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const config = useInstitute();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const isBranchAdmin = user?.role === 'branch_admin';
   const navItems = role === 'admin' ? adminNavItems : studentNavItems;
+
+  const handleLogout = async () => {
+    await logout();
+    router.push(role === 'admin' ? '/admin/login' : '/login');
+  };
 
   const filteredNavItems = navItems.filter((item) => {
     if (item.feature && !config.features[item.feature]) {
@@ -223,7 +229,12 @@ export default function Sidebar({ role, isOpen = false, onClose = () => {} }: Si
           {/* User profile footer */}
           {user && (
             <div className="p-4 border-t border-white/10">
-              <div className="flex items-center gap-3">
+              <Link
+                href={role === 'admin' ? '/admin/profile' : '/dashboard'}
+                className="flex items-center gap-3 mb-3 hover:opacity-80 transition-opacity"
+                title="View profile"
+                onClick={onClose}
+              >
                 <div
                   className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center shrink-0 text-xs font-bold"
                   style={{ backgroundColor: 'var(--color-primary)', color: '#fff' }}
@@ -234,6 +245,7 @@ export default function Sidebar({ role, isOpen = false, onClose = () => {} }: Si
                       alt={user.name ?? 'Avatar'}
                       width={32}
                       height={32}
+                      priority
                       className="object-cover w-full h-full"
                     />
                   ) : (
@@ -244,7 +256,17 @@ export default function Sidebar({ role, isOpen = false, onClose = () => {} }: Si
                   <p className="text-sm font-medium text-white truncate">{user.name}</p>
                   <p className="text-xs text-white/50 truncate capitalize">{user.role?.replace('_', ' ')}</p>
                 </div>
-              </div>
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs font-medium text-white/50 hover:text-red-400 hover:bg-red-900/20 transition-colors"
+                aria-label="Logout"
+              >
+                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>Logout</span>
+              </button>
             </div>
           )}
         </div>

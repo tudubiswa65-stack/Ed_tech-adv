@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Card, Spinner, Badge } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
@@ -115,7 +117,7 @@ function getGreeting() {
 }
 
 // ── Mobile header component ─────────────────────────────────────────────────
-function MobileHeader({ initials }: { initials: string }) {
+function MobileHeader({ initials, avatarUrl, onLogout }: { initials: string; avatarUrl?: string | null; onLogout: () => void }) {
   return (
     <div
       className="lg:hidden flex items-center justify-between px-4 pt-3 pb-2"
@@ -144,8 +146,30 @@ function MobileHeader({ initials }: { initials: string }) {
             <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
         </button>
-        {/* Avatar initials */}
-        <div
+        {/* Logout icon */}
+        <button
+          onClick={onLogout}
+          aria-label="Logout"
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: '50%',
+            background: 'rgba(255,255,255,0.08)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          <svg width="14" height="14" fill="none" stroke="rgba(248,113,113,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+            <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </button>
+        {/* Avatar — links to profile for avatar upload */}
+        <Link
+          href="/admin/profile"
+          aria-label="View profile"
           style={{
             width: 32,
             height: 32,
@@ -158,17 +182,32 @@ function MobileHeader({ initials }: { initials: string }) {
             color: '#fff',
             fontWeight: 600,
             flexShrink: 0,
+            overflow: 'hidden',
+            position: 'relative',
+            textDecoration: 'none',
           }}
         >
-          {initials}
-        </div>
+          {avatarUrl ? (
+            <Image
+              src={avatarUrl}
+              alt="Avatar"
+              fill
+              priority
+              style={{ objectFit: 'cover' }}
+              sizes="32px"
+            />
+          ) : (
+            initials
+          )}
+        </Link>
       </div>
     </div>
   );
 }
 
 export default function AdminDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const { data, isLoading: loading } = useAggregatedDashboard();
   const stats = data?.stats;
 
@@ -179,6 +218,11 @@ export default function AdminDashboard() {
     .slice(0, 2)
     .join('')
     .toUpperCase();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/admin/login');
+  };
 
   const totalStudents = stats?.totalStudents ?? 0;
   const activeStudents = stats?.activeStudents ?? 0;
@@ -209,7 +253,7 @@ export default function AdminDashboard() {
       className="lg:hidden flex flex-col"
       style={{ background: TOKEN.pageBg, minHeight: '100%', paddingBottom: 80 }}
     >
-      <MobileHeader initials={initials} />
+      <MobileHeader initials={initials} avatarUrl={user?.avatar_url} onLogout={handleLogout} />
 
       <div style={{ padding: '12px 16px 0' }}>
 

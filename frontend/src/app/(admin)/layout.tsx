@@ -26,9 +26,14 @@ const pageTitles: Record<string, string> = {
 };
 
 export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+
+  const handleMobileLogout = async () => {
+    await logout();
+    router.push('/admin/login');
+  };
 
   const isLoginPage = pathname === '/admin/login';
   const adminRoles = ['admin', 'branch_admin'];
@@ -81,12 +86,32 @@ export default function AdminRootLayout({ children }: { children: React.ReactNod
             (the dashboard page renders its own custom mobile header) */}
         {pathname !== '/admin' && (
           <div
-            className="lg:hidden flex items-center px-4 py-3 shrink-0"
+            className="lg:hidden flex items-center justify-between px-4 py-3 shrink-0"
             style={{ background: '#0b1120', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}
           >
             <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.9)' }}>
               {title}
             </span>
+            <button
+              onClick={handleMobileLogout}
+              aria-label="Logout"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'rgba(255,255,255,0.06)',
+                border: 'none',
+                borderRadius: 8,
+                padding: '5px 8px',
+                cursor: 'pointer',
+                gap: 4,
+                color: 'rgba(255,255,255,0.5)',
+              }}
+            >
+              <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
           </div>
         )}
         {/* pb-16 prevents content from hiding behind the mobile bottom nav */}
