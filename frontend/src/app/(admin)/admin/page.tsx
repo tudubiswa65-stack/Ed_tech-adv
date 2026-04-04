@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Card, Spinner, Badge } from '@/components/ui';
-import { apiClient } from '@/lib/apiClient';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdminDashboard } from '@/hooks/queries/useAdminQueries';
 
 interface DashboardStats {
   totalStudents: number;
@@ -177,25 +176,11 @@ function MobileHeader({ initials }: { initials: string }) {
 }
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await apiClient.get('/admin/dashboard');
-        const responseData = response.data?.success ? response.data.data : response.data;
-        setStats(responseData);
-      } catch (error) {
-        console.error('Failed to fetch dashboard stats:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, []);
+  const { data: stats, isLoading: loading } = useAdminDashboard() as {
+    data: DashboardStats | undefined;
+    isLoading: boolean;
+  };
 
   const firstName = user?.name?.split(' ')[0] ?? 'Admin';
   const initials = (user?.name ?? 'A')
