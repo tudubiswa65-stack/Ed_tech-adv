@@ -20,7 +20,8 @@ export const AVATAR_SIGNED_URL_EXPIRY_SECONDS = 3600; // 1 hour
  * Returns null when the input is empty or the signed URL cannot be generated.
  */
 export async function toSignedAvatarUrl(
-  avatarValue: string | null | undefined
+  avatarValue: string | null | undefined,
+  expiresIn: number = AVATAR_SIGNED_URL_EXPIRY_SECONDS
 ): Promise<string | null> {
   if (!avatarValue) return null;
 
@@ -39,7 +40,7 @@ export async function toSignedAvatarUrl(
 
   const { data, error } = await supabaseAdmin.storage
     .from('avatars')
-    .createSignedUrl(filePath, AVATAR_SIGNED_URL_EXPIRY_SECONDS);
+    .createSignedUrl(filePath, expiresIn);
 
   if (error || !data?.signedUrl) return null;
   return data.signedUrl;
