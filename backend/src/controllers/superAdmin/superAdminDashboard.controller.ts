@@ -2,13 +2,13 @@ import { Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
 import { AuthRequest } from '../../types';
 
-/** Number of months to look back (current month + 11 previous = 12 total). */
-const MONTHS_BACK = 11;
+/** Number of months to look back (current month + 4 previous = 5 total). */
+const MONTHS_BACK = 4;
 
-/** Returns labels for the last 12 rolling months ending at the current month (e.g. "May 25" … "Apr 26"). */
+/** Returns labels for the last 5 rolling months ending at the current month (e.g. "Dec 25" … "Apr 26"). */
 function getLast12MonthKeys(): string[] {
   const now = new Date();
-  return Array.from({ length: 12 }, (_, i) => {
+  return Array.from({ length: 5 }, (_, i) => {
     const monthOffset = now.getUTCMonth() - MONTHS_BACK + i;
     const d = new Date(Date.UTC(now.getUTCFullYear(), monthOffset, 1));
     return d.toLocaleString('en-US', { month: 'short', year: '2-digit', timeZone: 'UTC' });
@@ -75,7 +75,7 @@ export const getStudentGrowth = async (req: AuthRequest, res: Response): Promise
     let rawCounts: Record<string, number> = {};
 
     const { data: rpcData, error: rpcError } = await supabaseAdmin.rpc('get_student_growth', {
-      months_count: 12
+      months_count: 5
     });
 
     if (!rpcError && Array.isArray(rpcData)) {
@@ -97,7 +97,7 @@ export const getStudentGrowth = async (req: AuthRequest, res: Response): Promise
       });
     }
 
-    // Always return exactly 12 months, filling missing ones with 0
+    // Always return exactly 5 months, filling missing ones with 0
     const data = monthKeys.map(month => ({ month, count: rawCounts[month] ?? 0 }));
 
     res.json({ success: true, data });
@@ -126,7 +126,7 @@ export const getRevenueAnalytics = async (req: AuthRequest, res: Response): Prom
       }
     });
 
-    // Always return exactly 12 months, filling missing ones with 0
+    // Always return exactly 5 months, filling missing ones with 0
     const data = monthKeys.map(month => ({ month, revenue: rawRevenue[month] ?? 0 }));
 
     res.json({ success: true, data });

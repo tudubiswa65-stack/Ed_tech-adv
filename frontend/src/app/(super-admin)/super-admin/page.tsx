@@ -50,7 +50,7 @@ function StatCell({
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const CHART_MONTHS  = 12;
+const CHART_MONTHS  = 5;
 const MAX_BAR_HEIGHT = 60;
 const DONUT_RADIUS   = 35;
 
@@ -364,7 +364,7 @@ export default function SuperAdminDashboard() {
         <SectionLabel>Student Growth</SectionLabel>
         <div style={{ background: '#1e293b', borderRadius: 12, padding: '14px 12px', border: '0.5px solid rgba(255,255,255,0.06)', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>New enrolments · last 12 months</span>
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>New enrolments · last 5 months</span>
             <span style={{
               fontSize: 11, background: 'rgba(52,211,153,0.12)', color: '#34d399',
               border: '1px solid rgba(52,211,153,0.2)', borderRadius: 20, padding: '2px 8px',
@@ -387,7 +387,7 @@ export default function SuperAdminDashboard() {
         <SectionLabel>Revenue Analytics</SectionLabel>
         <div style={{ background: '#1e293b', borderRadius: 12, padding: '14px 12px', border: '0.5px solid rgba(255,255,255,0.06)', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>Monthly payments · last 12 months</span>
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>Monthly payments · last 5 months</span>
             <span style={{
               fontSize: 11, background: 'rgba(251,191,36,0.12)', color: '#fbbf24',
               border: '1px solid rgba(251,191,36,0.2)', borderRadius: 20, padding: '2px 8px',
