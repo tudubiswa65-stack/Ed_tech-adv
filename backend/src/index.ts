@@ -42,7 +42,11 @@ app.use(helmet());
 // so `origin` arrives as `undefined`.  We explicitly allow that case because
 // a request that arrives without an `Origin` header can only come from our own
 // server-side proxy (browsers always set `Origin` on cross-origin requests).
-console.log('[CORS] Configured frontend origin:', config.frontendUrl ?? '(not set - server-to-server allowed)');
+//
+// Railway production: hardcode the Railway frontend origin
+const RAILWAY_FRONTEND_URL = 'https://edtech-production.up.railway.app';
+const configuredFrontendUrl = config.frontendUrl || RAILWAY_FRONTEND_URL;
+console.log('[CORS] Configured frontend origin:', configuredFrontendUrl ?? '(not set - server-to-server allowed)');
 app.use(cors({
   origin: (origin, callback) => {
     // Allow undefined origins (server-to-server requests from Next.js proxy)
@@ -51,7 +55,8 @@ app.use(cors({
       callback(null, true);
       return;
     }
-    if (origin === config.frontendUrl) {
+    // Allow both configured frontend URL and Railway production URL
+    if (origin === configuredFrontendUrl || origin === RAILWAY_FRONTEND_URL) {
       callback(null, true);
     } else {
       console.warn('[CORS] Blocked request from unexpected origin:', origin);
