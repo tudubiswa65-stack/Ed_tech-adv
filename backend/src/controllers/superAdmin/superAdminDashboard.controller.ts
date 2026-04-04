@@ -2,13 +2,19 @@ import { Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
 import { AuthRequest } from '../../types';
 
-/** Returns labels for Jan–Dec of the current calendar year (e.g. "Jan 25"). */
-function getCalendarYearMonthKeys(): string[] {
-  const year = new Date().getFullYear();
+/** Returns labels for the last 12 rolling months ending at the current month (e.g. "May 25" … "Apr 26"). */
+function getLast12MonthKeys(): string[] {
+  const now = new Date();
   return Array.from({ length: 12 }, (_, i) => {
-    const d = new Date(year, i, 1);
-    return d.toLocaleString('en-US', { month: 'short', year: '2-digit' });
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11 + i, 1));
+    return d.toLocaleString('en-US', { month: 'short', year: '2-digit', timeZone: 'UTC' });
   });
+}
+
+/** Returns the ISO string for the first day of (current month − 11 months). */
+function getRollingStartDate(): string {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11, 1)).toISOString();
 }
 
 export const getDashboardStats = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -58,9 +64,8 @@ export const getDashboardStats = async (req: AuthRequest, res: Response): Promis
 
 export const getStudentGrowth = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const monthKeys = getCalendarYearMonthKeys();
-    const startDate = new Date(new Date().getFullYear(), 0, 1);   // Jan 1 of current year
-    startDate.setHours(0, 0, 0, 0);
+    const monthKeys = getLast12MonthKeys();
+    const startDateISO = getRollingStartDate();
 
     // Try the RPC first; fall back to a direct table query when it is unavailable
     let rawCounts: Record<string, number> = {};
@@ -79,11 +84,11 @@ export const getStudentGrowth = async (req: AuthRequest, res: Response): Promise
       const { data: students } = await supabaseAdmin
         .from('students')
         .select('created_at')
-        .gte('created_at', startDate.toISOString())
+        .gte('created_at', startDateISO)
         .order('created_at', { ascending: true });
 
       (students ?? []).forEach(student => {
-        const month = new Date(student.created_at).toLocaleString('en-US', { month: 'short', year: '2-digit' });
+        const month = new Date(student.created_at).toLocaleString('en-US', { month: 'short', year: '2-digit', timeZone: 'UTC' });
         rawCounts[month] = (rawCounts[month] || 0) + 1;
       });
     }
@@ -100,20 +105,19 @@ export const getStudentGrowth = async (req: AuthRequest, res: Response): Promise
 
 export const getRevenueAnalytics = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const monthKeys = getCalendarYearMonthKeys();
-    const startDate = new Date(new Date().getFullYear(), 0, 1);   // Jan 1 of current year
-    startDate.setHours(0, 0, 0, 0);
+    const monthKeys = getLast12MonthKeys();
+    const startDateISO = getRollingStartDate();
 
     const { data: payments } = await supabaseAdmin
       .from('payments')
       .select('amount, status, created_at')
-      .gte('created_at', startDate.toISOString())
+      .gte('created_at', startDateISO)
       .order('created_at', { ascending: true });
 
     const rawRevenue: Record<string, number> = {};
     (payments ?? []).forEach(payment => {
       if (payment.status === 'completed') {
-        const month = new Date(payment.created_at).toLocaleString('en-US', { month: 'short', year: '2-digit' });
+        const month = new Date(payment.created_at).toLocaleString('en-US', { month: 'short', year: '2-digit', timeZone: 'UTC' });
         rawRevenue[month] = (rawRevenue[month] || 0) + (payment.amount || 0);
       }
     });
