@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
 import { AuthRequest } from '../../types';
 
-/** Number of months to look back (current month + 4 previous = 5 total). */
+/** Number of months to look back for student growth (current month + 4 previous = 5 total). */
 const MONTHS_BACK = 4;
 
 /** Returns labels for the last 5 rolling months ending at the current month (e.g. "Dec 25" … "Apr 26"). */
@@ -19,6 +19,27 @@ function getLast12MonthKeys(): string[] {
 function getRollingStartDate(): string {
   const now = new Date();
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - MONTHS_BACK, 1)).toISOString();
+}
+
+/**
+ * Returns 5 month labels for the revenue chart:
+ * [3 months ago, 2 months ago, 1 month ago, current month, upcoming month].
+ * The current month sits at index 3 (middle); the upcoming month at index 4 is always blank.
+ */
+function getRevenueMonthKeys(): string[] {
+  const REVENUE_MONTHS_BACK = 3;
+  const now = new Date();
+  return Array.from({ length: 5 }, (_, i) => {
+    const monthOffset = now.getUTCMonth() - REVENUE_MONTHS_BACK + i;
+    const d = new Date(Date.UTC(now.getUTCFullYear(), monthOffset, 1));
+    return d.toLocaleString('en-US', { month: 'short', year: '2-digit', timeZone: 'UTC' });
+  });
+}
+
+/** Returns the ISO string for the first day of (current month − 3) for revenue queries. */
+function getRevenueStartDate(): string {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 3, 1)).toISOString();
 }
 
 export const getDashboardStats = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -109,8 +130,9 @@ export const getStudentGrowth = async (req: AuthRequest, res: Response): Promise
 
 export const getRevenueAnalytics = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const monthKeys = getLast12MonthKeys();
-    const startDateISO = getRollingStartDate();
+    // 5-slot layout: [3 months ago | 2 months ago | 1 month ago | current month | upcoming (blank)]
+    const monthKeys = getRevenueMonthKeys();
+    const startDateISO = getRevenueStartDate();
 
     const { data: payments } = await supabaseAdmin
       .from('payments')
@@ -126,7 +148,7 @@ export const getRevenueAnalytics = async (req: AuthRequest, res: Response): Prom
       }
     });
 
-    // Always return exactly 5 months, filling missing ones with 0
+    // Return all 5 months; the upcoming month (index 4) is always 0 since no future payments exist.
     const data = monthKeys.map(month => ({ month, revenue: rawRevenue[month] ?? 0 }));
 
     res.json({ success: true, data });
