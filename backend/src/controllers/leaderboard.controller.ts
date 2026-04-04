@@ -1,5 +1,6 @@
 import { Response, Request } from 'express';
 import supabaseAdmin from '../db/supabaseAdmin';
+import { toSignedAvatarUrl } from '../utils/avatarUrl';
 
 export const getLeaderboard = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -7,7 +8,7 @@ export const getLeaderboard = async (req: Request, res: Response): Promise<void>
 
     let query = supabaseAdmin
       .from('results')
-      .select('student_id, students(name, branch_id, branches(name)), score');
+      .select('student_id, students(name, branch_id, avatar_url, branches(name)), score');
 
     if (branch_id) {
       // In a real DB we would use a join or filter on the related table
@@ -34,19 +35,23 @@ export const getLeaderboard = async (req: Request, res: Response): Promise<void>
           student_name: result.students?.name,
           branch_id: result.students?.branch_id,
           branch_name: result.students?.branches?.name,
+          avatar_url: result.students?.avatar_url ?? null,
           total_score: 0,
         };
       }
       studentScores[studentId].total_score += result.score;
     });
 
-    const leaderboard = Object.values(studentScores)
-      .sort((a, b) => b.total_score - a.total_score)
-      .slice(0, Number(limit))
-      .map((entry, index) => ({
-        ...entry,
-        rank: index + 1,
-      }));
+    const leaderboard = await Promise.all(
+      Object.values(studentScores)
+        .sort((a, b) => b.total_score - a.total_score)
+        .slice(0, Number(limit))
+        .map(async (entry, index) => ({
+          ...entry,
+          avatar_url: await toSignedAvatarUrl(entry.avatar_url),
+          rank: index + 1,
+        }))
+    );
 
     res.json({ success: true, data: leaderboard });
   } catch (error: any) {

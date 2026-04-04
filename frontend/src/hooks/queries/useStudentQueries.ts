@@ -235,6 +235,7 @@ export function useStudentLeaderboard() {
         student_id: string;
         student_name: string;
         branch_name?: string;
+        avatar_url?: string | null;
         total_score: number;
         rank: number;
         [key: string]: unknown;
