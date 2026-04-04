@@ -19,6 +19,7 @@ import resultsRoutes from './routes/results.routes';
 import materialsRoutes from './routes/materials.routes';
 import notificationsRoutes from './routes/notifications.routes';
 import settingsRoutes from './routes/settings.routes';
+import publicRoutes from './routes/public.routes';
 
 // Import queue system
 import { closeQueues } from './queue';
@@ -47,27 +48,41 @@ app.use(helmet());
 const RAILWAY_FRONTEND_URL = 'https://edtech-production.up.railway.app';
 const configuredFrontendUrl = config.frontendUrl || RAILWAY_FRONTEND_URL;
 console.log('[CORS] Configured frontend origin:', configuredFrontendUrl ?? '(not set - server-to-server allowed)');
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow undefined origins (server-to-server requests from Next.js proxy)
-    // Browsers always send Origin on cross-origin requests, so undefined = internal
-    if (!origin) {
-      callback(null, true);
-      return;
-    }
-    // Allow both configured frontend URL and Railway production URL
-    if (origin === configuredFrontendUrl || origin === RAILWAY_FRONTEND_URL) {
-      callback(null, true);
-    } else {
-      console.warn('[CORS] Blocked request from unexpected origin:', origin);
-      callback(new Error(`CORS: origin '${origin}' not allowed`));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Cache-Control', 'Pragma'],
-  exposedHeaders: ['Set-Cookie'],
-}));
+
+// Single CORS middleware that handles both public and authenticated paths.
+// /api/public/* is intentionally open to all origins (no credentials) so that
+// external sites and the ISR server-side fetcher can consume the public data.
+// All other /api/* paths enforce a strict origin allowlist.
+// NOTE: this middleware is at the top-level app, so req.path is the full path
+// (e.g. /api/public/leaderboard) — not relative to a mount prefix.
+app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (req.path.startsWith('/api/public/')) {
+    // Public leaderboard and any future public endpoints: allow any origin,
+    // GET/OPTIONS only, no credentials. The wildcard origin is deliberate here.
+    cors({ origin: '*', methods: ['GET', 'OPTIONS'] })(req, res, next);
+  } else {
+    cors({
+      origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+        // Allow undefined origins (server-to-server requests from Next.js proxy)
+        // Browsers always send Origin on cross-origin requests, so undefined = internal
+        if (!origin) {
+          callback(null, true);
+          return;
+        }
+        if (origin === configuredFrontendUrl || origin === RAILWAY_FRONTEND_URL) {
+          callback(null, true);
+        } else {
+          console.warn('[CORS] Blocked request from unexpected origin:', origin);
+          callback(new Error(`CORS: origin '${origin}' not allowed`));
+        }
+      },
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Cache-Control', 'Pragma'],
+      exposedHeaders: ['Set-Cookie'],
+    })(req, res, next);
+  }
+});
 app.use(morgan('combined'));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -75,10 +90,21 @@ app.use(cookieParser());
 
 // Prevent all API responses from being cached by browsers or CDNs.
 // This eliminates 304 Not Modified responses that can serve stale auth state.
+// The public leaderboard endpoint is intentionally excluded so CDNs / Next.js
+// ISR can cache it for up to 1 hour, reducing database load.
 app.use('/api', (_req, res, next) => {
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
+  // NOTE: this middleware is mounted at /api, so _req.path is relative to that
+  // mount point — a request to /api/public/leaderboard has _req.path = /public/leaderboard.
+  if (_req.path.startsWith('/public/')) {
+    // Allow public endpoints to be cached (ISR-friendly).
+    // stale-while-revalidate=60 lets CDNs serve stale content for 60s while
+    // refreshing in the background, reducing latency on cache expiry.
+    res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=60');
+  } else {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
   next();
 });
 
@@ -111,6 +137,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/student', studentRoutes);
+app.use('/api/public', publicRoutes);
 
 // Global error handler
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
