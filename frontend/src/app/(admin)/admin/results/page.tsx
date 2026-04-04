@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import apiClient from '@/lib/apiClient';
 import Button from '@/components/ui/Button';
@@ -9,6 +9,7 @@ import Card from '@/components/ui/Card';
 import Table from '@/components/ui/Table';
 import Spinner from '@/components/ui/Spinner';
 import PageWrapper from '@/components/layout/PageWrapper';
+import { useAdminResults, useAdminTestsList } from '@/hooks/queries/useAdminQueries';
 
 interface Test {
   id: string;
@@ -55,12 +56,8 @@ interface TestOption {
 export default function ResultsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [results, setResults] = useState<Result[]>([]);
-  const [tests, setTests] = useState<TestOption[]>([]);
-  const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [filters, setFilters] = useState({
     testId: searchParams.get('testId') || '',
     status: '',
@@ -68,45 +65,12 @@ export default function ResultsPage() {
     sortOrder: 'desc'
   });
 
-  useEffect(() => {
-    fetchTests();
-  }, []);
+  // React Query hooks — results cached 60 s, tests dropdown cached 60 s
+  const { data: resultsData, isLoading: loading } = useAdminResults(page, filters);
+  const { data: tests = [] } = useAdminTestsList();
 
-  useEffect(() => {
-    fetchResults();
-  }, [page, filters]);
-
-  const fetchTests = async () => {
-    try {
-      const response = await apiClient.get('/admin/tests', {
-        params: { limit: 100 }
-      });
-      setTests(Array.isArray(response.data) ? response.data : (response.data.tests || []));
-    } catch (error) {
-      console.error('Error fetching tests:', error);
-    }
-  };
-
-  const fetchResults = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.append('page', page.toString());
-      params.append('limit', '15');
-      if (filters.testId) params.append('testId', filters.testId);
-      if (filters.status) params.append('status', filters.status);
-      params.append('sortBy', filters.sortBy);
-      params.append('sortOrder', filters.sortOrder);
-
-      const response = await apiClient.get<ResultsResponse>(`/admin/results?${params}`);
-      setResults(response.data.results || []);
-      setTotalPages(response.data.pagination?.totalPages ?? 1);
-    } catch (error) {
-      console.error('Error fetching results:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const results = resultsData?.results ?? [];
+  const totalPages = resultsData?.totalPages ?? 1;
 
   const exportToCSV = async () => {
     setExporting(true);

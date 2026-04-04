@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { apiClient } from '@/lib/apiClient';
 import { useAuth } from '@/hooks/useAuth';
+import { useStudentLeaderboard } from '@/hooks/queries/useStudentQueries';
 
 interface LeaderboardEntry {
   id?: string;
@@ -106,25 +105,10 @@ function PodiumCard({ entry }: { entry: LeaderboardEntry }) {
 }
 
 export default function LeaderboardPage() {
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  useEffect(() => {
-    fetchLeaderboard();
-  }, []);
-
-  const fetchLeaderboard = async () => {
-    setLoading(true);
-    try {
-      const response = await apiClient.get('/student/leaderboard');
-      setLeaderboard(response.data.data || []);
-    } catch (error) {
-      console.error('Failed to load leaderboard');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // React Query hook — leaderboard cached 2 min
+  const { data: leaderboard = [], isLoading: loading } = useStudentLeaderboard();
 
   const top3 = leaderboard
     .filter((e) => e.rank <= 3)

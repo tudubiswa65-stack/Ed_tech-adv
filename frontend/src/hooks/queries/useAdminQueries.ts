@@ -20,6 +20,13 @@ export const adminQueryKeys = {
     [...adminQueryKeys.all, 'attendance', { branch, course, date }] as const,
   students: (params: Record<string, string | number>) =>
     [...adminQueryKeys.all, 'students', params] as const,
+  payments: () => [...adminQueryKeys.all, 'payments'] as const,
+  notifications: (page: number, filters: Record<string, string>) =>
+    [...adminQueryKeys.all, 'notifications', { page, ...filters }] as const,
+  results: (page: number, filters: Record<string, string>) =>
+    [...adminQueryKeys.all, 'results', { page, ...filters }] as const,
+  testsList: (filters: Record<string, string>) =>
+    [...adminQueryKeys.all, 'tests-list', filters] as const,
 };
 
 // ── Admin Dashboard ───────────────────────────────────────────────────────────
@@ -158,9 +165,15 @@ export function useAdminDashboardWithPermissions(
 
 // ── Aggregated Endpoints ───────────────────────────────────────────────────────
 
+export interface AggregatedDashboardResponse {
+  stats: AdminDashboardStats;
+  permissions?: Record<string, boolean>;
+  recentActivity?: unknown[];
+}
+
 // Aggregated Dashboard: combines stats + permissions + recent activity
 export function useAggregatedDashboard() {
-  return useQuery({
+  return useQuery<AggregatedDashboardResponse>({
     queryKey: adminQueryKeys.aggregatedDashboard(),
     queryFn: async () => {
       const response = await apiClient.get('/admin/aggregated/dashboard');
@@ -226,6 +239,115 @@ export function useAggregatedNotificationsOverview() {
     queryFn: async () => {
       const response = await apiClient.get('/admin/aggregated/notifications-overview');
       return response.data.data ?? response.data;
+    },
+    staleTime: 60 * 1000,
+  });
+}
+
+// ── Individual resource hooks ─────────────────────────────────────────────────
+
+// Students list with filters and pagination
+export function useAdminStudents(params: {
+  page?: number;
+  search?: string;
+  courseId?: string;
+  branchId?: string;
+  limit?: number;
+} = {}) {
+  const { page = 1, search = '', courseId = '', branchId = '', limit = 20 } = params;
+  return useQuery({
+    queryKey: adminQueryKeys.students({ page, search, courseId, branchId, limit }),
+    queryFn: async () => {
+      const urlParams = new URLSearchParams({ page: String(page), limit: String(limit) });
+      if (search) urlParams.set('search', search);
+      if (courseId) urlParams.set('course_id', courseId);
+      if (branchId) urlParams.set('branch_id', branchId);
+      const response = await apiClient.get(`/admin/students?${urlParams}`);
+      const data = response.data?.success ? response.data.data : response.data;
+      return { students: data?.students ?? [], total: data?.total ?? 0 };
+    },
+    staleTime: 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+}
+
+// Payments list
+export function useAdminPayments() {
+  return useQuery({
+    queryKey: adminQueryKeys.payments(),
+    queryFn: async () => {
+      const response = await apiClient.get('/admin/payments');
+      return response.data.data ?? response.data ?? [];
+    },
+    staleTime: 60 * 1000,
+  });
+}
+
+// Notifications list with pagination and filters
+export function useAdminNotifications(
+  page = 1,
+  filters: { type?: string; targetAudience?: string } = {}
+) {
+  const filterKey = { type: filters.type ?? '', targetAudience: filters.targetAudience ?? '' };
+  return useQuery({
+    queryKey: adminQueryKeys.notifications(page, filterKey),
+    queryFn: async () => {
+      const params = new URLSearchParams({ page: String(page), limit: '15' });
+      if (filters.type) params.set('type', filters.type);
+      if (filters.targetAudience) params.set('targetAudience', filters.targetAudience);
+      const response = await apiClient.get(`/admin/notifications?${params}`);
+      const data = (response.data as any)?.success ? (response.data as any).data : response.data;
+      return {
+        notifications: data?.notifications ?? [],
+        totalPages: data?.pagination?.totalPages ?? 1,
+      };
+    },
+    staleTime: 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+}
+
+// Results list with pagination and filters
+export function useAdminResults(
+  page = 1,
+  filters: { testId?: string; status?: string; sortBy?: string; sortOrder?: string } = {}
+) {
+  const filterKey = {
+    testId: filters.testId ?? '',
+    status: filters.status ?? '',
+    sortBy: filters.sortBy ?? 'submitted_at',
+    sortOrder: filters.sortOrder ?? 'desc',
+  };
+  return useQuery({
+    queryKey: adminQueryKeys.results(page, filterKey),
+    queryFn: async () => {
+      const params = new URLSearchParams({ page: String(page), limit: '15' });
+      if (filters.testId) params.set('testId', filters.testId);
+      if (filters.status) params.set('status', filters.status);
+      params.set('sortBy', filters.sortBy ?? 'submitted_at');
+      params.set('sortOrder', filters.sortOrder ?? 'desc');
+      const response = await apiClient.get(`/admin/results?${params}`);
+      return {
+        results: response.data.results ?? [],
+        totalPages: response.data.pagination?.totalPages ?? 1,
+      };
+    },
+    staleTime: 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+}
+
+// Tests list with optional filters
+export function useAdminTestsList(filters: { courseId?: string; type?: string } = {}) {
+  const filterKey = { courseId: filters.courseId ?? '', type: filters.type ?? '' };
+  return useQuery({
+    queryKey: adminQueryKeys.testsList(filterKey),
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filters.courseId) params.set('course_id', filters.courseId);
+      if (filters.type) params.set('type', filters.type);
+      const response = await apiClient.get(`/admin/tests?${params}`);
+      return (Array.isArray(response.data) ? response.data : response.data?.tests ?? []) as any[];
     },
     staleTime: 60 * 1000,
   });

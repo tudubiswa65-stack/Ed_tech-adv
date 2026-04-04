@@ -4,7 +4,7 @@ import Link from 'next/link';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Card, Spinner, Badge } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
-import { useAdminDashboard, AdminDashboardStats } from '@/hooks/queries/useAdminQueries';
+import { AdminDashboardStats, useAggregatedDashboard } from '@/hooks/queries/useAdminQueries';
 
 // ── Mobile design tokens ────────────────────────────────────────────────────
 const TOKEN = {
@@ -169,7 +169,8 @@ function MobileHeader({ initials }: { initials: string }) {
 
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const { data: stats, isLoading: loading } = useAdminDashboard();
+  const { data, isLoading: loading } = useAggregatedDashboard();
+  const stats = data?.stats;
 
   const firstName = user?.name?.split(' ')[0] ?? 'Admin';
   const initials = (user?.name ?? 'A')

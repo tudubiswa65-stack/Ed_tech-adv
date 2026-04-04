@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import apiClient from '@/lib/apiClient';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
@@ -9,6 +9,8 @@ import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Spinner from '@/components/ui/Spinner';
 import PageWrapper from '@/components/layout/PageWrapper';
+import { useStudentFeedback, studentQueryKeys } from '@/hooks/queries/useStudentQueries';
+import { queryClient } from '@/lib/queryClient';
 
 interface Feedback {
   id: string;
@@ -19,8 +21,6 @@ interface Feedback {
 }
 
 export default function FeedbackPage() {
-  const [feedbackHistory, setFeedbackHistory] = useState<Feedback[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
@@ -31,23 +31,9 @@ export default function FeedbackPage() {
   });
   const [hoveredRating, setHoveredRating] = useState(0);
 
-  useEffect(() => {
-    fetchFeedback();
-  }, []);
-
-  const fetchFeedback = async () => {
-    setLoading(true);
-    try {
-      const response = await apiClient.get('/student/feedback');
-      // Handle standardized response - use type assertion for compatibility
-      const responseData = (response.data as any).success ? (response.data as any).data : response.data;
-      setFeedbackHistory(responseData || []);
-    } catch (error) {
-      console.error('Error fetching feedback:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // React Query hook — feedback history cached 60 s
+  const { data: feedbackRaw = [], isLoading: loading } = useStudentFeedback();
+  const feedbackHistory = feedbackRaw as Feedback[];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +42,7 @@ export default function FeedbackPage() {
       await apiClient.post('/student/feedback', formData);
       setShowModal(false);
       resetForm();
-      fetchFeedback();
+      queryClient.invalidateQueries({ queryKey: studentQueryKeys.feedback() });
       alert('Thank you for your feedback!');
     } catch (error) {
       console.error('Error submitting feedback:', error);

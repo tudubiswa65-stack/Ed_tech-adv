@@ -1,12 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import apiClient from '@/lib/apiClient';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
 import Spinner from '@/components/ui/Spinner';
 import PageWrapper from '@/components/layout/PageWrapper';
+import {
+  useStudentNotifications,
+  useStudentUnreadCount,
+  studentQueryKeys,
+} from '@/hooks/queries/useStudentQueries';
+import { queryClient } from '@/lib/queryClient';
 
 interface Notification {
   id: string;
@@ -39,55 +45,21 @@ interface NotificationsResponse {
 }
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
-  useEffect(() => {
-    fetchNotifications();
-    fetchUnreadCount();
-  }, [page, filter]);
+  // React Query hooks — notifications cached 60 s; unread count cached 60 s
+  const { data: notificationsData, isLoading: loading } = useStudentNotifications(page, filter);
+  const { data: unreadCount = 0 } = useStudentUnreadCount();
 
-  const fetchNotifications = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.append('page', page.toString());
-      if (filter === 'unread') params.append('unreadOnly', 'true');
-
-      const response = await apiClient.get(`/student/notifications?${params}`);
-      // Handle standardized response - use type assertion for compatibility
-      const responseData = ((response.data as any).success ? (response.data as any).data : response.data) || {};
-      setNotifications(responseData.notifications || []);
-      setTotalPages(responseData.pagination?.totalPages || 1);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchUnreadCount = async () => {
-    try {
-      const response = await apiClient.get('/student/notifications/unread-count');
-      // Handle standardized response - use type assertion for compatibility
-      const responseData = ((response.data as any).success ? (response.data as any).data : response.data) || {};
-      setUnreadCount(responseData.unreadCount || 0);
-    } catch (error) {
-      console.error('Error fetching unread count:', error);
-    }
-  };
+  const notifications = notificationsData?.notifications ?? [];
+  const totalPages = notificationsData?.totalPages ?? 1;
 
   const markAsRead = async (id: string) => {
     try {
       await apiClient.post(`/student/notifications/${id}/read`);
-      setNotifications(prev => prev.map(n => 
-        n.id === id ? { ...n, is_read: true } : n
-      ));
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      queryClient.invalidateQueries({ queryKey: studentQueryKeys.notifications(page, filter) });
+      queryClient.invalidateQueries({ queryKey: studentQueryKeys.unreadCount() });
     } catch (error) {
       console.error('Error marking as read:', error);
     }
@@ -96,8 +68,7 @@ export default function NotificationsPage() {
   const markAllAsRead = async () => {
     try {
       await apiClient.post('/student/notifications/read-all');
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-      setUnreadCount(0);
+      queryClient.invalidateQueries({ queryKey: studentQueryKeys.all });
     } catch (error) {
       console.error('Error marking all as read:', error);
     }
@@ -182,7 +153,7 @@ export default function NotificationsPage() {
             </div>
           ) : (
             <div className="divide-y divide-gray-200 dark:divide-slate-700">
-              {notifications.map(notification => (
+              {notifications.map((notification: Notification) => (
                 <div
                   key={notification.id}
                   className={`p-4 ${!notification.is_read ? 'bg-blue-50' : ''}`}
