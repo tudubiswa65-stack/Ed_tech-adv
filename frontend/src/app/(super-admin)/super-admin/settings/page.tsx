@@ -1,32 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { apiClient } from '@/lib/apiClient';
-
-interface Settings {
-  platform_name?: string;
-  tagline?: string;
-  primary_color?: string;
-  logo_url?: string;
-  currency?: string;
-  timezone?: string;
-  session_timeout?: number;
-  payment_threshold?: number;
-  late_fee_percentage?: number;
-  grace_period_days?: number;
-  max_upload_size_mb?: number;
-  allowed_file_types?: string[];
-  [key: string]: any;
-}
-
-interface Features {
-  maintenance_mode?: boolean;
-  user_registration?: boolean;
-  email_notifications?: boolean;
-  sms_notifications?: boolean;
-  [key: string]: any;
-}
+import {
+  useSuperAdminSettings,
+  useUpdateSettings,
+  useResetSettings,
+  type Settings,
+  type Features,
+} from '@/hooks/queries/useSuperAdminDataQueries';
+import { Spinner } from '@/components/ui';
 
 const TIMEZONES = ['UTC', 'America/New_York', 'America/Los_Angeles', 'Europe/London', 'Asia/Kolkata', 'Asia/Karachi', 'Asia/Dubai'];
 const FILE_TYPES = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'mp4', 'mp3', 'doc', 'docx', 'xls', 'xlsx'];
@@ -198,58 +181,41 @@ export default function SettingsPage() {
   const { user } = useAuth();
   const [settings, setSettings] = useState<Settings>({});
   const [features, setFeatures] = useState<Features>({});
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
+  // React Query hooks with caching
+  const { data: settingsData, isLoading, error } = useSuperAdminSettings();
+  const updateSettings = useUpdateSettings();
+  const resetSettings = useResetSettings();
+
+  // Initialize local state when data loads
   useEffect(() => {
-    fetchSettings();
-  }, []);
+    if (settingsData) {
+      setSettings(settingsData.settings || {});
+      setFeatures(settingsData.features || {});
+    }
+  }, [settingsData]);
 
   const showToast = (type: 'success' | 'error', message: string) => {
     setToast({ type, message });
     setTimeout(() => setToast(null), 3000);
   };
 
-  const fetchSettings = async () => {
-    try {
-      const [settingsRes, featuresRes] = await Promise.all([
-        apiClient.get('/super-admin/settings'),
-        apiClient.get('/super-admin/settings/features'),
-      ]);
-      if (settingsRes.data.success) setSettings(settingsRes.data.data || {});
-      if (featuresRes.data.success) setFeatures(featuresRes.data.data || {});
-    } catch {
-      showToast('error', 'Failed to load settings');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
     try {
-      const payload = { ...settings, ...features };
-      const res = await apiClient.put('/super-admin/settings', payload);
-      if (res.data.success) {
-        showToast('success', 'Settings saved successfully');
-      }
+      await updateSettings.mutateAsync({ settings, features });
+      showToast('success', 'Settings saved successfully');
     } catch {
       showToast('error', 'Failed to save settings');
-    } finally {
-      setSaving(false);
     }
   };
 
   const handleReset = async () => {
     if (!confirm('Reset all settings to defaults?')) return;
     try {
-      const res = await apiClient.post('/super-admin/settings/reset');
-      if (res.data.success) {
-        showToast('success', 'Settings reset to defaults');
-        fetchSettings();
-      }
+      await resetSettings.mutateAsync();
+      showToast('success', 'Settings reset to defaults');
     } catch {
       showToast('error', 'Failed to reset settings');
     }
@@ -287,10 +253,18 @@ export default function SettingsPage() {
     { key: 'sms_notifications', label: 'SMS Notifications', description: 'Send SMS alerts via integrated provider' },
   ];
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div style={{ background: '#0f172a', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>Loading settings…</span>
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ background: '#0f172a', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ color: '#f87171', fontSize: 14 }}>Failed to load settings</span>
       </div>
     );
   }
@@ -357,6 +331,7 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={handleReset}
+            disabled={resetSettings.isPending}
             style={{
               background: 'rgba(248,113,113,0.1)',
               border: '1px solid rgba(248,113,113,0.2)',
@@ -365,11 +340,12 @@ export default function SettingsPage() {
               fontWeight: 500,
               padding: '7px 14px',
               borderRadius: 8,
-              cursor: 'pointer',
+              cursor: resetSettings.isPending ? 'not-allowed' : 'pointer',
               flexShrink: 0,
+              opacity: resetSettings.isPending ? 0.5 : 1,
             }}
           >
-            Reset defaults
+            {resetSettings.isPending ? 'Resetting…' : 'Reset defaults'}
           </button>
         </div>
 
@@ -665,22 +641,22 @@ export default function SettingsPage() {
           {/* ── Save button ───────────────────────────────────────────────── */}
           <button
             type="submit"
-            disabled={saving}
+            disabled={updateSettings.isPending}
             style={{
               width: '100%',
-              background: saving ? 'rgba(59,130,246,0.5)' : '#3b82f6',
+              background: updateSettings.isPending ? 'rgba(59,130,246,0.5)' : '#3b82f6',
               borderRadius: 10,
               padding: 14,
               fontSize: 13,
               fontWeight: 500,
               color: '#fff',
               border: 'none',
-              cursor: saving ? 'not-allowed' : 'pointer',
+              cursor: updateSettings.isPending ? 'not-allowed' : 'pointer',
               marginTop: 4,
               transition: 'background 0.2s',
             }}
           >
-            {saving ? 'Saving…' : 'Save all changes'}
+            {updateSettings.isPending ? 'Saving…' : 'Save all changes'}
           </button>
 
         </form>
