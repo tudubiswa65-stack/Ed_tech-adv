@@ -50,7 +50,7 @@ function StatCell({
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const CHART_MONTHS  = 6;
+const CHART_MONTHS  = 12;
 const MAX_BAR_HEIGHT = 60;
 const DONUT_RADIUS   = 35;
 
@@ -71,7 +71,12 @@ function MiniBarChart({
   activeLabelColor: string;
   inactiveLabelColor: string;
 }) {
-  const display = data.length > 0 ? data : Array.from({ length: CHART_MONTHS }, (_, i) => ({ month: `M${i + 1}`, [valueKey]: 0 }));
+  const emptyFallback = Array.from({ length: CHART_MONTHS }, (_, i) => {
+    const now = new Date();
+    const d = new Date(now.getFullYear(), now.getMonth() - (CHART_MONTHS - 1 - i), 1);
+    return { month: d.toLocaleString('en-US', { month: 'short', year: '2-digit' }), [valueKey]: 0 };
+  });
+  const display = data.length > 0 ? data : emptyFallback;
 
   return (
     <div style={{ display: 'flex', gap: 4, alignItems: 'flex-end', height: MAX_BAR_HEIGHT + 20 }}>
@@ -267,9 +272,17 @@ export default function SuperAdminDashboard() {
   const presentDash       = (presentPct / 100) * C;
   const remainingDash     = ((100 - presentPct) / 100) * C;   // amber covers absent + late
 
-  // ── Chart slices (last CHART_MONTHS months) ──────────────────────────────────
-  const growthSlice  = studentGrowth.slice(-CHART_MONTHS);
-  const revenueSlice = revenue.slice(-CHART_MONTHS);
+  // ── Chart data (fixed 12 months from backend) ────────────────────────────────
+  const getLast12MonthLabels = () => {
+    const now = new Date();
+    return Array.from({ length: CHART_MONTHS }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (CHART_MONTHS - 1 - i), 1);
+      return d.toLocaleString('en-US', { month: 'short', year: '2-digit' });
+    });
+  };
+  const emptyMonths = getLast12MonthLabels();
+  const growthSlice  = studentGrowth.length > 0 ? studentGrowth : emptyMonths.map(month => ({ month, count: 0 }));
+  const revenueSlice = revenue.length > 0 ? revenue : emptyMonths.map(month => ({ month, revenue: 0 }));
   const growthMax    = Math.max(...growthSlice.map(d => d.count   ?? 0), 1);
   const revenueMax   = Math.max(...revenueSlice.map(d => d.revenue ?? 0), 1);
   const growthTotal  = growthSlice.reduce((a, d) => a + (d.count ?? 0), 0);
