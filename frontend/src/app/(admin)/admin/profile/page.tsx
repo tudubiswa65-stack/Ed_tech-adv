@@ -118,7 +118,7 @@ export default function AdminProfilePage() {
           <div className="p-6 flex flex-col items-center gap-4">
             <div className="relative">
               <div
-                className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center text-white text-3xl font-bold"
+                className="relative w-24 h-24 rounded-full overflow-hidden flex items-center justify-center text-white text-3xl font-bold"
                 style={{ backgroundColor: 'var(--color-primary)' }}
               >
                 {profile?.avatar_url ? (
