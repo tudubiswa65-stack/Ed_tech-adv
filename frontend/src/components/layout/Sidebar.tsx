@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useInstitute } from '@/hooks/useInstitute';
@@ -57,6 +58,12 @@ export default function Sidebar({ role, isOpen = false, onClose = () => {} }: Si
   const { user, logout } = useAuth();
   const isBranchAdmin = user?.role === 'branch_admin';
   const navItems = role === 'admin' ? adminNavItems : studentNavItems;
+  const [imgError, setImgError] = useState(false);
+
+  // Reset image error state whenever the avatar URL changes
+  useEffect(() => {
+    setImgError(false);
+  }, [user?.avatar_url]);
 
   const handleLogout = async () => {
     await logout();
@@ -239,7 +246,7 @@ export default function Sidebar({ role, isOpen = false, onClose = () => {} }: Si
                   className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center shrink-0 text-xs font-bold"
                   style={{ backgroundColor: 'var(--color-primary)', color: '#fff' }}
                 >
-                  {user.avatar_url ? (
+                  {user.avatar_url && !imgError ? (
                     <Image
                       src={user.avatar_url}
                       alt={user.name ?? 'Avatar'}
@@ -247,6 +254,7 @@ export default function Sidebar({ role, isOpen = false, onClose = () => {} }: Si
                       height={32}
                       priority
                       className="object-cover w-full h-full"
+                      onError={() => setImgError(true)}
                     />
                   ) : (
                     user.name?.charAt(0).toUpperCase()

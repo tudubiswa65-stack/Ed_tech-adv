@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/context/ThemeContext';
@@ -18,8 +18,14 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
   const { theme, toggleTheme } = useTheme();
   const { error: toastError, success: toastSuccess } = useToast();
   const [uploading, setUploading] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const adminRoles = ['admin', 'super_admin', 'branch_admin'];
+
+  // Reset image error state whenever the avatar URL changes (e.g. after upload)
+  useEffect(() => {
+    setImgError(false);
+  }, [user?.avatar_url]);
 
   const handleLogout = async () => {
     await logout();
@@ -142,7 +148,7 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
                 </div>
-              ) : user?.avatar_url ? (
+              ) : user?.avatar_url && !imgError ? (
                 <Image
                   src={user.avatar_url}
                   alt={user.name ?? 'Avatar'}
@@ -150,6 +156,7 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
                   priority
                   className="object-cover"
                   sizes="32px"
+                  onError={() => setImgError(true)}
                 />
               ) : (
                 <div
