@@ -241,7 +241,7 @@ export function useStudentLeaderboard() {
         [key: string]: unknown;
       }[];
     },
-    staleTime: 120 * 1000,
+    staleTime: 5 * 60 * 1000, // 5 minutes — matches signed URL TTL
   });
 }
 

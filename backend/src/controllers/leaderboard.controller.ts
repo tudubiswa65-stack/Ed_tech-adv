@@ -1,34 +1,40 @@
-import { Response, Request } from 'express';
-import supabaseAdmin from '../db/supabaseAdmin';
+import { Response } from 'express';
+import { supabaseAdmin } from '../db/supabaseAdmin';
 import { toSignedAvatarUrl } from '../utils/avatarUrl';
+import { AuthRequest } from '../types';
 
-export const getLeaderboard = async (req: Request, res: Response): Promise<void> => {
+// Signed URL lifetime for leaderboard avatars — matches the client-side cache TTL
+const LEADERBOARD_AVATAR_EXPIRY_SECONDS = 300; // 5 minutes
+
+export const getLeaderboard = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const instituteId = req.user?.instituteId;
     const { branch_id, limit = 10 } = req.query;
 
-    let query = supabaseAdmin
-      .from('results')
-      .select('student_id, students(name, branch_id, avatar_url, branches(name)), score');
-
-    if (branch_id) {
-      // In a real DB we would use a join or filter on the related table
-      // Supabase supports filtering on joined tables: students.branch_id
-      // but the exact syntax depends on the version/setup.
-      // For this implementation, we'll assume a flattened view or simple filter.
-      query = query.eq('students.branch_id', branch_id);
+    if (!instituteId) {
+      res.status(401).json({ success: false, error: 'Unauthorized' });
+      return;
     }
 
-    const { data, error } = await query
-      .order('score', { ascending: false })
-      .limit(Number(limit));
+    // Fetch all results for this institute so we can aggregate per student
+    let query = supabaseAdmin
+      .from('results')
+      .select('student_id, score, students(name, branch_id, avatar_url, branches(name))')
+      .eq('institute_id', instituteId);
+
+    const { data, error } = await query;
 
     if (error) throw error;
 
-    // Aggregate scores per student if they have multiple results
+    // Aggregate total_score per student
     const studentScores: Record<string, any> = {};
-    
-    data.forEach((result: any) => {
+
+    (data ?? []).forEach((result: any) => {
       const studentId = result.student_id;
+
+      // Apply optional branch filter after fetching
+      if (branch_id && result.students?.branch_id !== branch_id) return;
+
       if (!studentScores[studentId]) {
         studentScores[studentId] = {
           student_id: studentId,
@@ -39,16 +45,18 @@ export const getLeaderboard = async (req: Request, res: Response): Promise<void>
           total_score: 0,
         };
       }
-      studentScores[studentId].total_score += result.score;
+      studentScores[studentId].total_score += result.score ?? 0;
     });
+
+    const topN = Number(limit);
 
     const leaderboard = await Promise.all(
       Object.values(studentScores)
         .sort((a, b) => b.total_score - a.total_score)
-        .slice(0, Number(limit))
+        .slice(0, topN)
         .map(async (entry, index) => ({
           ...entry,
-          avatar_url: await toSignedAvatarUrl(entry.avatar_url),
+          avatar_url: await toSignedAvatarUrl(entry.avatar_url, LEADERBOARD_AVATAR_EXPIRY_SECONDS),
           rank: index + 1,
         }))
     );
