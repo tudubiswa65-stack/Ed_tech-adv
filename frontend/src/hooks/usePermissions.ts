@@ -1,5 +1,6 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/apiClient';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -40,55 +41,56 @@ const DEFAULT: Record<PermissionKey, boolean> = {
   export_data: false,
 };
 
+const ALL_TRUE = Object.fromEntries(
+  Object.keys(DEFAULT).map((k) => [k, true])
+) as Record<PermissionKey, boolean>;
+
+// Query key factory for permissions
+export const permissionsQueryKeys = {
+  all: ['permissions'] as const,
+  my: () => [...permissionsQueryKeys.all, 'my'] as const,
+};
+
+export async function fetchMyPermissions(): Promise<Record<PermissionKey, boolean>> {
+  const response = await apiClient.get('/admin/my-permissions');
+  if (response.data?.success) {
+    return { ...DEFAULT, ...response.data.data.permissions };
+  }
+  return DEFAULT;
+}
+
 export function usePermissions(): PermissionsState {
   const { user } = useAuth();
-  const [permissions, setPermissions] = useState<Record<PermissionKey, boolean>>(DEFAULT);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
+  // super_admin and admin have all permissions — no need to fetch
+  const hasAllPermissions = user?.role === 'super_admin' || user?.role === 'admin';
+  const isBranchAdmin = user?.role === 'branch_admin';
+
+  const { data: permissionsData, isLoading } = useQuery({
+    queryKey: permissionsQueryKeys.my(),
+    queryFn: fetchMyPermissions,
+    // 5 minute stale time for permissions - they rarely change during a session
+    staleTime: 5 * 60 * 1000,
+    // Only fetch for branch_admins who actually need permission checks
+    enabled: !!user && isBranchAdmin && !hasAllPermissions,
+    // Return defaults while loading
+    placeholderData: DEFAULT,
+  });
+
+  const permissions = useMemo(() => {
+    if (hasAllPermissions) {
+      return ALL_TRUE;
     }
+    return permissionsData ?? DEFAULT;
+  }, [hasAllPermissions, permissionsData]);
 
-    // super_admin and admin have all permissions — no need to fetch
-    if (user.role === 'super_admin' || user.role === 'admin') {
-      setPermissions(
-        Object.fromEntries(Object.keys(DEFAULT).map((k) => [k, true])) as Record<
-          PermissionKey,
-          boolean
-        >
-      );
-      setLoading(false);
-      return;
-    }
-
-    if (user.role !== 'branch_admin') {
-      setLoading(false);
-      return;
-    }
-
-    apiClient
-      .get('/admin/my-permissions')
-      .then((res) => {
-        if (res.data?.success) {
-          setPermissions({ ...DEFAULT, ...res.data.data.permissions });
-        }
-      })
-      .catch(() => {
-        // Fall back to defaults (all false) on error
-      })
-      .finally(() => setLoading(false));
-  }, [user]);
-
-  const hasPermission = useCallback(
-    (key: PermissionKey) => permissions[key] ?? false,
-    [permissions]
-  );
+  const hasPermission = (key: PermissionKey): boolean => {
+    return permissions[key] ?? false;
+  };
 
   return {
     permissions,
-    loading,
+    loading: isBranchAdmin ? isLoading : false,
     hasPermission,
   };
 }
