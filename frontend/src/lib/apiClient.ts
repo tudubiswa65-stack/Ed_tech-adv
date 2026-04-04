@@ -22,6 +22,18 @@ export const apiClient = axios.create({
   },
 });
 
+// Request interceptor — remove Content-Type for FormData so the browser sets
+// the correct multipart/form-data boundary automatically (fixes file uploads)
+apiClient.interceptors.request.use(
+  (config) => {
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // Response interceptor — handle 401 by redirecting to the correct login page
 apiClient.interceptors.response.use(
   (response) => response,
