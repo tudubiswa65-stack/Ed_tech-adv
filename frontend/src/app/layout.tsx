@@ -4,6 +4,7 @@ import './globals.css';
 import { ToastProvider } from '@/context/ToastContext';
 import { AuthProvider } from '@/hooks/useAuth';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { QueryProvider } from '@/components/providers/QueryProvider';
 import Toast from '@/components/ui/Toast';
 import { instituteConfig } from '@/config/institute.config';
 
@@ -43,10 +44,12 @@ export default function RootLayout({
       <body className="antialiased">
         <ThemeProvider>
           <ToastProvider>
-            <AuthProvider>
-              {children}
-              <Toast />
-            </AuthProvider>
+            <QueryProvider>
+              <AuthProvider>
+                {children}
+                <Toast />
+              </AuthProvider>
+            </QueryProvider>
           </ToastProvider>
         </ThemeProvider>
       </body>

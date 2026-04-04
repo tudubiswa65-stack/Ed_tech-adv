@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import apiClient from '@/lib/apiClient';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
 import Spinner from '@/components/ui/Spinner';
 import PageWrapper from '@/components/layout/PageWrapper';
+import { useStudentResults, useStudentPerformance } from '@/hooks/queries/useStudentQueries';
 
 interface Test {
   id: string;
@@ -45,31 +44,13 @@ interface Performance {
 
 export default function StudentResultsPage() {
   const router = useRouter();
-  const [results, setResults] = useState<Result[]>([]);
-  const [performance, setPerformance] = useState<Performance | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const { data: resultsData, isLoading: resultsLoading } = useStudentResults();
+  const { data: performanceData, isLoading: perfLoading } = useStudentPerformance();
 
-  const fetchData = async () => {
-    try {
-      const [resultsRes, performanceRes] = await Promise.all([
-        apiClient.get('/student/results'),
-        apiClient.get('/student/performance')
-      ]);
-      // Handle standardized responses - use type assertion for compatibility
-      const resultsData = (resultsRes.data as any).success ? (resultsRes.data as any).data : resultsRes.data;
-      const performanceData = (performanceRes.data as any).success ? (performanceRes.data as any).data : performanceRes.data;
-      setResults(resultsData || []);
-      setPerformance(performanceData);
-    } catch (error) {
-      console.error('Error fetching results:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const results: Result[] = (resultsData as Result[]) || [];
+  const performance: Performance | null = (performanceData as Performance) ?? null;
+  const loading = resultsLoading || perfLoading;
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);

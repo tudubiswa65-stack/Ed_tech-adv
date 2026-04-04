@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Button, Spinner, Modal, Input } from '@/components/ui';
@@ -8,6 +8,8 @@ import { apiClient } from '@/lib/apiClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/context/ToastContext';
 import { validateAvatarFile } from '@/lib/avatarValidation';
+import { useStudentDashboard, studentQueryKeys } from '@/hooks/queries/useStudentQueries';
+import { queryClient } from '@/lib/queryClient';
 
 interface Profile {
   id: string;
@@ -77,8 +79,6 @@ function formatDate(dateString: string): string {
 }
 
 export default function StudentProfileDashboard() {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -94,36 +94,25 @@ export default function StudentProfileDashboard() {
   const { error: toastError, success: toastSuccess } = useToast();
   const router = useRouter();
 
-  useEffect(() => {
-    fetchDashboard();
-  }, []);
+  const { data: queryData, isLoading: loading } = useStudentDashboard();
+  const data = queryData as DashboardData | undefined;
 
-  const fetchDashboard = async () => {
-    setLoading(true);
-    try {
-      const response = await apiClient.get('/student/dashboard');
-      const payload = response.data.success && response.data.data
-        ? response.data.data
-        : response.data;
-      setData(payload);
-      if (payload?.profile) {
-        setFormData({
-          name: payload.profile.name || '',
-          phone: payload.profile.phone || '',
-        });
-      }
-    } catch (error) {
-      console.error('Failed to fetch dashboard:', error);
-    } finally {
-      setLoading(false);
+  // Sync profile form fields whenever fresh dashboard data arrives
+  useEffect(() => {
+    if (data?.profile) {
+      setFormData({
+        name: data.profile.name || '',
+        phone: data.profile.phone || '',
+      });
     }
-  };
+  }, [data]);
 
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
       await apiClient.put('/student/profile', formData);
-      setData((prev) =>
+      // Update the cached dashboard data immediately (optimistic update)
+      queryClient.setQueryData(studentQueryKeys.dashboard(), (prev: DashboardData | undefined) =>
         prev && prev.profile
           ? { ...prev, profile: { ...prev.profile, ...formData } }
           : prev
@@ -177,7 +166,8 @@ export default function StudentProfileDashboard() {
       const res = await apiClient.post('/student/profile/avatar', formData);
       const newUrl = res.data?.data?.avatar_url;
       if (newUrl) {
-        setData((prev) =>
+        // Update the cached dashboard data immediately (optimistic update)
+        queryClient.setQueryData(studentQueryKeys.dashboard(), (prev: DashboardData | undefined) =>
           prev && prev.profile ? { ...prev, profile: { ...prev.profile, avatar_url: newUrl } } : prev
         );
         updateUserAvatar(newUrl);
