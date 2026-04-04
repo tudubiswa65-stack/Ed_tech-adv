@@ -377,3 +377,49 @@ export const getMaterialsBySubject = async (req: AuthRequest, res: Response) => 
     res.status(500).json({ error: 'Failed to fetch materials' });
   }
 };
+
+// Generate a signed URL for a material's file
+export const getSignedMaterialUrl = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const instituteId = req.user?.instituteId;
+
+    // Get the material to find its URL
+    let materialQuery = supabaseAdmin
+      .from('study_materials')
+      .select('url, title')
+      .eq('id', id);
+    if (instituteId) {
+      materialQuery = materialQuery.eq('institute_id', instituteId);
+    }
+    const { data: material, error: fetchError } = await materialQuery.single();
+
+    if (fetchError || !material) {
+      return res.status(404).json({ error: 'Material not found' });
+    }
+
+    if (!material.url) {
+      return res.status(400).json({ error: 'Material has no file URL' });
+    }
+
+    // Generate signed URL (valid for 1 hour)
+    // Assumes URL is in format: https://[project].supabase.co/storage/v1/object/public/...
+    const { data: signedData, error: signedError } = await supabaseAdmin.storage
+      .from('materials')
+      .createSignedUrl(material.url.replace(/^.*\/storage\/v1\/object\/public\//, ''), 3600);
+
+    if (signedError) {
+      console.error('Signed URL generation error:', signedError);
+      return res.status(500).json({ error: 'Failed to generate signed URL' });
+    }
+
+    res.json({
+      signedUrl: signedData?.signedUrl,
+      expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
+      materialTitle: material.title,
+    });
+  } catch (error) {
+    console.error('Get signed URL error:', error);
+    res.status(500).json({ error: 'Failed to generate signed URL' });
+  }
+};

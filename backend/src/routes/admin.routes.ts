@@ -29,6 +29,14 @@ import {
 } from '../controllers/admin/payment.controller';
 import { getMyPermissions } from '../controllers/admin/permissions.controller';
 import { getAdminProfile, updateAdminProfile, uploadAdminAvatar } from '../controllers/admin/profile.controller';
+import {
+  getAggregatedDashboard,
+  getAggregatedBranchOverview,
+  getAggregatedStudentsOverview,
+  getAggregatedPaymentsOverview,
+  getAggregatedTestsOverview,
+  getAggregatedNotificationsOverview,
+} from '../controllers/admin/aggregated.controller';
 import { requirePermission } from '../middleware/permissionMiddleware';
 import rateLimit from 'express-rate-limit';
 import { authMiddleware } from '../middleware/authMiddleware';
@@ -69,6 +77,14 @@ router.use(requireRole('admin', 'super_admin', 'branch_admin'));
 
 // Dashboard
 router.get('/dashboard', getDashboardStats);
+
+// Aggregated endpoints (combined data for efficiency)
+router.get('/aggregated/dashboard', getAggregatedDashboard);
+router.get('/aggregated/branch-overview', getAggregatedBranchOverview);
+router.get('/aggregated/students-overview', getAggregatedStudentsOverview);
+router.get('/aggregated/payments-overview', getAggregatedPaymentsOverview);
+router.get('/aggregated/tests-overview', getAggregatedTestsOverview);
+router.get('/aggregated/notifications-overview', getAggregatedNotificationsOverview);
 
 // My Permissions (for branch_admin self-check)
 router.get('/my-permissions', getMyPermissions);
