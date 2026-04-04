@@ -72,7 +72,7 @@ export default function NotificationsPage() {
 
       setShowModal(false);
       resetForm();
-      queryClient.invalidateQueries({ queryKey: adminQueryKeys.notifications(page, { type: filters.type, targetAudience: filters.targetAudience }) });
+      queryClient.invalidateQueries({ queryKey: [...adminQueryKeys.all, 'notifications'] });
     } catch (error) {
       console.error('Error creating notification:', error);
       alert('Failed to create notification');
@@ -85,7 +85,7 @@ export default function NotificationsPage() {
     if (!confirm('Are you sure you want to delete this notification?')) return;
     try {
       await apiClient.delete(`/admin/notifications/${id}`);
-      queryClient.invalidateQueries({ queryKey: adminQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: [...adminQueryKeys.all, 'notifications'] });
     } catch (error) {
       console.error('Error deleting notification:', error);
       alert('Failed to delete notification');
@@ -97,7 +97,7 @@ export default function NotificationsPage() {
     try {
       await apiClient.post(`/admin/notifications/${id}/broadcast`);
       alert('Notification broadcasted successfully');
-      queryClient.invalidateQueries({ queryKey: adminQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: [...adminQueryKeys.all, 'notifications'] });
     } catch (error) {
       console.error('Error broadcasting notification:', error);
       alert('Failed to broadcast notification');

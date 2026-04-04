@@ -77,10 +77,8 @@ export default function TestsPage() {
 
   // React Query hooks — courses cached 30 min; tests list cached 60 s, auto-refetch when filters change
   const { data: courses = [] } = useAdminCourses();
-  const { data: tests = [], isLoading: testsLoading } = useAdminTestsList({
-    courseId: filters.courseId,
-    type: filters.type,
-  });
+  const testsFilterKey = { courseId: filters.courseId, type: filters.type };
+  const { data: tests = [], isLoading: testsLoading } = useAdminTestsList(testsFilterKey);
   const isLoading = testsLoading || loading;
 
   const fetchQuestions = async (testId: string) => {
@@ -114,7 +112,7 @@ export default function TestsPage() {
 
       setShowModal(false);
       resetForm();
-      queryClient.invalidateQueries({ queryKey: adminQueryKeys.testsList({ courseId: filters.courseId, type: filters.type }) });
+      queryClient.invalidateQueries({ queryKey: [...adminQueryKeys.all, 'tests-list'] });
     } catch (error) {
       console.error('Error saving test:', error);
       alert('Failed to save test');
@@ -141,7 +139,7 @@ export default function TestsPage() {
     if (!confirm('Are you sure you want to delete this test?')) return;
     try {
       await apiClient.delete(`/admin/tests/${id}`);
-      queryClient.invalidateQueries({ queryKey: adminQueryKeys.testsList({ courseId: filters.courseId, type: filters.type }) });
+      queryClient.invalidateQueries({ queryKey: [...adminQueryKeys.all, 'tests-list'] });
     } catch (error) {
       console.error('Error deleting test:', error);
       alert('Failed to delete test');
@@ -151,7 +149,7 @@ export default function TestsPage() {
   const handleToggleActive = async (test: Test) => {
     try {
       await apiClient.put(`/admin/tests/${test.id}`, { is_active: !test.is_active });
-      queryClient.invalidateQueries({ queryKey: adminQueryKeys.testsList({ courseId: filters.courseId, type: filters.type }) });
+      queryClient.invalidateQueries({ queryKey: [...adminQueryKeys.all, 'tests-list'] });
     } catch (error) {
       console.error('Error toggling test:', error);
       alert('Failed to update test status');

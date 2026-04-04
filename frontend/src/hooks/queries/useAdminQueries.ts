@@ -165,9 +165,15 @@ export function useAdminDashboardWithPermissions(
 
 // ── Aggregated Endpoints ───────────────────────────────────────────────────────
 
+export interface AggregatedDashboardResponse {
+  stats: AdminDashboardStats;
+  permissions?: Record<string, boolean>;
+  recentActivity?: unknown[];
+}
+
 // Aggregated Dashboard: combines stats + permissions + recent activity
 export function useAggregatedDashboard() {
-  return useQuery({
+  return useQuery<AggregatedDashboardResponse>({
     queryKey: adminQueryKeys.aggregatedDashboard(),
     queryFn: async () => {
       const response = await apiClient.get('/admin/aggregated/dashboard');
