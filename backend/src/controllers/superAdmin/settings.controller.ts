@@ -294,3 +294,45 @@ export const resetSettings = async (req: AuthRequest, res: Response): Promise<vo
     res.status(500).json({ success: false, error: 'Failed to reset settings' });
   }
 };
+
+/**
+ * Aggregate endpoint that returns both settings and feature flags in a single request.
+ * Used by the frontend for efficient data fetching with React Query caching.
+ */
+export const getAggregateSettings = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { data: allSettings, error } = await supabaseAdmin
+      .from('super_admin_settings')
+      .select('*');
+
+    if (error) {
+      console.error('Error fetching aggregate settings:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch settings' });
+      return;
+    }
+
+    // Separate settings into regular settings and feature flags
+    const settings: Record<string, any> = {};
+    const features: Record<string, any> = {};
+
+    allSettings?.forEach((setting) => {
+      const parsedValue = parseValue(setting.key, setting.value);
+      if (BOOLEAN_KEYS.has(setting.key)) {
+        features[setting.key] = parsedValue;
+      } else {
+        settings[setting.key] = parsedValue;
+      }
+    });
+
+    res.json({
+      success: true,
+      data: {
+        settings,
+        features
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching aggregate settings:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch settings' });
+  }
+};

@@ -1,10 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { apiClient } from '@/lib/apiClient';
+import { useState } from 'react';
 import { DataTable } from '@/components/super-admin/DataTable';
 import { StatCard } from '@/components/super-admin/StatCard';
-import { Modal } from '@/components/ui';
+import { Modal, Spinner } from '@/components/ui';
+import {
+  useSuperAdminStudents,
+  useSuperAdminBranches,
+  useCreateStudent,
+  useUpdateStudentStatus,
+  useDeleteStudent,
+  type StudentsFilters,
+} from '@/hooks/queries/useSuperAdminDataQueries';
 
 interface Student {
   id: string;
@@ -18,11 +25,6 @@ interface Student {
   branch_id?: string;
 }
 
-interface Branch {
-  id: string;
-  name: string;
-}
-
 interface StudentForm {
   name: string;
   email: string;
@@ -33,10 +35,6 @@ interface StudentForm {
 }
 
 export default function StudentsPage() {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [branchFilter, setBranchFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -49,49 +47,27 @@ export default function StudentsPage() {
   });
   const [formError, setFormError] = useState('');
 
-  useEffect(() => {
-    fetchBranches();
-  }, []);
-
-  useEffect(() => {
-    fetchStudents();
-  }, [branchFilter, statusFilter, search]);
-
-  const fetchBranches = async () => {
-    try {
-      const res = await apiClient.get('/super-admin/branches');
-      if (res.data.success) setBranches(res.data.data);
-    } catch (err) {
-      console.error('Error fetching branches:', err);
-    }
+  // Build filters object for query key
+  const filters: StudentsFilters = {
+    ...(branchFilter && { branch_id: branchFilter }),
+    ...(statusFilter && { status: statusFilter }),
+    ...(search && { search }),
   };
 
-  const fetchStudents = async () => {
-    setLoading(true);
-    try {
-      const params: Record<string, string> = {};
-      if (branchFilter) params.branch_id = branchFilter;
-      if (statusFilter) params.status = statusFilter;
-      if (search) params.search = search;
-      const res = await apiClient.get('/super-admin/students', { params });
-      if (res.data.success) setStudents(res.data.data);
-    } catch (err) {
-      setError('Failed to load students');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // React Query hooks with caching
+  const { data: students = [], isLoading: studentsLoading, error: studentsError } = useSuperAdminStudents(filters);
+  const { data: branches = [] } = useSuperAdminBranches();
+  const createStudent = useCreateStudent();
+  const updateStudentStatus = useUpdateStudentStatus();
+  const deleteStudent = useDeleteStudent();
 
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
     try {
-      const res = await apiClient.post('/super-admin/students', formData);
-      if (res.data.success) {
-        setIsAddModal(false);
-        setFormData({ name: '', email: '', password: '', phone: '', branch_id: '', roll_number: '' });
-        fetchStudents();
-      }
+      await createStudent.mutateAsync(formData);
+      setIsAddModal(false);
+      setFormData({ name: '', email: '', password: '', phone: '', branch_id: '', roll_number: '' });
     } catch (err: any) {
       setFormError(err.response?.data?.message || 'Failed to add student');
     }
@@ -100,12 +76,9 @@ export default function StudentsPage() {
   const handleUpdateStatus = async () => {
     if (!selectedStudent) return;
     try {
-      const res = await apiClient.put(`/super-admin/students/${selectedStudent.id}/status`, { status: newStatus });
-      if (res.data.success) {
-        setStudents(students.map(s => s.id === selectedStudent.id ? { ...s, status: newStatus } : s));
-        setIsStatusModal(false);
-        setSelectedStudent(null);
-      }
+      await updateStudentStatus.mutateAsync({ id: selectedStudent.id, status: newStatus });
+      setIsStatusModal(false);
+      setSelectedStudent(null);
     } catch (err) {
       alert('Failed to update status');
     }
@@ -114,10 +87,7 @@ export default function StudentsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this student?')) return;
     try {
-      const res = await apiClient.delete(`/super-admin/students/${id}`);
-      if (res.data.success) {
-        setStudents(students.filter(s => s.id !== id));
-      }
+      await deleteStudent.mutateAsync(id);
     } catch (err) {
       alert('Failed to delete student');
     }
@@ -187,12 +157,20 @@ export default function StudentsPage() {
     },
   ];
 
-  if (loading && students.length === 0) {
-    return <div className="flex items-center justify-center h-64 text-gray-500 dark:text-slate-400">Loading students...</div>;
+  if (studentsLoading && students.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Spinner size="lg" />
+      </div>
+    );
   }
 
-  if (error) {
-    return <div className="flex items-center justify-center h-64 text-red-500">{error}</div>;
+  if (studentsError) {
+    return (
+      <div className="flex items-center justify-center h-64 text-red-500">
+        Failed to load students
+      </div>
+    );
   }
 
   return (
@@ -218,7 +196,7 @@ export default function StudentsPage() {
         <select
           value={branchFilter}
           onChange={e => setBranchFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
         >
           <option value="">All Branches</option>
           {branches.map(b => (
@@ -228,7 +206,7 @@ export default function StudentsPage() {
         <select
           value={statusFilter}
           onChange={e => setStatusFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
         >
           <option value="">All Status</option>
           <option value="ACTIVE">Active</option>
@@ -240,7 +218,7 @@ export default function StudentsPage() {
           placeholder="Search students..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-48 dark:border-slate-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-48 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
         />
       </div>
 
@@ -262,7 +240,7 @@ export default function StudentsPage() {
                 type={field.type}
                 value={formData[field.key as keyof StudentForm]}
                 onChange={e => setFormData({ ...formData, [field.key]: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
                 required
               />
             </div>
@@ -272,7 +250,7 @@ export default function StudentsPage() {
             <select
               value={formData.branch_id}
               onChange={e => setFormData({ ...formData, branch_id: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
               required
             >
               <option value="">Select Branch</option>
@@ -298,7 +276,7 @@ export default function StudentsPage() {
           <select
             value={newStatus}
             onChange={e => setNewStatus(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
           >
             <option value="ACTIVE">Active</option>
             <option value="SUSPENDED">Suspended</option>

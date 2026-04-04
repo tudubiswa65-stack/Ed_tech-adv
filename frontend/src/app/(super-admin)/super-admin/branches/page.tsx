@@ -1,9 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { apiClient } from '@/lib/apiClient';
+import { useState } from 'react';
 import { DataTable } from '@/components/super-admin/DataTable';
-import { Modal } from '@/components/ui';
+import { Modal, Spinner } from '@/components/ui';
+import {
+  useSuperAdminBranches,
+  useCreateBranch,
+  useUpdateBranch,
+  useDeleteBranch,
+  useToggleBranchStatus,
+} from '@/hooks/queries/useSuperAdminDataQueries';
 
 interface Branch {
   id: string;
@@ -18,8 +24,6 @@ interface Branch {
 }
 
 export default function BranchesPage() {
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
@@ -29,31 +33,16 @@ export default function BranchesPage() {
     contact_number: '',
   });
 
-  useEffect(() => {
-    fetchBranches();
-  }, []);
-
-  const fetchBranches = async () => {
-    try {
-      const res = await apiClient.get('/super-admin/branches');
-      if (res.data.success) {
-        setBranches(res.data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching branches:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // React Query hooks with caching
+  const { data: branches = [], isLoading, error } = useSuperAdminBranches();
+  const createBranch = useCreateBranch();
+  const updateBranch = useUpdateBranch();
+  const deleteBranch = useDeleteBranch();
+  const toggleBranchStatus = useToggleBranchStatus();
 
   const handleToggleStatus = async (id: string) => {
     try {
-      const res = await apiClient.put(`/super-admin/branches/${id}/toggle-status`);
-      if (res.data.success) {
-        setBranches(branches.map(b =>
-          b.id === id ? { ...b, is_active: res.data.data.is_active } : b
-        ));
-      }
+      await toggleBranchStatus.mutateAsync(id);
     } catch (error) {
       console.error('Error toggling branch status:', error);
     }
@@ -61,12 +50,8 @@ export default function BranchesPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this branch?')) return;
-
     try {
-      const res = await apiClient.delete(`/super-admin/branches/${id}`);
-      if (res.data.success) {
-        setBranches(branches.filter(b => b.id !== id));
-      }
+      await deleteBranch.mutateAsync(id);
     } catch (error) {
       console.error('Error deleting branch:', error);
     }
@@ -74,20 +59,15 @@ export default function BranchesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
-      const endpoint = selectedBranch
-        ? `/super-admin/branches/${selectedBranch.id}`
-        : '/super-admin/branches';
-      const method = selectedBranch ? 'put' : 'post';
-
-      const res = await apiClient[method](endpoint, formData);
-      if (res.data.success) {
-        fetchBranches();
-        setIsModalOpen(false);
-        setSelectedBranch(null);
-        setFormData({ name: '', location: '', contact_number: '' });
+      if (selectedBranch) {
+        await updateBranch.mutateAsync({ id: selectedBranch.id, data: formData });
+      } else {
+        await createBranch.mutateAsync(formData);
       }
+      setIsModalOpen(false);
+      setSelectedBranch(null);
+      setFormData({ name: '', location: '', contact_number: '' });
     } catch (error) {
       console.error('Error saving branch:', error);
     }
@@ -203,8 +183,20 @@ export default function BranchesPage() {
     b.location?.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) {
-    return <div className="flex items-center justify-center h-64">Loading branches...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64 text-red-500">
+        Failed to load branches
+      </div>
+    );
   }
 
   return (
@@ -230,7 +222,7 @@ export default function BranchesPage() {
           placeholder="Search branches..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:border-slate-500"
+          className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
         />
         <svg
           className="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-slate-500"
@@ -247,51 +239,51 @@ export default function BranchesPage() {
 
       {/* Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={selectedBranch ? 'Edit Branch' : 'Add Branch'}>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Branch Name</label>
-              <input
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:border-slate-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Location</label>
-              <input
-                type="text"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:border-slate-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Contact Number</label>
-              <input
-                type="tel"
-                value={formData.contact_number}
-                onChange={(e) => setFormData({ ...formData, contact_number: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:border-slate-500"
-              />
-            </div>
-            <div className="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors dark:bg-slate-800 dark:border-slate-500 dark:hover:bg-slate-700"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-              >
-                {selectedBranch ? 'Update' : 'Create'}
-              </button>
-            </div>
-          </form>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Branch Name</label>
+            <input
+              type="text"
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Location</label>
+            <input
+              type="text"
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Contact Number</label>
+            <input
+              type="tel"
+              value={formData.contact_number}
+              onChange={(e) => setFormData({ ...formData, contact_number: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
+            />
+          </div>
+          <div className="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors dark:bg-slate-800 dark:border-slate-500 dark:hover:bg-slate-700 dark:text-slate-100"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              {selectedBranch ? 'Update' : 'Create'}
+            </button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

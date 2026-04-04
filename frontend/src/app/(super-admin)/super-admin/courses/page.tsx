@@ -1,9 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { apiClient } from '@/lib/apiClient';
+import { useState } from 'react';
 import { DataTable } from '@/components/super-admin/DataTable';
 import { Modal } from '@/components/ui';
+import {
+  useSuperAdminCourses,
+  useSuperAdminBranches,
+  useCreateCourse,
+  useUpdateCourse,
+  useDeleteCourse,
+  useToggleCourseStatus,
+  type CoursesFilters,
+} from '@/hooks/queries/useSuperAdminDataQueries';
+import { Spinner } from '@/components/ui';
 
 interface Course {
   id: string;
@@ -16,11 +25,6 @@ interface Course {
   duration_weeks: number;
   is_active: boolean;
   thumbnail_url?: string;
-}
-
-interface Branch {
-  id: string;
-  name: string;
 }
 
 interface CourseForm {
@@ -38,10 +42,6 @@ const defaultForm: CourseForm = {
 };
 
 export default function CoursesPage() {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [branchFilter, setBranchFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [levelFilter, setLevelFilter] = useState('');
@@ -51,58 +51,42 @@ export default function CoursesPage() {
   const [formData, setFormData] = useState<CourseForm>(defaultForm);
   const [formError, setFormError] = useState('');
 
-  useEffect(() => {
-    fetchBranches();
-  }, []);
-
-  useEffect(() => {
-    fetchCourses();
-  }, [branchFilter, statusFilter, levelFilter, search]);
-
-  const fetchBranches = async () => {
-    try {
-      const res = await apiClient.get('/super-admin/branches');
-      if (res.data.success) setBranches(res.data.data);
-    } catch (err) {
-      console.error('Error fetching branches:', err);
-    }
+  // Build filters object for query key
+  const filters: CoursesFilters = {
+    ...(branchFilter && { branch_id: branchFilter }),
+    ...(statusFilter && { status: statusFilter }),
+    ...(levelFilter && { level: levelFilter }),
+    ...(search && { search }),
   };
 
-  const fetchCourses = async () => {
-    setLoading(true);
-    try {
-      const params: Record<string, string> = {};
-      if (branchFilter) params.branch_id = branchFilter;
-      if (statusFilter) params.status = statusFilter;
-      if (levelFilter) params.level = levelFilter;
-      if (search) params.search = search;
-      const res = await apiClient.get('/super-admin/courses', { params });
-      if (res.data.success) setCourses(res.data.data);
-    } catch (err) {
-      setError('Failed to load courses');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // React Query hooks with caching
+  const { data: courses = [], isLoading: coursesLoading, error: coursesError } = useSuperAdminCourses(filters);
+  const { data: branches = [] } = useSuperAdminBranches();
+  const createCourse = useCreateCourse();
+  const updateCourse = useUpdateCourse();
+  const deleteCourse = useDeleteCourse();
+  const toggleCourseStatus = useToggleCourseStatus();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
+
+    const payload = {
+      ...formData,
+      price: Number(formData.price),
+      duration: Number(formData.duration_weeks),
+      duration_unit: 'weeks',
+    };
+
     try {
-      const payload = {
-        ...formData,
-        price: Number(formData.price),
-        duration_weeks: Number(formData.duration_weeks),
-      };
-      const res = selectedCourse
-        ? await apiClient.put(`/super-admin/courses/${selectedCourse.id}`, payload)
-        : await apiClient.post('/super-admin/courses', payload);
-      if (res.data.success) {
-        setIsModalOpen(false);
-        setSelectedCourse(null);
-        setFormData(defaultForm);
-        fetchCourses();
+      if (selectedCourse) {
+        await updateCourse.mutateAsync({ id: selectedCourse.id, data: payload });
+      } else {
+        await createCourse.mutateAsync(payload);
       }
+      setIsModalOpen(false);
+      setSelectedCourse(null);
+      setFormData(defaultForm);
     } catch (err: any) {
       setFormError(err.response?.data?.message || 'Failed to save course');
     }
@@ -111,8 +95,7 @@ export default function CoursesPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this course?')) return;
     try {
-      const res = await apiClient.delete(`/super-admin/courses/${id}`);
-      if (res.data.success) setCourses(courses.filter(c => c.id !== id));
+      await deleteCourse.mutateAsync(id);
     } catch (err) {
       alert('Failed to delete course');
     }
@@ -120,10 +103,7 @@ export default function CoursesPage() {
 
   const handleToggleStatus = async (id: string) => {
     try {
-      const res = await apiClient.put(`/super-admin/courses/${id}/toggle-status`);
-      if (res.data.success) {
-        setCourses(courses.map(c => c.id === id ? { ...c, is_active: res.data.data.is_active } : c));
-      }
+      await toggleCourseStatus.mutateAsync(id);
     } catch (err) {
       alert('Failed to toggle status');
     }
@@ -206,12 +186,20 @@ export default function CoursesPage() {
     },
   ];
 
-  if (loading && courses.length === 0) {
-    return <div className="flex items-center justify-center h-64 text-gray-500 dark:text-slate-400">Loading courses...</div>;
+  if (coursesLoading && courses.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Spinner size="lg" />
+      </div>
+    );
   }
 
-  if (error) {
-    return <div className="flex items-center justify-center h-64 text-red-500">{error}</div>;
+  if (coursesError) {
+    return (
+      <div className="flex items-center justify-center h-64 text-red-500">
+        Failed to load courses
+      </div>
+    );
   }
 
   return (
@@ -230,7 +218,7 @@ export default function CoursesPage() {
         <select
           value={branchFilter}
           onChange={e => setBranchFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
         >
           <option value="">All Branches</option>
           {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -238,7 +226,7 @@ export default function CoursesPage() {
         <select
           value={statusFilter}
           onChange={e => setStatusFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
         >
           <option value="">All Status</option>
           <option value="active">Active</option>
@@ -247,7 +235,7 @@ export default function CoursesPage() {
         <select
           value={levelFilter}
           onChange={e => setLevelFilter(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
         >
           <option value="">All Levels</option>
           <option value="beginner">Beginner</option>
@@ -259,7 +247,7 @@ export default function CoursesPage() {
           placeholder="Search courses..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-48 dark:border-slate-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-48 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
         />
       </div>
 
@@ -270,15 +258,15 @@ export default function CoursesPage() {
           {formError && <p className="text-sm text-red-600">{formError}</p>}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Course Name</label>
-            <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500" required />
+            <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" required />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Description</label>
-            <textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500" />
+            <textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Branch</label>
-            <select value={formData.branch_id} onChange={e => setFormData({ ...formData, branch_id: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500" required>
+            <select value={formData.branch_id} onChange={e => setFormData({ ...formData, branch_id: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" required>
               <option value="">Select Branch</option>
               {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
@@ -286,7 +274,7 @@ export default function CoursesPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Level</label>
-              <select value={formData.level} onChange={e => setFormData({ ...formData, level: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500">
+              <select value={formData.level} onChange={e => setFormData({ ...formData, level: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100">
                 <option value="beginner">Beginner</option>
                 <option value="intermediate">Intermediate</option>
                 <option value="advanced">Advanced</option>
@@ -294,17 +282,17 @@ export default function CoursesPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Price (₹)</label>
-              <input type="number" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500" required min="0" />
+              <input type="number" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" required min="0" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Duration (weeks)</label>
-              <input type="number" value={formData.duration_weeks} onChange={e => setFormData({ ...formData, duration_weeks: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500" required min="1" />
+              <input type="number" value={formData.duration_weeks} onChange={e => setFormData({ ...formData, duration_weeks: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" required min="1" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Thumbnail URL</label>
-              <input type="text" value={formData.thumbnail_url} onChange={e => setFormData({ ...formData, thumbnail_url: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500" />
+              <input type="text" value={formData.thumbnail_url} onChange={e => setFormData({ ...formData, thumbnail_url: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" />
             </div>
           </div>
           <div className="flex justify-end space-x-3 pt-2">
