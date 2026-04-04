@@ -7,6 +7,13 @@ import { Table, Button, Input, Modal, Badge, Spinner } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
 import { useToast } from '@/context/ToastContext';
 import { usePermissions } from '@/hooks/usePermissions';
+import {
+  useAdminStudents,
+  useAdminCourses,
+  useAdminBranches,
+  adminQueryKeys,
+} from '@/hooks/queries/useAdminQueries';
+import { queryClient } from '@/lib/queryClient';
 
 interface Student {
   id: string;
@@ -33,15 +40,11 @@ interface Branch {
 }
 
 export default function StudentsPage() {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [courseFilter, setCourseFilter] = useState('');
   const [branchFilter, setBranchFilter] = useState('');
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
@@ -60,67 +63,27 @@ export default function StudentsPage() {
   const toast = useToast();
   const { hasPermission } = usePermissions();
 
-  const fetchStudents = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: '20',
-        ...(search && { search }),
-        ...(courseFilter && { course_id: courseFilter }),
-        ...(branchFilter && { branch_id: branchFilter }),
-      });
-
-      const response = await apiClient.get(`/admin/students?${params}`);
-      const responseData = response.data?.success ? response.data.data : response.data;
-      setStudents(responseData?.students || []);
-      setTotal(responseData?.total || 0);
-    } catch (error) {
-      console.error('Failed to fetch students:', error);
-      toast.error('Failed to load students');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchCourses = async () => {
-    try {
-      const response = await apiClient.get('/admin/courses');
-      setCourses(response.data.courses || []);
-    } catch (error) {
-      console.error('Failed to fetch courses:', error);
-    }
-  };
-
-  const fetchBranches = async () => {
-    try {
-      const response = await apiClient.get('/admin/branches');
-      setBranches(response.data.data || []);
-    } catch (error) {
-      console.error('Failed to fetch branches:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchCourses();
-    fetchBranches();
-  }, []);
-
-  useEffect(() => {
-    fetchStudents();
-  }, [page, courseFilter, branchFilter]);
-
+  // Debounce search input — resets page to 1 when search changes
   useEffect(() => {
     const timeout = setTimeout(() => {
-      if (page === 1) {
-        fetchStudents();
-      } else {
-        setPage(1);
-      }
+      setDebouncedSearch(search);
+      setPage(1);
     }, 300);
-
     return () => clearTimeout(timeout);
   }, [search]);
+
+  // React Query hooks — reference data cached for 30 min; student list cached 60 s
+  const { data: coursesData = [] } = useAdminCourses();
+  const { data: branchesData = [] } = useAdminBranches();
+  const { data: studentsData, isLoading: loading } = useAdminStudents({
+    page,
+    search: debouncedSearch,
+    courseId: courseFilter,
+    branchId: branchFilter,
+  });
+
+  const students = studentsData?.students ?? [];
+  const total = studentsData?.total ?? 0;
 
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,7 +94,7 @@ export default function StudentsPage() {
       toast.success('Student created successfully');
       setShowAddModal(false);
       setFormData({ name: '', email: '', password: '', course_id: '', branch_id: '' });
-      fetchStudents();
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.all });
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to create student');
     } finally {
@@ -148,7 +111,7 @@ export default function StudentsPage() {
       toast.success('Student deactivated successfully');
       setShowDeleteModal(false);
       setSelectedStudent(null);
-      fetchStudents();
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.all });
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to deactivate student');
     } finally {
@@ -265,7 +228,7 @@ export default function StudentsPage() {
               onChange={(e) => setBranchFilter(e.target.value)}
             >
               <option value="">All Branches</option>
-              {Array.isArray(branches) && branches.map((branch) => (
+              {Array.isArray(branchesData) && branchesData.map((branch) => (
                 <option key={branch.id} value={branch.id}>
                   {branch.name}
                 </option>
@@ -279,7 +242,7 @@ export default function StudentsPage() {
               onChange={(e) => setCourseFilter(e.target.value)}
             >
               <option value="">All Courses</option>
-              {Array.isArray(courses) && courses.map((course) => (
+              {Array.isArray(coursesData) && coursesData.map((course) => (
                 <option key={course.id} value={course.id}>
                   {course.name}
                 </option>
@@ -364,7 +327,7 @@ export default function StudentsPage() {
                     required
                   >
                     <option value="">Select Branch</option>
-                    {Array.isArray(branches) && branches.map((branch) => (
+                    {Array.isArray(branchesData) && branchesData.map((branch) => (
                       <option key={branch.id} value={branch.id}>
                         {branch.name}
                       </option>
@@ -382,7 +345,7 @@ export default function StudentsPage() {
                     required
                   >
                     <option value="">Select Course</option>
-                    {Array.isArray(courses) && courses.map((course) => (
+                    {Array.isArray(coursesData) && coursesData.map((course) => (
                       <option key={course.id} value={course.id}>
                         {course.name}
                       </option>

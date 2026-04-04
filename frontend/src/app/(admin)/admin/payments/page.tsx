@@ -1,11 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Table, Button, Modal, Badge, Input } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
 import { useToast } from '@/context/ToastContext';
 import { usePermissions } from '@/hooks/usePermissions';
+import {
+  useAdminPayments,
+  useAdminStudents,
+  adminQueryKeys,
+} from '@/hooks/queries/useAdminQueries';
+import { queryClient } from '@/lib/queryClient';
 
 interface Payment {
   id: string;
@@ -36,9 +42,6 @@ interface Student {
 }
 
 export default function AdminPaymentsPage() {
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [students, setStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
@@ -55,32 +58,10 @@ export default function AdminPaymentsPage() {
   const toast = useToast();
   const { hasPermission } = usePermissions();
 
-  useEffect(() => {
-    fetchPayments();
-    fetchStudents();
-  }, []);
-
-  const fetchPayments = async () => {
-    setLoading(true);
-    try {
-      const response = await apiClient.get('/admin/payments');
-      setPayments(response.data.data || []);
-    } catch {
-      toast.error('Failed to load payments');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchStudents = async () => {
-    try {
-      const response = await apiClient.get('/admin/students?limit=100');
-      const d = response.data;
-      setStudents(d?.data?.students || d?.students || []);
-    } catch {
-      toast.error('Failed to load students');
-    }
-  };
+  // React Query hooks — payments list (60s stale) + students reference (60s stale)
+  const { data: payments = [], isLoading: loading } = useAdminPayments();
+  const { data: studentsData } = useAdminStudents({ limit: 100 });
+  const students = studentsData?.students ?? [];
 
   const handleRecordPayment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +74,7 @@ export default function AdminPaymentsPage() {
       toast.success(`Payment recorded! Receipt: ${receiptNum || 'generated'}`);
       setShowAddModal(false);
       setFormData({ student_id: '', amount: '', payment_method: 'Cash', transaction_id: '', description: '', status: 'completed' });
-      fetchPayments();
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.payments() });
     } catch {
       toast.error('Failed to record payment');
     }

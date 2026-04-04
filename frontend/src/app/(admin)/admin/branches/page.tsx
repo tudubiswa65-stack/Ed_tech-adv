@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Table, Button, Input, Modal, Badge } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
 import { useToast } from '@/context/ToastContext';
+import { useAdminBranches, adminQueryKeys } from '@/hooks/queries/useAdminQueries';
+import { queryClient } from '@/lib/queryClient';
 
 interface Branch {
   id: string;
@@ -16,8 +18,7 @@ interface Branch {
 }
 
 export default function BranchesPage() {
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
@@ -31,22 +32,9 @@ export default function BranchesPage() {
 
   const toast = useToast();
 
-  const fetchBranches = async () => {
-    setLoading(true);
-    try {
-      const response = await apiClient.get('/admin/branches');
-      setBranches(response.data.data || []);
-    } catch (error) {
-      console.error('Failed to fetch branches:', error);
-      toast.error('Failed to load branches');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchBranches();
-  }, []);
+  // React Query hook — branches list cached 30 min
+  const { data: branches = [], isLoading: branchesLoading } = useAdminBranches();
+  const isBusy = branchesLoading || loading;
 
   const handleAddBranch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +44,7 @@ export default function BranchesPage() {
       toast.success('Branch created successfully');
       setShowAddModal(false);
       setFormData({ name: '', location: '', contact_number: '', is_active: true });
-      fetchBranches();
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.branches() });
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to create branch');
     } finally {
@@ -73,7 +61,7 @@ export default function BranchesPage() {
       toast.success('Branch updated successfully');
       setShowEditModal(false);
       setSelectedBranch(null);
-      fetchBranches();
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.branches() });
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to update branch');
     } finally {
@@ -137,7 +125,7 @@ export default function BranchesPage() {
       title="Branch Management"
       actions={<Button onClick={() => setShowAddModal(true)}>Add Branch</Button>}
     >
-      <Table columns={columns} data={branches} loading={loading} emptyMessage="No branches found" />
+      <Table columns={columns} data={branches} loading={isBusy} emptyMessage="No branches found" />
 
       {/* Add Branch Modal */}
       <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Add New Branch" size="md">

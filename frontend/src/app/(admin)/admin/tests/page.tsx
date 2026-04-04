@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import apiClient from '@/lib/apiClient';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
@@ -10,6 +10,8 @@ import Input from '@/components/ui/Input';
 import Spinner from '@/components/ui/Spinner';
 import PageWrapper from '@/components/layout/PageWrapper';
 import Switch from '@/components/ui/Switch';
+import { useAdminCourses, useAdminTestsList, adminQueryKeys } from '@/hooks/queries/useAdminQueries';
+import { queryClient } from '@/lib/queryClient';
 
 interface Test {
   id: string;
@@ -43,9 +45,8 @@ interface Question {
 }
 
 export default function TestsPage() {
-  const [tests, setTests] = useState<Test[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showQuestionModal, setShowQuestionModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
@@ -70,40 +71,17 @@ export default function TestsPage() {
     optionD: '',
     correctOption: 'a'
   });
-  const [questions, setQuestions] = useState<Question[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [assignAllCourse, setAssignAllCourse] = useState(true);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
 
-  useEffect(() => {
-    fetchCourses();
-    fetchTests();
-  }, [filters]);
-
-  const fetchCourses = async () => {
-    try {
-      const response = await apiClient.get('/admin/courses');
-      setCourses(response.data.courses || []);
-    } catch (error) {
-      console.error('Error fetching courses:', error);
-    }
-  };
-
-  const fetchTests = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (filters.courseId) params.append('course_id', filters.courseId);
-      if (filters.type) params.append('type', filters.type);
-
-      const response = await apiClient.get<Test[]>(`/admin/tests?${params}`);
-      setTests(response.data || []);
-    } catch (error) {
-      console.error('Error fetching tests:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // React Query hooks — courses cached 30 min; tests list cached 60 s, auto-refetch when filters change
+  const { data: courses = [] } = useAdminCourses();
+  const { data: tests = [], isLoading: testsLoading } = useAdminTestsList({
+    courseId: filters.courseId,
+    type: filters.type,
+  });
+  const isLoading = testsLoading || loading;
 
   const fetchQuestions = async (testId: string) => {
     try {
@@ -136,7 +114,7 @@ export default function TestsPage() {
 
       setShowModal(false);
       resetForm();
-      fetchTests();
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.testsList({ courseId: filters.courseId, type: filters.type }) });
     } catch (error) {
       console.error('Error saving test:', error);
       alert('Failed to save test');
@@ -163,7 +141,7 @@ export default function TestsPage() {
     if (!confirm('Are you sure you want to delete this test?')) return;
     try {
       await apiClient.delete(`/admin/tests/${id}`);
-      fetchTests();
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.testsList({ courseId: filters.courseId, type: filters.type }) });
     } catch (error) {
       console.error('Error deleting test:', error);
       alert('Failed to delete test');
@@ -173,7 +151,7 @@ export default function TestsPage() {
   const handleToggleActive = async (test: Test) => {
     try {
       await apiClient.put(`/admin/tests/${test.id}`, { is_active: !test.is_active });
-      fetchTests();
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.testsList({ courseId: filters.courseId, type: filters.type }) });
     } catch (error) {
       console.error('Error toggling test:', error);
       alert('Failed to update test status');
@@ -358,7 +336,7 @@ export default function TestsPage() {
         </Card>
 
         {/* Tests Table */}
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center py-12">
             <Spinner />
           </div>

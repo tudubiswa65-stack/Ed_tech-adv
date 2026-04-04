@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import apiClient from '@/lib/apiClient';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
@@ -10,6 +10,8 @@ import Input from '@/components/ui/Input';
 import Spinner from '@/components/ui/Spinner';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useAdminNotifications, adminQueryKeys } from '@/hooks/queries/useAdminQueries';
+import { queryClient } from '@/lib/queryClient';
 
 interface Notification {
   id: string;
@@ -34,10 +36,7 @@ interface NotificationsResponse {
 }
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [filters, setFilters] = useState({ type: '', targetAudience: '' });
@@ -52,29 +51,10 @@ export default function NotificationsPage() {
 
   const { hasPermission } = usePermissions();
 
-  useEffect(() => {
-    fetchNotifications();
-  }, [page, filters]);
-
-  const fetchNotifications = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.append('page', page.toString());
-      params.append('limit', '15');
-      if (filters.type) params.append('type', filters.type);
-      if (filters.targetAudience) params.append('targetAudience', filters.targetAudience);
-
-      const response = await apiClient.get<NotificationsResponse>(`/admin/notifications?${params}`);
-      const responseData = (response.data as any)?.success ? (response.data as any).data : response.data;
-      setNotifications(responseData?.notifications || []);
-      setTotalPages(responseData?.pagination?.totalPages ?? 1);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // React Query hook — notifications list cached 60 s, auto-refetch on page/filter change
+  const { data, isLoading: loading } = useAdminNotifications(page, filters);
+  const notifications = data?.notifications ?? [];
+  const totalPages = data?.totalPages ?? 1;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,12 +68,11 @@ export default function NotificationsPage() {
         actionUrl: formData.actionUrl || undefined,
         scheduledAt: formData.scheduledAt || undefined
       };
-      console.log("Payload:", payload);
       await apiClient.post('/admin/notifications', payload);
 
       setShowModal(false);
       resetForm();
-      fetchNotifications();
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.notifications(page, { type: filters.type, targetAudience: filters.targetAudience }) });
     } catch (error) {
       console.error('Error creating notification:', error);
       alert('Failed to create notification');
@@ -106,7 +85,7 @@ export default function NotificationsPage() {
     if (!confirm('Are you sure you want to delete this notification?')) return;
     try {
       await apiClient.delete(`/admin/notifications/${id}`);
-      fetchNotifications();
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.all });
     } catch (error) {
       console.error('Error deleting notification:', error);
       alert('Failed to delete notification');
@@ -118,7 +97,7 @@ export default function NotificationsPage() {
     try {
       await apiClient.post(`/admin/notifications/${id}/broadcast`);
       alert('Notification broadcasted successfully');
-      fetchNotifications();
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.all });
     } catch (error) {
       console.error('Error broadcasting notification:', error);
       alert('Failed to broadcast notification');
