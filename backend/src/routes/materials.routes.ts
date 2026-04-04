@@ -12,9 +12,6 @@ import {
 
 const router = Router();
 
-// All routes require admin authentication
-router.use(authenticate, requireAdmin);
-
 // Materials management
 router.get('/', getMaterials);
 router.get('/:id', getMaterialById);

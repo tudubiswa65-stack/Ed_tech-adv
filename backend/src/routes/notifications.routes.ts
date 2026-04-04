@@ -16,9 +16,6 @@ import {
 
 const router = Router();
 
-// All routes require admin authentication
-router.use(authenticate, requireAdmin);
-
 // Notifications
 router.get('/', getNotifications);
 router.post('/', createNotification);

@@ -17,10 +17,6 @@ import { requireRole } from '../middleware/roleMiddleware';
 
 const router = Router();
 
-// All routes require authentication and admin role (including branch_admin)
-router.use(authMiddleware);
-router.use(requireRole('admin', 'super_admin', 'branch_admin'));
-
 // Course routes
 router.get('/', getCourses);
 router.post('/', createCourse);

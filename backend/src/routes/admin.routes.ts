@@ -35,6 +35,14 @@ import { authMiddleware } from '../middleware/authMiddleware';
 import { requireRole } from '../middleware/roleMiddleware';
 import multer from 'multer';
 
+// Import sub-routers
+import courseRoutes from './course.routes';
+import testRoutes from './test.routes';
+import resultsRoutes from './results.routes';
+import materialsRoutes from './materials.routes';
+import notificationsRoutes from './notifications.routes';
+import settingsRoutes from './settings.routes';
+
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -96,5 +104,13 @@ router.post('/payments', paymentRecordLimiter, requirePermission('manage_fees'),
 router.put('/payments/:id', requirePermission('issue_receipts'), updatePaymentStatus);
 router.get('/payments/:id/receipt', requirePermission('issue_receipts'), getPaymentReceipt);
 router.get('/payments/:id/verify', verifyPayment);
+
+// Mount sub-routers
+router.use('/courses', courseRoutes);
+router.use('/tests', testRoutes);
+router.use('/results', resultsRoutes);
+router.use('/materials', materialsRoutes);
+router.use('/notifications', notificationsRoutes);
+router.use('/settings', settingsRoutes);
 
 export default router;
