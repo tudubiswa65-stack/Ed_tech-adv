@@ -174,7 +174,7 @@ export default function MobileBottomNav({ role }: { role: Role }) {
     <nav
       className={`fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t ${isStudentRole || isAdminRole ? '' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 shadow-[0_-4px_12px_rgba(0,0,0,0.08)]'}`}
       style={(isStudentRole || isAdminRole)
-        ? { background: '#0b1120', borderColor: 'rgba(255,255,255,0.06)', paddingBottom: 'env(safe-area-inset-bottom)' }
+        ? { background: '#0b1120', borderTopWidth: '0.5px', borderColor: 'rgba(255,255,255,0.06)', paddingBottom: 'env(safe-area-inset-bottom)' }
         : undefined}
       aria-label="Mobile navigation"
     >
