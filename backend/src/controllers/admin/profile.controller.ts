@@ -1,9 +1,10 @@
 import { Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
 import { AuthRequest } from '../../types';
+import { toSignedAvatarUrl } from '../../utils/avatarUrl';
 
-// NOTE: Requires a public 'avatars' bucket in Supabase Storage.
-// Create the bucket via the Supabase dashboard: Storage → New bucket → name: "avatars" → Public: true
+// NOTE: Requires a PRIVATE 'avatars' bucket in Supabase Storage.
+// Create the bucket via the Supabase dashboard: Storage → New bucket → name: "avatars" → Public: false
 
 // Get admin profile
 export const getAdminProfile = async (req: AuthRequest, res: Response) => {
@@ -21,7 +22,9 @@ export const getAdminProfile = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, error: 'Profile not found' });
     }
 
-    res.json({ success: true, data });
+    const signedAvatarUrl = await toSignedAvatarUrl(data.avatar_url);
+
+    res.json({ success: true, data: { ...data, avatar_url: signedAvatarUrl } });
   } catch (error) {
     console.error('Get admin profile error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch profile' });
@@ -95,24 +98,50 @@ export const uploadAdminAvatar = async (req: AuthRequest, res: Response) => {
       return res.status(500).json({ success: false, error: 'Failed to upload image' });
     }
 
-    const { data: { publicUrl } } = supabaseAdmin.storage
-      .from('avatars')
-      .getPublicUrl(filePath);
-
+    // Store the file path (not a public URL) so the bucket can remain private.
     const { error: updateError } = await supabaseAdmin
       .from('users')
-      .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+      .update({ avatar_url: filePath, updated_at: new Date().toISOString() })
       .eq('id', adminId);
 
     if (updateError) {
       return res.status(500).json({ success: false, error: 'Failed to update profile' });
     }
 
-    res.json({ success: true, data: { avatar_url: publicUrl } });
+    // Generate a short-lived signed URL so the frontend never receives a raw
+    // storage URL and the bucket stays private.
+    const signedAvatarUrl = await toSignedAvatarUrl(filePath);
+
+    res.json({ success: true, data: { avatar_url: signedAvatarUrl } });
   } catch (error) {
     console.error('Upload admin avatar error:', error);
     res.status(500).json({ success: false, error: 'Failed to upload avatar' });
   }
 };
 
-export default { getAdminProfile, updateAdminProfile, uploadAdminAvatar };
+export default { getAdminProfile, updateAdminProfile, uploadAdminAvatar, getAdminAvatarUrl };
+
+// Get a fresh signed URL for the current admin's avatar
+export async function getAdminAvatarUrl(req: AuthRequest, res: Response) {
+  try {
+    const adminId = req.user?.id;
+
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .select('avatar_url')
+      .eq('id', adminId)
+      .in('role', ['admin', 'super_admin', 'branch_admin'])
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ success: false, error: 'Profile not found' });
+    }
+
+    const signedAvatarUrl = await toSignedAvatarUrl(data.avatar_url);
+
+    res.json({ success: true, data: { avatar_url: signedAvatarUrl } });
+  } catch (error) {
+    console.error('Get admin avatar URL error:', error);
+    res.status(500).json({ success: false, error: 'Failed to generate avatar URL' });
+  }
+}

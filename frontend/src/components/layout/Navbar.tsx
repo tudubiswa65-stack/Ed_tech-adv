@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/context/ThemeContext';
 import { useToast } from '@/context/ToastContext';
 import { apiClient } from '@/lib/apiClient';
-import { validateAvatarFile, addAvatarCacheBuster } from '@/lib/avatarValidation';
+import { validateAvatarFile } from '@/lib/avatarValidation';
 
 interface NavbarProps {
   title: string;
@@ -53,9 +53,9 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
       const res = await apiClient.post(endpoint, formData);
       const newUrl = res.data?.data?.avatar_url;
       if (newUrl) {
-        // Append cache-buster so the browser fetches the fresh image even though
-        // Supabase upsert keeps the same public URL path.
-        updateUserAvatar(addAvatarCacheBuster(newUrl));
+        // The backend returns a signed URL (unique per generation), so no
+        // cache-busting is needed — every signed URL has a distinct token.
+        updateUserAvatar(newUrl);
       }
       toastSuccess('Profile photo updated successfully.');
     } catch (err) {

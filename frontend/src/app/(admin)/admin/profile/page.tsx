@@ -7,7 +7,7 @@ import { Card, Button, Input, Spinner } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/context/ToastContext';
-import { validateAvatarFile, addAvatarCacheBuster } from '@/lib/avatarValidation';
+import { validateAvatarFile } from '@/lib/avatarValidation';
 
 interface AdminProfile {
   id: string;
@@ -78,9 +78,10 @@ export default function AdminProfilePage() {
       const res = await apiClient.post('/admin/profile/avatar', formData);
       const newUrl = res.data?.data?.avatar_url;
       if (newUrl) {
-        const cacheBustedUrl = addAvatarCacheBuster(newUrl);
-        setProfile((p) => p ? { ...p, avatar_url: cacheBustedUrl } : p);
-        updateUserAvatar(cacheBustedUrl);
+        // The backend returns a signed URL (unique per generation), so no
+        // cache-busting is needed — every signed URL has a distinct token.
+        setProfile((p) => p ? { ...p, avatar_url: newUrl } : p);
+        updateUserAvatar(newUrl);
         toastSuccess('Profile photo updated successfully.');
       }
     } catch (err) {

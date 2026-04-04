@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
 import bcrypt from 'bcryptjs';
 import { JWTPayload } from '../../types';
+import { toSignedAvatarUrl } from '../../utils/avatarUrl';
 
 interface AuthRequest extends Request {
   user?: JWTPayload;
@@ -39,7 +40,9 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, error: 'Profile not found' });
     }
 
-    res.json({ success: true, data });
+    const signedAvatarUrl = await toSignedAvatarUrl(data.avatar_url);
+
+    res.json({ success: true, data: { ...data, avatar_url: signedAvatarUrl } });
   } catch (error) {
     console.error('Get profile error:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch profile' });
@@ -236,8 +239,8 @@ export const updateNotificationPreferences = async (req: AuthRequest, res: Respo
 };
 
 // Upload student avatar
-// NOTE: Requires a public 'avatars' bucket in Supabase Storage.
-// Create the bucket via the Supabase dashboard: Storage → New bucket → name: "avatars" → Public: true
+// NOTE: Requires a PRIVATE 'avatars' bucket in Supabase Storage.
+// Create the bucket via the Supabase dashboard: Storage → New bucket → name: "avatars" → Public: false
 export const uploadAvatar = async (req: AuthRequest, res: Response) => {
   try {
     const studentId = req.user?.id;
@@ -273,15 +276,11 @@ export const uploadAvatar = async (req: AuthRequest, res: Response) => {
       return res.status(500).json({ success: false, error: 'Failed to upload image' });
     }
 
-    const { data: { publicUrl } } = supabaseAdmin.storage
-      .from('avatars')
-      .getPublicUrl(filePath);
-
-    // Update the users table so the auth context (/auth/me) returns the new avatar_url.
-    // This is the source of truth for the navbar and auth state.
+    // Store the file path (not a public URL) so the bucket can remain private.
+    // Update the users table so the auth context (/auth/me) returns the new avatar.
     const { error: usersUpdateError } = await supabaseAdmin
       .from('users')
-      .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+      .update({ avatar_url: filePath, updated_at: new Date().toISOString() })
       .eq('id', studentId)
       .eq('role', 'student');
 
@@ -291,19 +290,21 @@ export const uploadAvatar = async (req: AuthRequest, res: Response) => {
     }
 
     // Also update the students table for the student profile page.
-    // Use only studentId as the filter since instituteId may not be in the JWT payload.
     const { error: studentsUpdateError } = await supabaseAdmin
       .from('students')
-      .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+      .update({ avatar_url: filePath, updated_at: new Date().toISOString() })
       .eq('id', studentId);
 
     if (studentsUpdateError) {
       // Non-fatal: the users table (auth source of truth) was already updated.
-      // Log so that any data-sync issues are visible in server logs.
       console.error('Failed to sync avatar_url to students table:', studentsUpdateError);
     }
 
-    res.json({ success: true, data: { avatar_url: publicUrl } });
+    // Generate a short-lived signed URL so the frontend never receives a raw
+    // storage URL and the bucket stays private.
+    const signedAvatarUrl = await toSignedAvatarUrl(filePath);
+
+    res.json({ success: true, data: { avatar_url: signedAvatarUrl } });
   } catch (error) {
     console.error('Upload avatar error:', error);
     res.status(500).json({ success: false, error: 'Failed to upload avatar' });
@@ -319,4 +320,31 @@ export default {
   getNotificationPreferences,
   updateNotificationPreferences,
   uploadAvatar,
+  getStudentAvatarUrl,
 };
+
+// Get a fresh signed URL for the current student's avatar
+export async function getStudentAvatarUrl(req: AuthRequest, res: Response) {
+  try {
+    const studentId = req.user?.id;
+    const instituteId = req.user?.instituteId;
+
+    const { data, error } = await supabaseAdmin
+      .from('students')
+      .select('avatar_url')
+      .eq('id', studentId)
+      .eq('institute_id', instituteId)
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ success: false, error: 'Profile not found' });
+    }
+
+    const signedAvatarUrl = await toSignedAvatarUrl(data.avatar_url);
+
+    res.json({ success: true, data: { avatar_url: signedAvatarUrl } });
+  } catch (error) {
+    console.error('Get student avatar URL error:', error);
+    res.status(500).json({ success: false, error: 'Failed to generate avatar URL' });
+  }
+}
