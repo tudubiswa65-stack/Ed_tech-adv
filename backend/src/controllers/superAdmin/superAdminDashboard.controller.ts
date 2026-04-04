@@ -2,15 +2,13 @@ import { Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
 import { AuthRequest } from '../../types';
 
-/** Returns labels for the last 12 calendar months, oldest first (e.g. "Jan 24"). */
-function getLast12MonthKeys(): string[] {
-  const keys: string[] = [];
-  const now = new Date();
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    keys.push(d.toLocaleString('en-US', { month: 'short', year: '2-digit' }));
-  }
-  return keys;
+/** Returns labels for Jan–Dec of the current calendar year (e.g. "Jan 25"). */
+function getCalendarYearMonthKeys(): string[] {
+  const year = new Date().getFullYear();
+  return Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(year, i, 1);
+    return d.toLocaleString('en-US', { month: 'short', year: '2-digit' });
+  });
 }
 
 export const getDashboardStats = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -60,10 +58,8 @@ export const getDashboardStats = async (req: AuthRequest, res: Response): Promis
 
 export const getStudentGrowth = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const monthKeys = getLast12MonthKeys();
-    const startDate = new Date();
-    startDate.setMonth(startDate.getMonth() - 11);
-    startDate.setDate(1);
+    const monthKeys = getCalendarYearMonthKeys();
+    const startDate = new Date(new Date().getFullYear(), 0, 1);   // Jan 1 of current year
     startDate.setHours(0, 0, 0, 0);
 
     // Try the RPC first; fall back to a direct table query when it is unavailable
@@ -104,10 +100,8 @@ export const getStudentGrowth = async (req: AuthRequest, res: Response): Promise
 
 export const getRevenueAnalytics = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const monthKeys = getLast12MonthKeys();
-    const startDate = new Date();
-    startDate.setMonth(startDate.getMonth() - 11);
-    startDate.setDate(1);
+    const monthKeys = getCalendarYearMonthKeys();
+    const startDate = new Date(new Date().getFullYear(), 0, 1);   // Jan 1 of current year
     startDate.setHours(0, 0, 0, 0);
 
     const { data: payments } = await supabaseAdmin

@@ -72,8 +72,8 @@ function MiniBarChart({
   inactiveLabelColor: string;
 }) {
   const emptyFallback = Array.from({ length: CHART_MONTHS }, (_, i) => {
-    const now = new Date();
-    const d = new Date(now.getFullYear(), now.getMonth() - (CHART_MONTHS - 1 - i), 1);
+    const year = new Date().getFullYear();
+    const d = new Date(year, i, 1);
     return { month: d.toLocaleString('en-US', { month: 'short', year: '2-digit' }), [valueKey]: 0 };
   });
   const display = data.length > 0 ? data : emptyFallback;
@@ -272,15 +272,15 @@ export default function SuperAdminDashboard() {
   const presentDash       = (presentPct / 100) * C;
   const remainingDash     = ((100 - presentPct) / 100) * C;   // amber covers absent + late
 
-  // ── Chart data (fixed 12 months from backend) ────────────────────────────────
-  const getLast12MonthLabels = () => {
-    const now = new Date();
+  // ── Chart data (fixed Jan–Dec of current year from backend) ─────────────────
+  const getCalendarYearLabels = () => {
+    const year = new Date().getFullYear();
     return Array.from({ length: CHART_MONTHS }, (_, i) => {
-      const d = new Date(now.getFullYear(), now.getMonth() - (CHART_MONTHS - 1 - i), 1);
+      const d = new Date(year, i, 1);
       return d.toLocaleString('en-US', { month: 'short', year: '2-digit' });
     });
   };
-  const emptyMonths = getLast12MonthLabels();
+  const emptyMonths = getCalendarYearLabels();
   const growthSlice  = studentGrowth.length > 0 ? studentGrowth : emptyMonths.map(month => ({ month, count: 0 }));
   const revenueSlice = revenue.length > 0 ? revenue : emptyMonths.map(month => ({ month, revenue: 0 }));
   const growthMax    = Math.max(...growthSlice.map(d => d.count   ?? 0), 1);
