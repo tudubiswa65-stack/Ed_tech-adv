@@ -7,7 +7,8 @@ import {
   updateMaterial,
   deleteMaterial,
   togglePublish,
-  getMaterialsBySubject
+  getMaterialsBySubject,
+  getSignedMaterialUrl
 } from '../controllers/admin/materials.controller';
 
 const router = Router();
@@ -25,5 +26,8 @@ router.patch('/:id/publish', togglePublish);
 
 // Get materials by subject
 router.get('/subject/:subjectId', getMaterialsBySubject);
+
+// Signed URL for material file access
+router.get('/:id/signed-url', getSignedMaterialUrl);
 
 export default router;

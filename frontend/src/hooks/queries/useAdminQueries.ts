@@ -7,6 +7,13 @@ import { permissionsQueryKeys, fetchMyPermissions, PermissionKey } from '@/hooks
 export const adminQueryKeys = {
   all: ['admin'] as const,
   dashboard: () => [...adminQueryKeys.all, 'dashboard'] as const,
+  aggregatedDashboard: () => [...adminQueryKeys.all, 'aggregated', 'dashboard'] as const,
+  aggregatedBranchOverview: () => [...adminQueryKeys.all, 'aggregated', 'branch-overview'] as const,
+  aggregatedStudentsOverview: (page?: number, limit?: number) =>
+    [...adminQueryKeys.all, 'aggregated', 'students-overview', { page, limit }] as const,
+  aggregatedPaymentsOverview: () => [...adminQueryKeys.all, 'aggregated', 'payments-overview'] as const,
+  aggregatedTestsOverview: () => [...adminQueryKeys.all, 'aggregated', 'tests-overview'] as const,
+  aggregatedNotificationsOverview: () => [...adminQueryKeys.all, 'aggregated', 'notifications-overview'] as const,
   branches: () => [...adminQueryKeys.all, 'branches'] as const,
   courses: () => [...adminQueryKeys.all, 'courses'] as const,
   attendance: (branch: string, course: string, date: string) =>
@@ -147,4 +154,79 @@ export function useAdminDashboardWithPermissions(
     isError,
     error,
   };
+}
+
+// ── Aggregated Endpoints ───────────────────────────────────────────────────────
+
+// Aggregated Dashboard: combines stats + permissions + recent activity
+export function useAggregatedDashboard() {
+  return useQuery({
+    queryKey: adminQueryKeys.aggregatedDashboard(),
+    queryFn: async () => {
+      const response = await apiClient.get('/admin/aggregated/dashboard');
+      return response.data.data ?? response.data;
+    },
+    // 60 second stale time for aggregated data
+    staleTime: 60 * 1000,
+  });
+}
+
+// Aggregated Branch Overview: branches + courses + student counts
+export function useAggregatedBranchOverview() {
+  return useQuery({
+    queryKey: adminQueryKeys.aggregatedBranchOverview(),
+    queryFn: async () => {
+      const response = await apiClient.get('/admin/aggregated/branch-overview');
+      return response.data.data ?? response.data;
+    },
+    staleTime: 120 * 1000, // 2 minutes for reference data
+  });
+}
+
+// Aggregated Students Overview: students + recent results + attendance
+export function useAggregatedStudentsOverview(page = 1, limit = 20) {
+  return useQuery({
+    queryKey: adminQueryKeys.aggregatedStudentsOverview(page, limit),
+    queryFn: async () => {
+      const response = await apiClient.get(`/admin/aggregated/students-overview?page=${page}&limit=${limit}`);
+      return response.data.data ?? response.data;
+    },
+    staleTime: 60 * 1000,
+  });
+}
+
+// Aggregated Payments Overview: payments + receipts + defaulters
+export function useAggregatedPaymentsOverview() {
+  return useQuery({
+    queryKey: adminQueryKeys.aggregatedPaymentsOverview(),
+    queryFn: async () => {
+      const response = await apiClient.get('/admin/aggregated/payments-overview');
+      return response.data.data ?? response.data;
+    },
+    staleTime: 120 * 1000,
+  });
+}
+
+// Aggregated Tests Overview: tests + results + analytics
+export function useAggregatedTestsOverview() {
+  return useQuery({
+    queryKey: adminQueryKeys.aggregatedTestsOverview(),
+    queryFn: async () => {
+      const response = await apiClient.get('/admin/aggregated/tests-overview');
+      return response.data.data ?? response.data;
+    },
+    staleTime: 60 * 1000,
+  });
+}
+
+// Aggregated Notifications Overview: notifications + read status + stats
+export function useAggregatedNotificationsOverview() {
+  return useQuery({
+    queryKey: adminQueryKeys.aggregatedNotificationsOverview(),
+    queryFn: async () => {
+      const response = await apiClient.get('/admin/aggregated/notifications-overview');
+      return response.data.data ?? response.data;
+    },
+    staleTime: 60 * 1000,
+  });
 }
