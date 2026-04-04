@@ -1,18 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { apiClient } from '@/lib/apiClient';
+import {
+  useSuperAdminStats,
+  useSuperAdminStudentGrowth,
+  useSuperAdminRevenue,
+  useSuperAdminAttendance,
+  useSuperAdminTopBranches,
+} from '@/hooks/queries/useSuperAdminQueries';
 
-interface DashboardStats {
-  totalBranches: number;
-  totalStudents: number;
-  totalRevenue: number;
-  activeCourses: number;
-  totalCourses: number;
-  totalTests: number;
-}
 
 // ─── Section label ───────────────────────────────────────────────────────────
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -213,38 +210,14 @@ function fmtRevenue(val: number) {
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function SuperAdminDashboard() {
   const { user } = useAuth();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [studentGrowth, setStudentGrowth] = useState<any[]>([]);
-  const [revenueData, setRevenueData] = useState<any[]>([]);
-  const [attendanceData, setAttendanceData] = useState<any[]>([]);
-  const [topBranches, setTopBranches] = useState<any[]>([]);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  const { data: stats, isLoading: statsLoading, isError: statsError } = useSuperAdminStats();
+  const { data: studentGrowth = [] } = useSuperAdminStudentGrowth();
+  const { data: revenueData = [] } = useSuperAdminRevenue();
+  const { data: attendanceData = [] } = useSuperAdminAttendance();
+  const { data: topBranches = [] } = useSuperAdminTopBranches();
 
-  const fetchDashboardData = async () => {
-    try {
-      const [statsRes, growthRes, revenueRes, attendanceRes, branchesRes] = await Promise.allSettled([
-        apiClient.get('/super-admin/dashboard/stats'),
-        apiClient.get('/super-admin/dashboard/student-growth'),
-        apiClient.get('/super-admin/dashboard/revenue'),
-        apiClient.get('/super-admin/dashboard/attendance'),
-        apiClient.get('/super-admin/dashboard/top-branches'),
-      ]);
-
-      if (statsRes.status === 'fulfilled' && statsRes.value.data.success) setStats(statsRes.value.data.data);
-      if (growthRes.status === 'fulfilled' && growthRes.value.data.success) setStudentGrowth(growthRes.value.data.data);
-      if (revenueRes.status === 'fulfilled' && revenueRes.value.data.success) setRevenueData(revenueRes.value.data.data);
-      if (attendanceRes.status === 'fulfilled' && attendanceRes.value.data.success) setAttendanceData(attendanceRes.value.data.data);
-      if (branchesRes.status === 'fulfilled' && branchesRes.value.data.success) setTopBranches(branchesRes.value.data.data);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const loading = statsLoading;
 
   // ── Derived user display values ──────────────────────────────────────────────
   const initials = user?.name
@@ -264,7 +237,7 @@ export default function SuperAdminDashboard() {
     );
   }
 
-  if (!stats) {
+  if (statsError) {
     return (
       <div style={{ background: '#0f172a', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <span style={{ color: '#f87171', fontSize: 14 }}>Failed to load dashboard data</span>
@@ -272,10 +245,20 @@ export default function SuperAdminDashboard() {
     );
   }
 
+  // Render stat values with safe fallbacks while secondary queries load
+  const safeStats = stats ?? {
+    totalBranches: 0,
+    totalStudents: 0,
+    totalRevenue: 0,
+    activeCourses: 0,
+    totalCourses: 0,
+    totalTests: 0,
+  };
+
   // ── Attendance percentages ───────────────────────────────────────────────────
   const attMap: Record<string, number> = {};
   attendanceData.forEach(item => {
-    const k = String(item.label ?? item.name ?? '').toLowerCase();
+    const k = String(item.label ?? '').toLowerCase();
     attMap[k] = Number(item.value ?? 0);
   });
   const attTotal = Math.max(Object.values(attMap).reduce((a, b) => a + b, 0), 1);
@@ -360,12 +343,12 @@ export default function SuperAdminDashboard() {
         {/* ── Stats grid ──────────────────────────────────────────────────────────── */}
         <SectionLabel>Overview</SectionLabel>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 20 }}>
-          <StatCell icon={<BranchIcon />}       badgeBg="rgba(59,130,246,0.15)"  iconColor="#60a5fa" value={stats.totalBranches}  valueColor="#fff"     label="Branches" />
-          <StatCell icon={<StudentsIcon />}      badgeBg="rgba(52,211,153,0.12)"  iconColor="#34d399" value={stats.totalStudents}  valueColor="#34d399"  label="Students" />
-          <StatCell icon={<RevenueIcon />}       badgeBg="rgba(251,191,36,0.12)"  iconColor="#fbbf24" value={fmtRevenue(stats.totalRevenue)} valueColor="#fbbf24" label="Revenue" />
-          <StatCell icon={<CoursesIcon />}       badgeBg="rgba(99,102,241,0.15)"  iconColor="#818cf8" value={stats.totalCourses}   valueColor="#818cf8"  label="Courses" />
-          <StatCell icon={<ActiveCoursesIcon />} badgeBg="rgba(251,146,60,0.12)"  iconColor="#fb923c" value={stats.activeCourses}  valueColor="#fb923c"  label="Active" />
-          <StatCell icon={<TestsIcon />}         badgeBg="rgba(244,114,182,0.12)" iconColor="#f472b6" value={stats.totalTests}     valueColor="#f472b6"  label="Tests" />
+          <StatCell icon={<BranchIcon />}       badgeBg="rgba(59,130,246,0.15)"  iconColor="#60a5fa" value={safeStats.totalBranches}  valueColor="#fff"     label="Branches" />
+          <StatCell icon={<StudentsIcon />}      badgeBg="rgba(52,211,153,0.12)"  iconColor="#34d399" value={safeStats.totalStudents}  valueColor="#34d399"  label="Students" />
+          <StatCell icon={<RevenueIcon />}       badgeBg="rgba(251,191,36,0.12)"  iconColor="#fbbf24" value={fmtRevenue(safeStats.totalRevenue)} valueColor="#fbbf24" label="Revenue" />
+          <StatCell icon={<CoursesIcon />}       badgeBg="rgba(99,102,241,0.15)"  iconColor="#818cf8" value={safeStats.totalCourses}   valueColor="#818cf8"  label="Courses" />
+          <StatCell icon={<ActiveCoursesIcon />} badgeBg="rgba(251,146,60,0.12)"  iconColor="#fb923c" value={safeStats.activeCourses}  valueColor="#fb923c"  label="Active" />
+          <StatCell icon={<TestsIcon />}         badgeBg="rgba(244,114,182,0.12)" iconColor="#f472b6" value={safeStats.totalTests}     valueColor="#f472b6"  label="Tests" />
         </div>
 
         {/* ── Student Growth chart ─────────────────────────────────────────────────── */}
@@ -400,7 +383,7 @@ export default function SuperAdminDashboard() {
               fontSize: 11, background: 'rgba(251,191,36,0.12)', color: '#fbbf24',
               border: '1px solid rgba(251,191,36,0.2)', borderRadius: 20, padding: '2px 8px',
             }}>
-              {fmtRevenue(stats.totalRevenue)}
+              {fmtRevenue(safeStats.totalRevenue)}
             </span>
           </div>
           <MiniBarChart
