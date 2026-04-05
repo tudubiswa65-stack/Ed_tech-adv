@@ -231,13 +231,15 @@ export default function ResultsPage() {
                         >
                           View
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => router.push(`/admin/results/analytics/test/${result.tests?.id}`)}
-                        >
-                          Analytics
-                        </Button>
+                        {result.tests?.id && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => router.push(`/admin/results/analytics/test/${result.tests.id}`)}
+                          >
+                            Analytics
+                          </Button>
+                        )}
                       </div>
                     )}
                   ]}

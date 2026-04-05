@@ -213,7 +213,7 @@ export default function ResultDetailPage() {
           <Button variant="outline" onClick={() => router.back()}>
             Back to Results
           </Button>
-          <Button variant="outline" onClick={() => router.push(`/admin/results/analytics/test/${result.tests?.id}`)}>
+          <Button variant="outline" onClick={() => router.push(`/admin/results/analytics/test/${result.tests!.id}`)} disabled={!result.tests?.id}>
             View Test Analytics
           </Button>
           <Button variant="outline" onClick={() => router.push(`/admin/students/${result.students?.id}`)}>
