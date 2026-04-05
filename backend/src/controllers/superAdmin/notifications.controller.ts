@@ -100,23 +100,48 @@ export const getAllNotifications = async (req: AuthRequest, res: Response): Prom
   }
 };
 
+// Maps targetAudience values to the legacy target_type column's allowed values.
+const TARGET_TYPE_MAP: Record<string, string> = {
+  all: 'all',
+  students: 'all',
+  admins: 'all',
+  branches: 'all',
+  course: 'course',
+  student: 'student',
+};
+
 export const createNotification = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const {
       title,
       message,
+      // Accept both the new field name (matching branch admin UI) and the legacy field name
+      targetAudience,
       target,
-      priority = 'medium',
+      type = 'info',
+      priority = 'normal',
       category,
       branch_id,
       scheduled_at,
-      action_url
+      scheduledAt,
+      action_url,
+      actionUrl,
     } = req.body;
 
-    if (!title || !message || !target) {
-      res.status(400).json({ success: false, error: 'Title, message, and target are required' });
+    // Prefer targetAudience (new), fall back to target (legacy)
+    const resolvedAudience = (targetAudience || target || 'all') as string;
+
+    if (!title || !message) {
+      res.status(400).json({ success: false, error: 'Title and message are required' });
       return;
     }
+
+    const VALID_TYPES = ['info', 'warning', 'success', 'error'] as const;
+    const resolvedType = VALID_TYPES.includes(type as typeof VALID_TYPES[number]) ? type as typeof VALID_TYPES[number] : 'info';
+
+    const resolvedTargetType = TARGET_TYPE_MAP[resolvedAudience] ?? 'all';
+    const resolvedScheduledAt = scheduled_at || scheduledAt || null;
+    const resolvedActionUrl = action_url || actionUrl || null;
 
     const adminId = req.user?.id;
 
@@ -125,19 +150,24 @@ export const createNotification = async (req: AuthRequest, res: Response): Promi
       .insert({
         title,
         message,
-        target,
+        type: resolvedType,
+        target: resolvedAudience,
+        target_audience: resolvedAudience,
+        target_type: resolvedTargetType,
         priority,
-        category,
-        branch_id,
-        scheduled_at,
-        action_url,
-        created_by: adminId
+        category: category || null,
+        branch_id: branch_id || null,
+        scheduled_at: resolvedScheduledAt,
+        action_url: resolvedActionUrl,
+        // Mark as sent immediately (same behaviour as branch admin createNotification)
+        sent_at: resolvedScheduledAt ? null : new Date().toISOString(),
+        created_by: adminId,
       })
       .select()
       .single();
 
     if (error) {
-      console.error('Error creating notification:', error);
+      console.error('Error creating notification:', JSON.stringify(error));
       res.status(500).json({ success: false, error: 'Failed to create notification' });
       return;
     }
@@ -145,7 +175,7 @@ export const createNotification = async (req: AuthRequest, res: Response): Promi
     res.json({
       success: true,
       data: notification,
-      message: 'Notification created successfully'
+      message: 'Notification created successfully',
     });
   } catch (error) {
     console.error('Error creating notification:', error);

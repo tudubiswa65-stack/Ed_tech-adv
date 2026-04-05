@@ -10,6 +10,9 @@ export const superAdminQueryKeys = {
   revenue: () => [...superAdminQueryKeys.all, 'revenue'] as const,
   attendance: () => [...superAdminQueryKeys.all, 'attendance'] as const,
   topBranches: () => [...superAdminQueryKeys.all, 'top-branches'] as const,
+  notifications: (page: number, filters: Record<string, string>) =>
+    [...superAdminQueryKeys.all, 'notifications', { page, ...filters }] as const,
+  branches: () => [...superAdminQueryKeys.all, 'branches'] as const,
 };
 
 // ── Super Admin Notification Count ───────────────────────────────────────────
@@ -37,7 +40,7 @@ export function useSuperAdminNotificationsCount(options?: { enabled?: boolean })
     },
     enabled: options?.enabled ?? true,
     staleTime: 30 * 1000,
-    refetchInterval: 30 * 1000,
+    refetchInterval: 10 * 1000,
   });
 }
 
@@ -208,4 +211,69 @@ export function useSuperAdminDashboard(): SuperAdminDashboardData {
     isError,
     error,
   };
+}
+
+// ── Super Admin Notifications List ────────────────────────────────────────────
+
+export interface SuperAdminNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  target_audience?: string;
+  target?: string;
+  priority: string;
+  branch_id?: string;
+  action_url?: string;
+  scheduled_at?: string;
+  sent_at?: string;
+  created_at: string;
+  branches?: { id: string; name: string } | null;
+}
+
+export function useSuperAdminNotifications(
+  page = 1,
+  filters: { type?: string; targetAudience?: string; branch_id?: string } = {}
+) {
+  const filterKey = {
+    type: filters.type ?? '',
+    targetAudience: filters.targetAudience ?? '',
+    branch_id: filters.branch_id ?? '',
+  };
+  return useQuery({
+    queryKey: superAdminQueryKeys.notifications(page, filterKey),
+    queryFn: async () => {
+      const params = new URLSearchParams({ page: String(page), limit: '15' });
+      if (filters.type) params.set('type', filters.type);
+      if (filters.targetAudience) params.set('targetAudience', filters.targetAudience);
+      if (filters.branch_id) params.set('branch_id', filters.branch_id);
+      const response = await apiClient.get(`/super-admin/notifications?${params}`);
+      const data = (response.data as any)?.success ? (response.data as any) : response.data;
+      return {
+        notifications: (data?.data ?? []) as SuperAdminNotification[],
+        totalPages: data?.pagination?.totalPages ?? 1,
+      };
+    },
+    staleTime: 60 * 1000,
+    placeholderData: (prev: any) => prev,
+  });
+}
+
+// ── Super Admin Branches (for notification branch targeting) ──────────────────
+
+export interface SuperAdminBranch {
+  id: string;
+  name: string;
+}
+
+export function useSuperAdminBranches() {
+  return useQuery<SuperAdminBranch[]>({
+    queryKey: superAdminQueryKeys.branches(),
+    queryFn: async () => {
+      const response = await apiClient.get('/super-admin/branches');
+      const data = (response.data as any)?.success ? (response.data as any).data : response.data;
+      return (Array.isArray(data) ? data : []) as SuperAdminBranch[];
+    },
+    staleTime: 30 * 60 * 1000,
+  });
 }
