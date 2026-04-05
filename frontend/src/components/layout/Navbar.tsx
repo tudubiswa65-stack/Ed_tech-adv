@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/context/ThemeContext';
 import { useToast } from '@/context/ToastContext';
@@ -22,6 +23,7 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
   const { user, logout, updateUserAvatar } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { error: toastError, success: toastSuccess } = useToast();
+  const router = useRouter();
   const [uploading, setUploading] = useState(false);
   const [imgError, setImgError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -38,7 +40,11 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
   };
 
   const handleAvatarClick = () => {
-    fileInputRef.current?.click();
+    if (user?.role === 'student') {
+      router.push('/dashboard');
+    } else {
+      fileInputRef.current?.click();
+    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,14 +174,14 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
               <p className="text-sm font-medium text-gray-700 dark:text-slate-200">{user?.name}</p>
               <p className="text-xs text-gray-400 dark:text-slate-400">{roleLabel}</p>
             </div>
-            {/* Avatar - clickable to upload */}
+            {/* Avatar – students go to dashboard; admins open upload dialog */}
             <button
               onClick={handleAvatarClick}
               disabled={uploading}
               className="relative w-8 h-8 rounded-full overflow-hidden ring-2 ring-offset-1 shrink-0 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-60"
               style={{ outlineColor: 'var(--color-primary-light)' }}
-              title="Click to change profile photo"
-              aria-label="Change profile photo"
+              title={user?.role === 'student' ? 'Go to dashboard' : 'Click to change profile photo'}
+              aria-label={user?.role === 'student' ? 'Go to dashboard' : 'Change profile photo'}
             >
               {uploading ? (
                 <div
