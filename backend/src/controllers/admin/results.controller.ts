@@ -214,21 +214,33 @@ export const getTestAnalytics = async (req: AuthRequest, res: Response) => {
 
       if (branchStudentIds !== null) {
         if (branchStudentIds.length === 0) {
-          // Branch has no students — return empty analytics
+          // Branch has no students — return empty analytics with the correct response structure
           return res.json({
-            test,
-            totalAttempts: 0,
-            passedAttempts: 0,
-            failedAttempts: 0,
-            averageScore: 0,
-            averagePercentage: 0,
-            averageTime: 0,
-            fastestTime: 0,
-            slowestTime: 0,
-            medianPercentage: 0,
-            stdDeviation: 0,
-            topPerformers: [],
+            test: {
+              id: test.id,
+              title: test.title,
+              totalMarks: test.total_marks,
+              passingMarks: test.passing_marks,
+            },
+            summary: {
+              totalAttempts: 0,
+              passedAttempts: 0,
+              failedAttempts: 0,
+              passRate: 0,
+              failRate: 0,
+              averageScore: 0,
+              averagePercentage: 0,
+              medianPercentage: 0,
+              stdDeviation: 0,
+              averageTimeSeconds: 0,
+              fastestTimeSeconds: 0,
+              slowestTimeSeconds: 0,
+            },
+            percentileRanks: { p90: 0, p75: 0, p50: 0, p25: 0, p10: 0 },
             questionStats: [],
+            scoreDistribution: [],
+            topPerformers: [],
+            performanceTrend: [],
           });
         }
         resultsQuery = resultsQuery.in('student_id', branchStudentIds);
@@ -283,9 +295,10 @@ export const getTestAnalytics = async (req: AuthRequest, res: Response) => {
     const questionStats = questions.map((q, index) => {
       const responses = results?.map(r => {
         const answers = r.answers as any[];
+        const answer = answers?.[index];
         return {
-          selected: answers?.[index]?.selected,
-          isCorrect: answers?.[index]?.selected === q.correctAnswer
+          selected: answer?.selected_option ?? answer?.selected,
+          isCorrect: (answer?.selected_option ?? answer?.selected) === (q.correct_option ?? q.correctAnswer)
         };
       }) || [];
 
@@ -304,10 +317,8 @@ export const getTestAnalytics = async (req: AuthRequest, res: Response) => {
         correctResponses: correctCount,
         totalResponses: totalAttempts,
         accuracy,
-        difficulty: accuracy < 30 ? 'very_hard' :
-                   accuracy < 50 ? 'hard' :
-                   accuracy > 80 ? 'easy' :
-                   accuracy > 90 ? 'very_easy' : 'medium',
+        difficulty: accuracy < 40 ? 'hard' :
+                   accuracy > 75 ? 'easy' : 'medium',
         optionDistribution: optionCounts
       };
     });

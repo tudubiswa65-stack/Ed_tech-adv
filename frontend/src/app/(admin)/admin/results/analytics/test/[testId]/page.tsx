@@ -95,7 +95,7 @@ export default function TestAnalyticsPage() {
     );
   }
 
-  const maxScoreCount = Math.max(...analytics.scoreDistribution.map(s => s.count), 1);
+  const maxScoreCount = Math.max(...(analytics.scoreDistribution ?? []).map(s => s.count), 1);
 
   return (
     <PageWrapper title={`Analytics: ${analytics.test.title}`}>
@@ -172,7 +172,7 @@ export default function TestAnalyticsPage() {
             <div className="p-6">
               <h3 className="text-lg font-semibold mb-4">Score Distribution</h3>
               <div className="space-y-3">
-                {analytics.scoreDistribution.map((range) => (
+                {(analytics.scoreDistribution ?? []).map((range) => (
                   <div key={range.range} className="flex items-center gap-3">
                     <span className="w-16 text-sm text-gray-500 dark:text-slate-400">{range.range}%</span>
                     <div className="flex-1 bg-gray-200 rounded-full h-6 overflow-hidden dark:bg-slate-600">
