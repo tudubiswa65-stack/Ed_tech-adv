@@ -310,6 +310,33 @@ export function useAdminNotifications(
   });
 }
 
+// localStorage key for tracking when admin last viewed notifications
+export const ADMIN_NOTIF_VIEWED_AT_KEY = 'admin_notif_viewed_at';
+
+// Count of new notifications since the admin last viewed the notifications page
+export function useAdminNotificationsCount(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: [...adminQueryKeys.all, 'notifications-count'],
+    queryFn: async () => {
+      if (typeof window === 'undefined') return 0;
+      const since = localStorage.getItem(ADMIN_NOTIF_VIEWED_AT_KEY);
+      if (!since) {
+        // First time: mark now as viewed so pre-existing notifications don't appear as new
+        localStorage.setItem(ADMIN_NOTIF_VIEWED_AT_KEY, new Date().toISOString());
+        return 0;
+      }
+      const response = await apiClient.get(
+        `/admin/notifications/count?since=${encodeURIComponent(since)}`
+      );
+      const data = (response.data as any)?.success ? (response.data as any).data : response.data;
+      return (data?.count ?? 0) as number;
+    },
+    enabled: options?.enabled ?? true,
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
+  });
+}
+
 // Results list with pagination and filters
 export function useAdminResults(
   page = 1,

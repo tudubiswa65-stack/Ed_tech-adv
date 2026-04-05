@@ -6,6 +6,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useInstitute } from '@/hooks/useInstitute';
 import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
+import { useStudentUnreadCount } from '@/hooks/queries/useStudentQueries';
+import { useAdminNotificationsCount } from '@/hooks/queries/useAdminQueries';
 
 interface NavItem {
   label: string;
@@ -81,6 +83,13 @@ export default function Sidebar({ role, isOpen = false, onClose = () => {} }: Si
     }
     return true;
   });
+
+  const isStudent = role === 'student';
+
+  // Notification badge count — use existing hooks (enabled per role), shares React Query cache with Navbar
+  const { data: studentCount = 0 } = useStudentUnreadCount({ enabled: isStudent });
+  const { data: adminCount = 0 } = useAdminNotificationsCount({ enabled: !isStudent });
+  const notifBadgeCount = isStudent ? studentCount : adminCount;
 
   const getIcon = (icon: string) => {
     const icons: Record<string, JSX.Element> = {
@@ -232,6 +241,11 @@ export default function Sidebar({ role, isOpen = false, onClose = () => {} }: Si
                       )}
                       {getIcon(item.icon)}
                       <span>{item.label}</span>
+                      {item.icon === 'notifications' && notifBadgeCount > 0 && (
+                        <span className="ml-auto min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
+                          {notifBadgeCount > 99 ? '99+' : notifBadgeCount}
+                        </span>
+                      )}
                     </Link>
                   </li>
                 );

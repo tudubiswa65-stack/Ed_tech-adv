@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useInstitute } from '@/hooks/useInstitute';
 import Image from 'next/image';
+import { useSuperAdminNotificationsCount } from '@/hooks/queries/useSuperAdminQueries';
 
 interface NavItem {
   label: string;
@@ -33,6 +34,9 @@ interface SidebarProps {
 export default function SuperAdminSidebar({ isOpen = false, onClose = () => {} }: SidebarProps) {
   const pathname = usePathname();
   const config = useInstitute();
+
+  // Notification badge count — uses existing hook, shares React Query cache with Navbar
+  const { data: notifBadgeCount = 0 } = useSuperAdminNotificationsCount();
 
   const getIcon = (icon: string) => {
     const icons: Record<string, JSX.Element> = {
@@ -150,6 +154,11 @@ export default function SuperAdminSidebar({ isOpen = false, onClose = () => {} }
                     >
                       {getIcon(item.icon)}
                       <span>{item.label}</span>
+                      {item.icon === 'notifications' && notifBadgeCount > 0 && (
+                        <span className="ml-auto min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
+                          {notifBadgeCount > 99 ? '99+' : notifBadgeCount}
+                        </span>
+                      )}
                     </Link>
                   </li>
                 );

@@ -2,11 +2,15 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/context/ThemeContext';
 import { useToast } from '@/context/ToastContext';
 import { apiClient } from '@/lib/apiClient';
 import { validateAvatarFile } from '@/lib/avatarValidation';
+import { useStudentUnreadCount } from '@/hooks/queries/useStudentQueries';
+import { useAdminNotificationsCount } from '@/hooks/queries/useAdminQueries';
+import { useSuperAdminNotificationsCount } from '@/hooks/queries/useSuperAdminQueries';
 
 interface NavbarProps {
   title: string;
@@ -74,6 +78,31 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
     .join('')
     .toUpperCase() ?? '?';
 
+  const role = user?.role;
+
+  const notifPath =
+    role === 'super_admin'
+      ? '/super-admin/notifications'
+      : role === 'admin' || role === 'branch_admin'
+      ? '/admin/notifications'
+      : '/notifications';
+
+  // Notification badge counts — only one will fetch based on enabled flag
+  const { data: studentUnreadCount = 0 } = useStudentUnreadCount({ enabled: role === 'student' });
+  const { data: adminUnreadCount = 0 } = useAdminNotificationsCount({
+    enabled: role === 'admin' || role === 'branch_admin',
+  });
+  const { data: superAdminUnreadCount = 0 } = useSuperAdminNotificationsCount({
+    enabled: role === 'super_admin',
+  });
+
+  const notifBadgeCount =
+    role === 'student'
+      ? studentUnreadCount
+      : role === 'super_admin'
+      ? superAdminUnreadCount
+      : adminUnreadCount;
+
   const roleLabel =
     user?.role === 'super_admin'
       ? 'Super Admin'
@@ -112,14 +141,20 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
           </button>
 
           {/* Notification bell */}
-          <button
+          <Link
+            href={notifPath}
             className="relative p-1.5 rounded-lg text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors dark:bg-slate-700"
             aria-label="Notifications"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
-          </button>
+            {notifBadgeCount > 0 && (
+              <span className="absolute top-0.5 right-0.5 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 leading-none">
+                {notifBadgeCount > 99 ? '99+' : notifBadgeCount}
+              </span>
+            )}
+          </Link>
 
           <div className="w-px h-6 bg-gray-200 dark:bg-slate-700 mx-1" />
 

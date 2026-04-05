@@ -2,6 +2,33 @@ import { Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
 import { AuthRequest } from '../../types';
 
+export const getNotificationsCount = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { since } = req.query;
+
+    let query = supabaseAdmin
+      .from('notifications')
+      .select('*', { count: 'exact', head: true });
+
+    if (since && typeof since === 'string') {
+      query = query.gt('created_at', since);
+    }
+
+    const { count, error } = await query;
+
+    if (error) {
+      console.error('Error fetching notifications count:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch notifications count' });
+      return;
+    }
+
+    res.json({ success: true, data: { count: count ?? 0 } });
+  } catch (error) {
+    console.error('Error fetching notifications count:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch notifications count' });
+  }
+};
+
 export const getAllNotifications = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const {

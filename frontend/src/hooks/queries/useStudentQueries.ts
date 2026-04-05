@@ -124,7 +124,7 @@ export function useStudentNotifications(page = 1, filter: 'all' | 'unread' = 'al
   });
 }
 
-export function useStudentUnreadCount() {
+export function useStudentUnreadCount(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: studentQueryKeys.unreadCount(),
     queryFn: async () => {
@@ -132,7 +132,9 @@ export function useStudentUnreadCount() {
       const data = ((response.data as any)?.success ? (response.data as any).data : response.data) || {};
       return data.unreadCount ?? 0;
     },
+    enabled: options?.enabled ?? true,
     staleTime: 60 * 1000,
+    refetchInterval: 30 * 1000,
   });
 }
 

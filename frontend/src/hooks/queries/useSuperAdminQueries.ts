@@ -12,6 +12,35 @@ export const superAdminQueryKeys = {
   topBranches: () => [...superAdminQueryKeys.all, 'top-branches'] as const,
 };
 
+// ── Super Admin Notification Count ───────────────────────────────────────────
+
+// localStorage key for tracking when super-admin last viewed notifications
+export const SUPER_ADMIN_NOTIF_VIEWED_AT_KEY = 'super_admin_notif_viewed_at';
+
+// Count of new notifications since the super-admin last viewed the notifications page
+export function useSuperAdminNotificationsCount(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: [...superAdminQueryKeys.all, 'notifications-count'],
+    queryFn: async () => {
+      if (typeof window === 'undefined') return 0;
+      const since = localStorage.getItem(SUPER_ADMIN_NOTIF_VIEWED_AT_KEY);
+      if (!since) {
+        // First time: mark now as viewed so pre-existing notifications don't appear as new
+        localStorage.setItem(SUPER_ADMIN_NOTIF_VIEWED_AT_KEY, new Date().toISOString());
+        return 0;
+      }
+      const response = await apiClient.get(
+        `/super-admin/notifications/count?since=${encodeURIComponent(since)}`
+      );
+      const data = (response.data as any)?.success ? (response.data as any).data : response.data;
+      return (data?.count ?? 0) as number;
+    },
+    enabled: options?.enabled ?? true,
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
+  });
+}
+
 // ── Super Admin Dashboard Stats ───────────────────────────────────────────────
 
 export interface SuperAdminStats {

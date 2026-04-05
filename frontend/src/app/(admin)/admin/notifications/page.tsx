@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import apiClient from '@/lib/apiClient';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
@@ -10,7 +10,7 @@ import Input from '@/components/ui/Input';
 import Spinner from '@/components/ui/Spinner';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { usePermissions } from '@/hooks/usePermissions';
-import { useAdminNotifications, adminQueryKeys } from '@/hooks/queries/useAdminQueries';
+import { useAdminNotifications, adminQueryKeys, ADMIN_NOTIF_VIEWED_AT_KEY } from '@/hooks/queries/useAdminQueries';
 import { queryClient } from '@/lib/queryClient';
 
 interface Notification {
@@ -50,6 +50,14 @@ export default function NotificationsPage() {
   });
 
   const { hasPermission } = usePermissions();
+
+  // Clear notification badge when this page is opened
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(ADMIN_NOTIF_VIEWED_AT_KEY, new Date().toISOString());
+      queryClient.setQueryData([...adminQueryKeys.all, 'notifications-count'], 0);
+    }
+  }, []);
 
   // React Query hook — notifications list cached 60 s, auto-refetch on page/filter change
   const { data, isLoading: loading } = useAdminNotifications(page, filters);

@@ -59,6 +59,7 @@ import {
 // Notification controllers
 import {
   getAllNotifications,
+  getNotificationsCount,
   createNotification,
   updateNotification,
   deleteNotification,
@@ -175,6 +176,7 @@ router.get('/courses/analytics', requireSuperAdmin, getCourseAnalytics);
 // ═══════════════════════════════════════════════════════════
 // NOTIFICATIONS ENDPOINTS
 // ═══════════════════════════════════════════════════════════
+router.get('/notifications/count', requireSuperAdmin, getNotificationsCount);
 router.get('/notifications', requireSuperAdmin, getAllNotifications);
 router.post('/notifications', requireSuperAdmin, createNotification);
 router.put('/notifications/:id', requireSuperAdmin, updateNotification);
