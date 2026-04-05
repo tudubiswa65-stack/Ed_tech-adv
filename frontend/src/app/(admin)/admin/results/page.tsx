@@ -67,7 +67,7 @@ export default function ResultsPage() {
   });
 
   // React Query hooks — results cached 60 s, tests dropdown cached 60 s
-  const { data: resultsData, isLoading: loading } = useAdminResults(page, filters);
+  const { data: resultsData, isLoading: loading, isError } = useAdminResults(page, filters);
   const { data: tests = [] } = useAdminTestsList();
 
   const results = resultsData?.results ?? [];
@@ -197,6 +197,8 @@ export default function ResultsPage() {
             <h3 className="text-lg font-semibold mb-4">Test Results</h3>
             {loading ? (
               <AdminTableSkeleton rows={6} cols={6} />
+            ) : isError ? (
+              <p className="text-center text-red-500 py-8 dark:text-red-400">Failed to load results. Please try again.</p>
             ) : results.length === 0 ? (
               <p className="text-center text-gray-500 py-8 dark:text-slate-400">No results found</p>
             ) : (
