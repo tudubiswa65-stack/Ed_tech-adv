@@ -4,17 +4,9 @@ import { useState } from 'react';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Table, Badge, Card, Button, Modal } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
-import { useStudentPayments } from '@/hooks/queries/useStudentQueries';
+import { useStudentPayments, PaymentRecord } from '@/hooks/queries/useStudentQueries';
 
-interface Payment {
-  id: string;
-  amount: number;
-  status: 'pending' | 'completed' | 'failed' | 'refunded';
-  payment_method?: string;
-  transaction_id?: string;
-  description?: string;
-  created_at: string;
-}
+type Payment = PaymentRecord & { status: 'pending' | 'completed' | 'failed' | 'refunded' };
 
 interface Receipt {
   receipt_number: string;
@@ -31,8 +23,9 @@ export default function StudentPaymentsPage() {
   const [receiptLoading, setReceiptLoading] = useState(false);
 
   // React Query hook — payments list cached 2 min
-  const { data: paymentsRaw = [], isLoading: loading } = useStudentPayments();
-  const payments = paymentsRaw as Payment[];
+  const { data, isLoading: loading } = useStudentPayments();
+  const payments = (data?.payments ?? []) as Payment[];
+  const summary = data?.summary;
 
   const handleViewReceipt = async (paymentId: string) => {
     setReceiptLoading(true);
@@ -57,7 +50,7 @@ export default function StudentPaymentsPage() {
     {
       key: 'amount',
       label: 'Amount',
-      render: (p: Payment) => <span className="font-semibold">${p.amount.toFixed(2)}</span>,
+      render: (p: Payment) => <span className="font-semibold">PKR {Number(p.amount).toLocaleString()}</span>,
     },
     {
       key: 'method',
@@ -100,13 +93,48 @@ export default function StudentPaymentsPage() {
     },
   ];
 
+  const totalPaid = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + Number(p.amount), 0);
+
   return (
     <PageWrapper title="My Payments">
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="p-4 flex flex-col items-center justify-center">
-          <div className="text-sm text-gray-500 uppercase font-semibold dark:text-slate-400">Total Paid</div>
-          <div className="text-3xl font-bold text-green-600">
-            ${payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0).toFixed(2)}
+      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Paid */}
+        <Card className="p-4 flex flex-col gap-1">
+          <div className="text-xs text-gray-500 uppercase font-semibold dark:text-slate-400 tracking-wide">Total Paid</div>
+          <div className="text-2xl font-bold text-green-600">PKR {totalPaid.toLocaleString()}</div>
+          <div className="text-xs text-gray-400 dark:text-slate-500">All completed payments</div>
+        </Card>
+
+        {/* Course Fee */}
+        <Card className="p-4 flex flex-col gap-1">
+          <div className="text-xs text-gray-500 uppercase font-semibold dark:text-slate-400 tracking-wide">Course Fee</div>
+          <div className="text-2xl font-bold text-blue-600">
+            {summary?.courseFee != null ? `PKR ${Number(summary.courseFee).toLocaleString()}` : '—'}
+          </div>
+          <div className="text-xs text-gray-400 dark:text-slate-500">Enrolled course amount</div>
+        </Card>
+
+        {/* This Month */}
+        <Card className="p-4 flex flex-col gap-1">
+          <div className="text-xs text-gray-500 uppercase font-semibold dark:text-slate-400 tracking-wide">This Month</div>
+          <div className="text-2xl font-bold text-purple-600">
+            PKR {(summary?.monthlyPaid ?? 0).toLocaleString()}
+          </div>
+          <div className="text-xs text-gray-400 dark:text-slate-500">
+            {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
+          </div>
+        </Card>
+
+        {/* Upcoming Payment */}
+        <Card className="p-4 flex flex-col gap-1">
+          <div className="text-xs text-gray-500 uppercase font-semibold dark:text-slate-400 tracking-wide">Upcoming Payment</div>
+          <div className="text-2xl font-bold text-orange-500">
+            {summary?.nextPaymentAmount != null ? `PKR ${Number(summary.nextPaymentAmount).toLocaleString()}` : '—'}
+          </div>
+          <div className="text-xs text-gray-400 dark:text-slate-500">
+            {summary?.nextPaymentDate
+              ? `Due ${new Date(summary.nextPaymentDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+              : 'No upcoming payment'}
           </div>
         </Card>
       </div>

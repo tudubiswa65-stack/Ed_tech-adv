@@ -28,6 +28,8 @@ export const getStudentDashboard = async (req: AuthRequest, res: Response): Prom
       todayTestsResult,
       upcomingTestsResult,
       leaderboardResult,
+      enrollmentResult,
+      totalAssignmentsResult,
     ] = await Promise.all([
       // 1. Profile info
       (() => {
@@ -96,6 +98,22 @@ export const getStudentDashboard = async (req: AuthRequest, res: Response): Prom
         if (instituteId) q = q.eq('institute_id', instituteId);
         return q;
       })(),
+
+      // 7. Current course enrollment
+      supabaseAdmin
+        .from('enrollments')
+        .select('enrolled_at, status, courses(id, name, price, end_date, duration_value, duration_unit)')
+        .eq('student_id', studentId)
+        .in('status', ['active', 'completed'])
+        .order('enrolled_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+
+      // 8. Total test assignments count for course progress
+      supabaseAdmin
+        .from('test_assignments')
+        .select('id', { count: 'exact', head: true })
+        .eq('student_id', studentId),
     ]);
 
     const profile = profileResult.data;
@@ -104,6 +122,22 @@ export const getStudentDashboard = async (req: AuthRequest, res: Response): Prom
     const todayTests = todayTestsResult.data || [];
     const upcomingTests = upcomingTestsResult.data || [];
     const leaderboardRaw = leaderboardResult.data || [];
+    const enrollmentRaw = enrollmentResult.data;
+    const totalAssignments = totalAssignmentsResult.count ?? 0;
+
+    // --- Course progress ---
+    const completedTests = allResults.length;
+    const courseProgress =
+      totalAssignments > 0 ? Math.min(Math.round((completedTests / totalAssignments) * 100), 100) : 0;
+
+    const enrollment = enrollmentRaw
+      ? {
+          enrolled_at: enrollmentRaw.enrolled_at,
+          status: enrollmentRaw.status,
+          course: enrollmentRaw.courses as any,
+          progress: courseProgress,
+        }
+      : null;
 
     // --- Performance calculations ---
     const totalTests = allResults.length;
@@ -177,6 +211,7 @@ export const getStudentDashboard = async (req: AuthRequest, res: Response): Prom
         recentTests,
         todayTests,
         upcomingTests,
+        enrollment,
       },
     });
   } catch (error) {

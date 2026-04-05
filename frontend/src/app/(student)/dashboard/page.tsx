@@ -55,6 +55,22 @@ interface TodayTest {
   tests: { id: string; title: string; courses: { name: string } | null } | null;
 }
 
+interface CourseInfo {
+  id: string;
+  name: string;
+  price: number | null;
+  end_date: string | null;
+  duration_value: number | null;
+  duration_unit: string | null;
+}
+
+interface EnrollmentInfo {
+  enrolled_at: string;
+  status: string;
+  course: CourseInfo | null;
+  progress: number;
+}
+
 interface DashboardData {
   profile: Profile | null;
   performance: Performance;
@@ -62,6 +78,7 @@ interface DashboardData {
   recentTests: RecentTest[];
   todayTests: TodayTest[];
   upcomingTests: TodayTest[];
+  enrollment: EnrollmentInfo | null;
 }
 
 function formatSeconds(seconds: number): string {
@@ -198,13 +215,14 @@ export default function StudentProfileDashboard() {
     );
   }
 
-  const { profile, performance, leaderboard, recentTests, todayTests, upcomingTests } = data || {
+  const { profile, performance, leaderboard, recentTests, todayTests, upcomingTests, enrollment } = data || {
     profile: null,
     performance: { totalTests: 0, passed: 0, failed: 0, avgScore: 0, highestScore: 0, accuracy: null, avgTimeTakenSeconds: null, streak: 0 },
     leaderboard: { rank: null, totalPoints: 0, totalStudents: 0, rankBadge: null },
     recentTests: [],
     todayTests: [],
     upcomingTests: [],
+    enrollment: null,
   };
 
   // SVG progress ring helpers
@@ -349,6 +367,79 @@ export default function StudentProfileDashboard() {
 
       {/* ── Page Sections ── */}
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+        {/* ── My Course ── */}
+        {enrollment && enrollment.course && (
+          <section>
+            <p style={sectionLabel}>My Course</p>
+            <div style={{
+              background: '#1e293b',
+              borderRadius: 12,
+              border: '1px solid rgba(255,255,255,0.06)',
+              borderLeft: '3px solid #34d399',
+              padding: '16px',
+            }}>
+              {/* Course name + status badge */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div style={{ flex: 1, paddingRight: 8 }}>
+                  <p style={{ color: 'white', fontWeight: 600, fontSize: 15, margin: 0 }}>{enrollment.course.name}</p>
+                  {enrollment.course.end_date && (
+                    <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: '3px 0 0' }}>
+                      Ends {new Date(enrollment.course.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </p>
+                  )}
+                </div>
+                <span style={{
+                  background: enrollment.status === 'active' ? 'rgba(52,211,153,0.15)' : 'rgba(96,165,250,0.15)',
+                  color: enrollment.status === 'active' ? '#34d399' : '#60a5fa',
+                  padding: '3px 10px', borderRadius: 9999, fontSize: 11, fontWeight: 500,
+                  border: `1px solid ${enrollment.status === 'active' ? 'rgba(52,211,153,0.3)' : 'rgba(96,165,250,0.3)'}`,
+                  flexShrink: 0,
+                }}>
+                  {enrollment.status.charAt(0).toUpperCase() + enrollment.status.slice(1)}
+                </span>
+              </div>
+
+              {/* Joined date + course fee */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+                <div>
+                  <p style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'rgba(255,255,255,0.35)', margin: '0 0 3px' }}>Joined Date</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.85)', margin: 0 }}>
+                    {new Date(enrollment.enrolled_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </p>
+                </div>
+                {enrollment.course.price != null && (
+                  <div>
+                    <p style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'rgba(255,255,255,0.35)', margin: '0 0 3px' }}>Course Fee</p>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#fbbf24', margin: 0 }}>
+                      PKR {Number(enrollment.course.price).toLocaleString()}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Progress bar */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+                  <p style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'rgba(255,255,255,0.35)', margin: 0 }}>Course Progress</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: '#34d399', margin: 0 }}>{enrollment.progress}%</p>
+                </div>
+                <div style={{ height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 6 }}>
+                  <div style={{
+                    width: `${enrollment.progress}%`,
+                    height: '100%',
+                    background: enrollment.progress >= 80 ? '#34d399' : enrollment.progress >= 50 ? '#60a5fa' : '#fbbf24',
+                    borderRadius: 6,
+                    transition: 'width 0.4s ease',
+                  }} />
+                </div>
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', margin: '5px 0 0' }}>
+                  Based on tests completed
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* ── Performance Stats ── */}
         <section>
