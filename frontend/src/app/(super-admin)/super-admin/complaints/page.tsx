@@ -5,6 +5,7 @@ import { apiClient } from '@/lib/apiClient';
 import { DataTable } from '@/components/super-admin/DataTable';
 import { StatCard } from '@/components/super-admin/StatCard';
 import { Modal } from '@/components/ui';
+import { StatsTableSkeleton } from '@/components/super-admin/SuperAdminPageSkeletons';
 
 interface Complaint {
   id: string;
@@ -166,7 +167,7 @@ export default function ComplaintsPage() {
   ];
 
   if (loading && complaints.length === 0) {
-    return <div className="flex items-center justify-center h-64 text-gray-500 dark:text-slate-400">Loading complaints...</div>;
+    return <StatsTableSkeleton statCount={4} showButton={false} />;
   }
 
   if (error) {

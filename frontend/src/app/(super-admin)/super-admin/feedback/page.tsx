@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { DataTable } from '@/components/super-admin/DataTable';
 import { StatCard } from '@/components/super-admin/StatCard';
+import { StatsTableSkeleton } from '@/components/super-admin/SuperAdminPageSkeletons';
 
 interface Feedback {
   id: string;
@@ -132,7 +133,7 @@ export default function FeedbackPage() {
   ];
 
   if (loading && feedback.length === 0) {
-    return <div className="flex items-center justify-center h-64 text-gray-500 dark:text-slate-400">Loading feedback...</div>;
+    return <StatsTableSkeleton statCount={3} showButton={false} />;
   }
 
   if (error) {

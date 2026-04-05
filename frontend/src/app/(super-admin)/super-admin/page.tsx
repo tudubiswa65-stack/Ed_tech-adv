@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useSuperAdminDashboard } from '@/hooks/queries/useSuperAdminQueries';
+import { DashboardSkeleton } from '@/components/super-admin/SuperAdminPageSkeletons';
 
 
 // ─── Section label ───────────────────────────────────────────────────────────
@@ -244,11 +245,7 @@ export default function SuperAdminDashboard() {
   const roleLabel = user?.role === 'super_admin' ? 'Super Admin' : 'Admin';
 
   if (loading) {
-    return (
-      <div style={{ background: '#0f172a', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>Loading dashboard…</span>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (statsError) {

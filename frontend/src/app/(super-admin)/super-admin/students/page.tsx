@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { DataTable } from '@/components/super-admin/DataTable';
 import { StatCard } from '@/components/super-admin/StatCard';
-import { Modal, Spinner } from '@/components/ui';
+import { Modal } from '@/components/ui';
 import {
   useSuperAdminStudents,
   useSuperAdminBranches,
@@ -12,6 +12,7 @@ import {
   useDeleteStudent,
   type StudentsFilters,
 } from '@/hooks/queries/useSuperAdminDataQueries';
+import { StatsTableSkeleton } from '@/components/super-admin/SuperAdminPageSkeletons';
 
 interface Student {
   id: string;
@@ -158,11 +159,7 @@ export default function StudentsPage() {
   ];
 
   if (studentsLoading && students.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Spinner size="lg" />
-      </div>
-    );
+    return <StatsTableSkeleton statCount={4} />;
   }
 
   if (studentsError) {
