@@ -89,8 +89,9 @@ export default function StudentProfileDashboard() {
     confirmPassword: '',
   });
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarImgError, setAvatarImgError] = useState(false);
   const avatarFileRef = useRef<HTMLInputElement>(null);
-  const { updateUserAvatar } = useAuth();
+  const { user, updateUserAvatar } = useAuth();
   const { error: toastError, success: toastSuccess } = useToast();
   const router = useRouter();
 
@@ -106,6 +107,12 @@ export default function StudentProfileDashboard() {
       });
     }
   }, [data]);
+
+  // Reset image error state whenever the avatar URL changes (e.g. after upload)
+  const avatarSrc = user?.avatar_url || data?.profile?.avatar_url;
+  useEffect(() => {
+    setAvatarImgError(false);
+  }, [avatarSrc]);
 
   const handleSaveProfile = async () => {
     setSaving(true);
@@ -236,7 +243,7 @@ export default function StudentProfileDashboard() {
       <div style={{ background: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)', padding: '20px 16px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
 
-          {/* Avatar with camera overlay */}
+            {/* Avatar with camera overlay */}
           <div style={{ position: 'relative', width: 72, height: 72, flexShrink: 0 }}>
             <div style={{
               width: '100%', height: '100%', borderRadius: '50%',
@@ -245,14 +252,15 @@ export default function StudentProfileDashboard() {
               color: 'white', fontSize: 26, fontWeight: 700,
               overflow: 'hidden', position: 'relative',
             }}>
-              {profile?.avatar_url ? (
+              {avatarSrc && !avatarImgError ? (
                 <Image
-                  src={profile.avatar_url}
-                  alt={profile.name ?? 'Avatar'}
+                  src={avatarSrc}
+                  alt={profile?.name ?? 'Avatar'}
                   fill
                   priority
                   className="object-cover"
                   sizes="72px"
+                  onError={() => setAvatarImgError(true)}
                 />
               ) : (
                 profile?.name?.split(' ').filter((w) => w.length > 0).map((w) => w[0]).join('').toUpperCase().slice(0, 2) || 'S'
