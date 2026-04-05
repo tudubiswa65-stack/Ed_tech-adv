@@ -50,10 +50,6 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
   }
 
   const title = pageTitles[pathname] ?? 'Super Admin Dashboard';
-  const isDashboard = pathname === '/super-admin';
-  // Settings page renders its own custom mobile header (like the dashboard)
-  const isSettings = pathname === '/super-admin/settings';
-  const hideNavbarOnMobile = isDashboard || isSettings;
 
   return (
     <div className="min-h-screen flex bg-[#0f172a]">
@@ -62,12 +58,8 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         <SuperAdminSidebar />
       </div>
       <div className="flex-1 flex flex-col min-w-0">
-        {/* On mobile the dashboard and settings pages render their own header; hide Navbar there */}
-        <div className={hideNavbarOnMobile ? 'hidden lg:block' : ''}>
-          <Navbar title={title} onMenuClick={() => {}} />
-        </div>
-        {/* Dashboard/settings page controls its own mobile padding; other pages keep p-6 */}
-        <main className={`flex-1 overflow-auto pb-16 lg:pb-6 ${hideNavbarOnMobile ? 'p-0 lg:p-6' : 'p-6'}`}>
+        <Navbar title={title} onMenuClick={() => {}} />
+        <main className="flex-1 overflow-auto pb-16 lg:pb-6 p-6">
           {children}
         </main>
       </div>
