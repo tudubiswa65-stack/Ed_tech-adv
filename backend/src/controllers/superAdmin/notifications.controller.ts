@@ -36,7 +36,8 @@ export const getAllNotifications = async (req: AuthRequest, res: Response): Prom
       limit = 10,
       search = '',
       branch_id,
-      priority,
+      type,
+      targetAudience,
       category
     } = req.query;
 
@@ -47,10 +48,6 @@ export const getAllNotifications = async (req: AuthRequest, res: Response): Prom
         branches (
           id,
           name
-        ),
-        admins (
-          id,
-          name
         )
       `, { count: 'exact' });
 
@@ -59,8 +56,12 @@ export const getAllNotifications = async (req: AuthRequest, res: Response): Prom
       query = query.eq('branch_id', branch_id);
     }
 
-    if (priority) {
-      query = query.eq('priority', priority);
+    if (type) {
+      query = query.eq('type', type);
+    }
+
+    if (targetAudience) {
+      query = query.eq('target_audience', targetAudience);
     }
 
     if (category) {
@@ -119,7 +120,6 @@ export const createNotification = async (req: AuthRequest, res: Response): Promi
       targetAudience,
       target,
       type = 'info',
-      priority = 'normal',
       category,
       branch_id,
       scheduled_at,
@@ -151,10 +151,8 @@ export const createNotification = async (req: AuthRequest, res: Response): Promi
         title,
         message,
         type: resolvedType,
-        target: resolvedAudience,
         target_audience: resolvedAudience,
         target_type: resolvedTargetType,
-        priority,
         category: category || null,
         branch_id: branch_id || null,
         scheduled_at: resolvedScheduledAt,
@@ -189,26 +187,33 @@ export const updateNotification = async (req: AuthRequest, res: Response): Promi
     const {
       title,
       message,
+      targetAudience,
       target,
-      priority,
+      type,
       category,
       branch_id,
       scheduled_at,
-      action_url
+      scheduledAt,
+      action_url,
+      actionUrl,
     } = req.body;
 
-    const updateData: any = {
-      updated_at: new Date().toISOString()
-    };
+    const updateData: Record<string, unknown> = {};
 
     if (title) updateData.title = title;
     if (message) updateData.message = message;
-    if (target) updateData.target = target;
-    if (priority) updateData.priority = priority;
+    const resolvedAudience = targetAudience || target;
+    if (resolvedAudience) {
+      updateData.target_audience = resolvedAudience;
+      updateData.target_type = TARGET_TYPE_MAP[resolvedAudience] ?? 'all';
+    }
+    if (type) updateData.type = type;
     if (category) updateData.category = category;
     if (branch_id !== undefined) updateData.branch_id = branch_id;
-    if (scheduled_at !== undefined) updateData.scheduled_at = scheduled_at;
-    if (action_url !== undefined) updateData.action_url = action_url;
+    const resolvedScheduledAt = scheduled_at !== undefined ? scheduled_at : scheduledAt;
+    if (resolvedScheduledAt !== undefined) updateData.scheduled_at = resolvedScheduledAt;
+    const resolvedActionUrl = action_url !== undefined ? action_url : actionUrl;
+    if (resolvedActionUrl !== undefined) updateData.action_url = resolvedActionUrl;
 
     const { data: notification, error } = await supabaseAdmin
       .from('notifications')
