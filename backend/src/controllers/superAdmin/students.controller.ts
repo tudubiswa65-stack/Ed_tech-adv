@@ -241,8 +241,8 @@ export const updateStudent = async (req: AuthRequest, res: Response): Promise<vo
     const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (name !== undefined) updateData.name = name;
     if (email !== undefined) updateData.email = email;
-    if (course_id !== undefined) updateData.course_id = course_id || null;
-    if (branch_id !== undefined) updateData.branch_id = branch_id || null;
+    if (course_id !== undefined) updateData.course_id = course_id === '' ? null : course_id;
+    if (branch_id !== undefined) updateData.branch_id = branch_id === '' ? null : branch_id;
     if (status !== undefined) updateData.status = status;
     if (password && password.trim()) {
       updateData.password_hash = await bcrypt.hash(password, 12);

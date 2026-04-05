@@ -9,7 +9,18 @@ import {
   useSuperAdminBranches,
   useSuperAdminCourses,
   useUpdateStudent,
+  type StudentProfile,
 } from '@/hooks/queries/useSuperAdminDataQueries';
+
+interface Course {
+  id: string;
+  name: string;
+}
+
+interface Branch {
+  id: string;
+  name: string;
+}
 
 interface StudentForm {
   name: string;
@@ -30,8 +41,8 @@ export default function SuperAdminStudentDetailPage() {
   const [formData, setFormData] = useState<StudentForm | null>(null);
 
   const { data: student, isLoading, error } = useSuperAdminStudent(studentId);
-  const { data: branches = [] } = useSuperAdminBranches();
-  const { data: courses = [] } = useSuperAdminCourses();
+  const { data: branches = [] } = useSuperAdminBranches() as { data: Branch[] };
+  const { data: courses = [] } = useSuperAdminCourses() as { data: Course[] };
   const updateStudent = useUpdateStudent();
 
   const startEdit = () => {
@@ -39,8 +50,8 @@ export default function SuperAdminStudentDetailPage() {
     setFormData({
       name: student.name ?? '',
       email: student.email ?? '',
-      course_id: (student as any).course_id ?? '',
-      branch_id: (student as any).branch_id ?? '',
+      course_id: student.course_id ?? '',
+      branch_id: student.branch_id ?? '',
       status: student.status ?? 'ACTIVE',
       password: '',
     });
@@ -174,7 +185,7 @@ export default function SuperAdminStudentDetailPage() {
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-700 dark:text-slate-100"
               >
                 <option value="">No course</option>
-                {courses.map((c: any) => (
+                {courses.map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
@@ -191,7 +202,7 @@ export default function SuperAdminStudentDetailPage() {
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-700 dark:text-slate-100"
               >
                 <option value="">No branch</option>
-                {branches.map((b: any) => (
+                {branches.map((b) => (
                   <option key={b.id} value={b.id}>{b.name}</option>
                 ))}
               </select>
@@ -231,7 +242,7 @@ export default function SuperAdminStudentDetailPage() {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Minimum 6 characters"
-                minLength={formData.password ? 6 : undefined}
+                minLength={6}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-700 dark:text-slate-100"
               />
             </div>
@@ -262,9 +273,9 @@ export default function SuperAdminStudentDetailPage() {
               <InfoRow label="Full Name" value={student.name} />
               <InfoRow label="Email" value={student.email} />
               <InfoRow label="Roll Number" value={student.roll_number} />
-              <InfoRow label="Phone" value={(student as any).phone ?? '—'} />
-              <InfoRow label="Branch" value={student.branch_name ?? (student as any).branches?.name ?? '—'} />
-              <InfoRow label="Course" value={student.course_name ?? (student as any).courses?.name ?? '—'} />
+              <InfoRow label="Phone" value={student.phone ?? '—'} />
+              <InfoRow label="Branch" value={student.branch_name ?? student.branches?.name ?? '—'} />
+              <InfoRow label="Course" value={student.course_name ?? student.courses?.name ?? '—'} />
               <InfoRow
                 label="Status"
                 value={
@@ -275,14 +286,14 @@ export default function SuperAdminStudentDetailPage() {
                   </span>
                 }
               />
-              <InfoRow label="Joined" value={(student as any).created_at ? new Date((student as any).created_at).toLocaleDateString() : '—'} />
+              <InfoRow label="Joined" value={student.created_at ? new Date(student.created_at).toLocaleDateString() : '—'} />
             </div>
           </div>
         )}
       </div>
 
       {/* Enrollment History */}
-      {!isEditing && (student as any).enrollments && (student as any).enrollments.length > 0 && (
+      {!isEditing && student.enrollments && student.enrollments.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 dark:bg-slate-800 dark:border-slate-600">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">
             Enrollment History
@@ -297,7 +308,7 @@ export default function SuperAdminStudentDetailPage() {
                 </tr>
               </thead>
               <tbody>
-                {(student as any).enrollments.map((enrollment: any) => (
+                {student.enrollments.map((enrollment) => (
                   <tr key={enrollment.id} className="border-b border-gray-50 dark:border-slate-700">
                     <td className="py-2 pr-4 text-gray-900 dark:text-slate-100">
                       {enrollment.courses?.name ?? '—'}

@@ -75,7 +75,23 @@ export interface Student {
   branch_id?: string;
 }
 
-export interface Settings {
+export interface Enrollment {
+  id: string;
+  status: string;
+  created_at?: string;
+  courses?: { id: string; name: string };
+}
+
+export interface StudentProfile extends Student {
+  course_id?: string;
+  phone?: string;
+  branches?: { id: string; name: string; location?: string; contact_number?: string };
+  courses?: { id: string; name: string; level?: string; duration?: number; duration_unit?: string };
+  enrollments?: Enrollment[];
+  created_at?: string;
+}
+
+
   platform_name?: string;
   tagline?: string;
   primary_color?: string;
@@ -242,7 +258,7 @@ export function useSuperAdminStudents(filters?: StudentsFilters) {
 }
 
 export function useSuperAdminStudent(id: string) {
-  return useQuery<Student>({
+  return useQuery<StudentProfile>({
     queryKey: superAdminDataQueryKeys.student(id),
     queryFn: async () => {
       const response = await apiClient.get(`/super-admin/students/${id}/profile`);
