@@ -28,6 +28,8 @@ export const getStudentDashboard = async (req: AuthRequest, res: Response): Prom
       todayTestsResult,
       upcomingTestsResult,
       leaderboardResult,
+      enrollmentResult,
+      totalAssignmentsResult,
     ] = await Promise.all([
       // 1. Profile info
       (() => {
@@ -39,11 +41,11 @@ export const getStudentDashboard = async (req: AuthRequest, res: Response): Prom
         return q.single();
       })(),
 
-      // 2. All results for performance stats
+      // 2. All results for performance stats (include test course_id for course-specific progress)
       (() => {
         let q = supabaseAdmin
           .from('results')
-          .select('score, total_marks, percentage, status, time_taken_seconds')
+          .select('score, total_marks, percentage, status, time_taken_seconds, tests(course_id)')
           .eq('student_id', studentId);
         if (instituteId) q = q.eq('institute_id', instituteId);
         return q;
@@ -96,6 +98,22 @@ export const getStudentDashboard = async (req: AuthRequest, res: Response): Prom
         if (instituteId) q = q.eq('institute_id', instituteId);
         return q;
       })(),
+
+      // 7. Current course enrollment
+      supabaseAdmin
+        .from('enrollments')
+        .select('enrolled_at, status, courses(id, name, price, end_date, duration_value, duration_unit)')
+        .eq('student_id', studentId)
+        .in('status', ['active', 'completed'])
+        .order('enrolled_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+
+      // 8. All test assignments with course_id for course-specific progress
+      supabaseAdmin
+        .from('test_assignments')
+        .select('id, tests(course_id)')
+        .eq('student_id', studentId),
     ]);
 
     const profile = profileResult.data;
@@ -104,6 +122,30 @@ export const getStudentDashboard = async (req: AuthRequest, res: Response): Prom
     const todayTests = todayTestsResult.data || [];
     const upcomingTests = upcomingTestsResult.data || [];
     const leaderboardRaw = leaderboardResult.data || [];
+    const enrollmentRaw = enrollmentResult.data;
+    const allAssignments = totalAssignmentsResult.data || [];
+
+    // --- Course progress (filtered to enrolled course) ---
+    const enrolledCourseId = (enrollmentRaw?.courses as any)?.id ?? null;
+    const courseCompletedTests = enrolledCourseId
+      ? allResults.filter((r: any) => r.tests?.course_id === enrolledCourseId).length
+      : 0;
+    const courseTotalAssignments = enrolledCourseId
+      ? allAssignments.filter((a: any) => a.tests?.course_id === enrolledCourseId).length
+      : 0;
+    const courseProgress =
+      courseTotalAssignments > 0
+        ? Math.min(Math.round((courseCompletedTests / courseTotalAssignments) * 100), 100)
+        : 0;
+
+    const enrollment = enrollmentRaw
+      ? {
+          enrolled_at: enrollmentRaw.enrolled_at,
+          status: enrollmentRaw.status,
+          course: enrollmentRaw.courses as any,
+          progress: courseProgress,
+        }
+      : null;
 
     // --- Performance calculations ---
     const totalTests = allResults.length;
@@ -177,6 +219,7 @@ export const getStudentDashboard = async (req: AuthRequest, res: Response): Prom
         recentTests,
         todayTests,
         upcomingTests,
+        enrollment,
       },
     });
   } catch (error) {

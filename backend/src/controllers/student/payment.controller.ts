@@ -6,18 +6,70 @@ export const getMyPayments = async (req: AuthRequest, res: Response): Promise<vo
   try {
     const student_id = req.user?.id;
 
-    const { data, error } = await supabaseAdmin
-      .from('payments')
-      .select('*')
-      .eq('student_id', student_id)
-      .order('created_at', { ascending: false });
+    const [paymentsResult, enrollmentResult] = await Promise.all([
+      supabaseAdmin
+        .from('payments')
+        .select('*')
+        .eq('student_id', student_id)
+        .order('created_at', { ascending: false }),
+      supabaseAdmin
+        .from('enrollments')
+        .select('courses(price, name)')
+        .eq('student_id', student_id)
+        .in('status', ['active', 'completed'])
+        .order('enrolled_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
 
-    if (error) {
-      res.status(400).json({ success: false, error: error.message });
+    if (paymentsResult.error) {
+      res.status(400).json({ success: false, error: paymentsResult.error.message });
       return;
     }
 
-    res.json({ success: true, data: data || [] });
+    const payments = paymentsResult.data || [];
+    const enrollment = enrollmentResult.data;
+
+    // Course fee from current enrollment
+    const courseFee = (enrollment?.courses as any)?.price ?? null;
+
+    // Monthly paid: sum of completed payments in the current calendar month
+    const now = new Date();
+    const monthlyPaid = payments
+      .filter((p) => {
+        if (p.status !== 'completed') return false;
+        const d = new Date(p.created_at);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      })
+      .reduce((sum, p) => sum + Number(p.amount), 0);
+
+    // Upcoming payment: pending payment amount (no due_date column — date shown as null),
+    // or an estimated next payment 30 days after the last completed one (approximation for monthly plans).
+    const pendingPayment = payments.find((p) => p.status === 'pending');
+    const completedPayments = payments.filter((p) => p.status === 'completed');
+    let nextPaymentDate: string | null = null;
+    let nextPaymentAmount: number | null = null;
+    if (pendingPayment) {
+      // No due_date column; surface amount only — UI will show "Pending" for the date
+      nextPaymentAmount = Number(pendingPayment.amount);
+    } else if (completedPayments.length > 0) {
+      // Estimate next monthly payment as 30 days after last completed payment
+      const lastDate = new Date(completedPayments[0].created_at);
+      lastDate.setDate(lastDate.getDate() + 30);
+      nextPaymentDate = lastDate.toISOString();
+      nextPaymentAmount = courseFee ?? Number(completedPayments[0].amount);
+    }
+
+    res.json({
+      success: true,
+      data: payments,
+      summary: {
+        courseFee,
+        monthlyPaid,
+        nextPaymentDate,
+        nextPaymentAmount,
+      },
+    });
   } catch (error: any) {
     console.error('Get my payments error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });

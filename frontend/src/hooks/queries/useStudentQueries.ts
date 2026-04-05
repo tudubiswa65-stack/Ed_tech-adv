@@ -140,21 +140,38 @@ export function useStudentUnreadCount(options?: { enabled?: boolean }) {
 
 // ── Student Payments ──────────────────────────────────────────────────────────
 
+export interface PaymentSummary {
+  courseFee: number | null;
+  monthlyPaid: number;
+  nextPaymentDate: string | null;
+  nextPaymentAmount: number | null;
+}
+
+export interface PaymentRecord {
+  id: string;
+  amount: number;
+  status: string;
+  payment_method?: string;
+  transaction_id?: string;
+  description?: string;
+  created_at: string;
+  [key: string]: unknown;
+}
+
 export function useStudentPayments() {
   return useQuery({
     queryKey: studentQueryKeys.payments(),
     queryFn: async () => {
       const response = await apiClient.get('/student/payments');
-      return (response.data.data ?? []) as {
-        id: string;
-        amount: number;
-        status: string;
-        payment_method?: string;
-        transaction_id?: string;
-        description?: string;
-        created_at: string;
-        [key: string]: unknown;
-      }[];
+      return {
+        payments: (response.data.data ?? []) as PaymentRecord[],
+        summary: (response.data.summary ?? {
+          courseFee: null,
+          monthlyPaid: 0,
+          nextPaymentDate: null,
+          nextPaymentAmount: null,
+        }) as PaymentSummary,
+      };
     },
     staleTime: 120 * 1000,
   });
