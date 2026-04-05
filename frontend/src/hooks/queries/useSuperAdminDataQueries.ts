@@ -43,14 +43,24 @@ export interface Branch {
 export interface Course {
   id: string;
   name: string;
-  description: string;
+  title?: string;
+  description?: string;
   branch_name: string;
   branch_id: string;
-  level: string;
-  price: number;
-  duration_weeks: number;
+  level?: string;
+  price?: number;
+  duration_value?: number;
+  duration_unit?: string;
+  start_date?: string;
+  end_date?: string;
+  last_enrollment_date?: string;
+  thumbnail?: string;
+  instructor?: string;
+  terms_and_conditions?: string;
+  category?: string;
+  status?: string;
   is_active: boolean;
-  thumbnail_url?: string;
+  is_published?: boolean;
 }
 
 export interface Student {
@@ -158,16 +168,7 @@ export function useCreateCourse() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (data: {
-      name: string;
-      description: string;
-      level: string;
-      duration: number;
-      duration_unit: string;
-      price: number;
-      branch_id: string;
-      is_active?: boolean;
-    }) => {
+    mutationFn: async (data: Record<string, unknown>) => {
       const response = await apiClient.post('/super-admin/courses', data);
       return response.data.data;
     },
