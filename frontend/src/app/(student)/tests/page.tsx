@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PageWrapper from '@/components/layout/PageWrapper';
-import { Card, Button, Badge, Spinner } from '@/components/ui';
+import { Card, Button, Badge } from '@/components/ui';
 import { useStudentTests } from '@/hooks/queries/useStudentQueries';
 
 interface TestData {
@@ -21,9 +21,28 @@ export default function StudentTestsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Spinner size="lg" />
-      </div>
+      <PageWrapper title="My Tests">
+        {/* Tab bar skeleton */}
+        <div className="flex gap-4 md:gap-6 mb-6 border-b border-gray-200 dark:border-slate-600 animate-pulse">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-4 bg-gray-200 dark:bg-slate-600 rounded w-20 mb-3" />
+          ))}
+        </div>
+        {/* Cards grid skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="animate-pulse bg-white dark:bg-slate-800 rounded-xl shadow-sm p-5 border border-gray-100 dark:border-slate-700">
+              <div className="h-4 bg-gray-200 dark:bg-slate-600 rounded w-3/4 mb-2" />
+              <div className="h-3 bg-gray-200 dark:bg-slate-600 rounded w-1/2 mb-4" />
+              <div className="flex gap-2 mb-4">
+                <div className="h-6 bg-gray-200 dark:bg-slate-600 rounded w-16" />
+                <div className="h-6 bg-gray-200 dark:bg-slate-600 rounded w-14" />
+              </div>
+              <div className="h-9 bg-gray-200 dark:bg-slate-600 rounded w-full" />
+            </div>
+          ))}
+        </div>
+      </PageWrapper>
     );
   }
 

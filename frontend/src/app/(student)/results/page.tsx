@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
-import Spinner from '@/components/ui/Spinner';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { useStudentResults, useStudentPerformance } from '@/hooks/queries/useStudentQueries';
 
@@ -69,8 +68,43 @@ export default function StudentResultsPage() {
   if (loading) {
     return (
       <PageWrapper title="My Results">
-        <div className="flex justify-center py-12">
-          <Spinner />
+        <div className="space-y-6">
+          {/* Stats cards skeleton */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="animate-pulse bg-white dark:bg-slate-800 rounded-xl p-4 text-center border border-gray-100 dark:border-slate-700">
+                <div className="h-8 bg-gray-200 dark:bg-slate-600 rounded w-1/2 mx-auto mb-2" />
+                <div className="h-3 bg-gray-200 dark:bg-slate-600 rounded w-3/4 mx-auto" />
+              </div>
+            ))}
+          </div>
+          {/* Subject bars skeleton */}
+          <Card>
+            <div className="p-4 md:p-6 animate-pulse space-y-4">
+              <div className="h-4 bg-gray-200 dark:bg-slate-600 rounded w-1/3 mb-4" />
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-28 h-3 bg-gray-200 dark:bg-slate-600 rounded" />
+                  <div className="flex-1 h-3 bg-gray-200 dark:bg-slate-600 rounded-full" />
+                  <div className="w-10 h-3 bg-gray-200 dark:bg-slate-600 rounded" />
+                </div>
+              ))}
+            </div>
+          </Card>
+          {/* Table skeleton */}
+          <Card>
+            <div className="p-4 animate-pulse">
+              <div className="h-4 bg-gray-200 dark:bg-slate-600 rounded w-1/4 mb-4" />
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex gap-3 py-3 border-b border-gray-100 dark:border-slate-700">
+                  <div className="flex-1 h-3 bg-gray-200 dark:bg-slate-600 rounded" />
+                  <div className="w-20 h-3 bg-gray-200 dark:bg-slate-600 rounded" />
+                  <div className="w-16 h-3 bg-gray-200 dark:bg-slate-600 rounded" />
+                  <div className="w-16 h-3 bg-gray-200 dark:bg-slate-600 rounded" />
+                </div>
+              ))}
+            </div>
+          </Card>
         </div>
       </PageWrapper>
     );

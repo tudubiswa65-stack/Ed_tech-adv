@@ -97,6 +97,36 @@ export default function StudentPaymentsPage() {
 
   return (
     <PageWrapper title="My Payments">
+      {loading ? (
+        <div className="animate-pulse space-y-6">
+          {/* Summary cards skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-gray-100 dark:border-slate-700 flex flex-col gap-2">
+                <div className="h-3 bg-gray-200 dark:bg-slate-600 rounded w-1/2" />
+                <div className="h-7 bg-gray-200 dark:bg-slate-600 rounded w-3/4" />
+                <div className="h-3 bg-gray-200 dark:bg-slate-600 rounded w-2/3" />
+              </div>
+            ))}
+          </div>
+          {/* Table skeleton */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 overflow-hidden">
+            <div className="flex gap-4 p-4 border-b border-gray-100 dark:border-slate-700">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex-1 h-3 bg-gray-200 dark:bg-slate-600 rounded" />
+              ))}
+            </div>
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex gap-4 p-4 border-b border-gray-50 dark:border-slate-700">
+                {[...Array(5)].map((_, j) => (
+                  <div key={j} className="flex-1 h-3 bg-gray-200 dark:bg-slate-600 rounded" />
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+      <>
       <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Paid */}
         <Card className="p-4 flex flex-col gap-1">
@@ -142,6 +172,8 @@ export default function StudentPaymentsPage() {
       </div>
 
       <Table columns={columns} data={payments} loading={loading} emptyMessage="No payment records found" />
+      </>
+      )}
 
       {/* Receipt Modal */}
       <Modal isOpen={showReceiptModal} onClose={() => setShowReceiptModal(false)} title="Payment Receipt" size="md">

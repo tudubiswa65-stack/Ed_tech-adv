@@ -187,8 +187,31 @@ export default function LeaderboardPage() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-24">
-          <div className="w-9 h-9 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <div className="animate-pulse px-4">
+          {/* Podium skeleton */}
+          <div className="flex flex-row items-end justify-center gap-3 sm:gap-6 py-6">
+            {[{ h: 'h-40' }, { h: 'h-52' }, { h: 'h-36' }].map(({ h }, i) => (
+              <div key={i} className={`flex flex-col items-center gap-2 w-28 ${h} bg-white/5 rounded-2xl p-4`}>
+                <div className="w-12 h-12 bg-slate-600 rounded-full" />
+                <div className="h-3 bg-slate-600 rounded w-16 mt-auto" />
+                <div className="h-3 bg-slate-600 rounded w-10" />
+              </div>
+            ))}
+          </div>
+          {/* List skeleton */}
+          <div className="flex flex-col gap-2 mt-2">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="flex items-center gap-3 bg-[#131740] rounded-2xl px-4 py-3">
+                <div className="w-6 h-3 bg-slate-600 rounded" />
+                <div className="w-10 h-10 bg-slate-600 rounded-full shrink-0" />
+                <div className="flex-1 space-y-1">
+                  <div className="h-3 bg-slate-600 rounded w-1/3" />
+                  <div className="h-2 bg-slate-700 rounded w-1/4" />
+                </div>
+                <div className="h-3 bg-slate-600 rounded w-16" />
+              </div>
+            ))}
+          </div>
         </div>
       ) : leaderboard.length === 0 ? (
         <p className="text-center text-slate-400 py-24">No rankings available yet</p>
