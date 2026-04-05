@@ -21,6 +21,38 @@ const TARGET_TYPE_MAP: Record<string, string> = {
 };
 
 
+// Get count of notifications (optionally since a given timestamp)
+export const getNotificationsCount = async (req: AuthRequest, res: Response) => {
+  try {
+    const instituteId = req.user?.instituteId;
+    const { since } = req.query;
+
+    let query = supabaseAdmin
+      .from('notifications')
+      .select('*', { count: 'exact', head: true });
+
+    if (instituteId) {
+      query = query.eq('institute_id', instituteId);
+    }
+
+    if (since && typeof since === 'string') {
+      query = query.gt('created_at', since);
+    }
+
+    const { count, error } = await query;
+
+    if (error) {
+      console.error('Admin getNotificationsCount DB error:', JSON.stringify(error));
+      return res.status(400).json({ success: false, error: error.message });
+    }
+
+    res.json({ success: true, data: { count: count ?? 0 } });
+  } catch (error) {
+    console.error('Get notifications count error:', error);
+    res.status(500).json({ success: false, error: 'Failed to get notifications count' });
+  }
+};
+
 // Get all notifications
 export const getNotifications = async (req: AuthRequest, res: Response) => {
   try {

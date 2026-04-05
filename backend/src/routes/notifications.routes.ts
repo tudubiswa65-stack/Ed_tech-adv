@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticate, requireAdmin } from '../middleware/authMiddleware';
 import {
   getNotifications,
+  getNotificationsCount,
   createNotification,
   updateNotification,
   deleteNotification,
@@ -17,6 +18,7 @@ import {
 const router = Router();
 
 // Notifications
+router.get('/count', getNotificationsCount);
 router.get('/', getNotifications);
 router.post('/', createNotification);
 router.put('/:id', updateNotification);

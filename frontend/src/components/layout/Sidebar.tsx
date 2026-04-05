@@ -6,6 +6,10 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useInstitute } from '@/hooks/useInstitute';
 import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/lib/apiClient';
+import { studentQueryKeys } from '@/hooks/queries/useStudentQueries';
+import { adminQueryKeys, ADMIN_NOTIF_VIEWED_AT_KEY } from '@/hooks/queries/useAdminQueries';
 
 interface NavItem {
   label: string;
@@ -80,6 +84,35 @@ export default function Sidebar({ role, isOpen = false, onClose = () => {} }: Si
       return false;
     }
     return true;
+  });
+
+  const isStudent = role === 'student';
+
+  // Notification badge count — shares the same React Query cache with Navbar
+  const { data: notifBadgeCount = 0 } = useQuery({
+    queryKey: isStudent
+      ? studentQueryKeys.unreadCount()
+      : [...adminQueryKeys.all, 'notifications-count'],
+    queryFn: async () => {
+      if (isStudent) {
+        const r = await apiClient.get('/student/notifications/unread-count');
+        const d = (r.data as any)?.success ? (r.data as any).data : r.data;
+        return (d?.unreadCount ?? 0) as number;
+      }
+      if (typeof window === 'undefined') return 0;
+      const since = localStorage.getItem(ADMIN_NOTIF_VIEWED_AT_KEY);
+      if (!since) {
+        localStorage.setItem(ADMIN_NOTIF_VIEWED_AT_KEY, new Date().toISOString());
+        return 0;
+      }
+      const r = await apiClient.get(
+        `/admin/notifications/count?since=${encodeURIComponent(since)}`
+      );
+      const d = (r.data as any)?.success ? (r.data as any).data : r.data;
+      return (d?.count ?? 0) as number;
+    },
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
   });
 
   const getIcon = (icon: string) => {
@@ -232,6 +265,11 @@ export default function Sidebar({ role, isOpen = false, onClose = () => {} }: Si
                       )}
                       {getIcon(item.icon)}
                       <span>{item.label}</span>
+                      {item.icon === 'notifications' && notifBadgeCount > 0 && (
+                        <span className="ml-auto min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
+                          {notifBadgeCount > 99 ? '99+' : notifBadgeCount}
+                        </span>
+                      )}
                     </Link>
                   </li>
                 );

@@ -2,11 +2,16 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/context/ThemeContext';
 import { useToast } from '@/context/ToastContext';
 import { apiClient } from '@/lib/apiClient';
 import { validateAvatarFile } from '@/lib/avatarValidation';
+import { useQuery } from '@tanstack/react-query';
+import { studentQueryKeys } from '@/hooks/queries/useStudentQueries';
+import { adminQueryKeys, ADMIN_NOTIF_VIEWED_AT_KEY } from '@/hooks/queries/useAdminQueries';
+import { superAdminQueryKeys, SUPER_ADMIN_NOTIF_VIEWED_AT_KEY } from '@/hooks/queries/useSuperAdminQueries';
 
 interface NavbarProps {
   title: string;
@@ -74,6 +79,77 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
     .join('')
     .toUpperCase() ?? '?';
 
+  const role = user?.role;
+
+  const notifPath =
+    role === 'super_admin'
+      ? '/super-admin/notifications'
+      : role === 'admin' || role === 'branch_admin'
+      ? '/admin/notifications'
+      : '/notifications';
+
+  // Unread count for students (actual unread from backend)
+  const { data: studentUnreadCount = 0 } = useQuery({
+    queryKey: studentQueryKeys.unreadCount(),
+    queryFn: async () => {
+      const r = await apiClient.get('/student/notifications/unread-count');
+      const d = (r.data as any)?.success ? (r.data as any).data : r.data;
+      return (d?.unreadCount ?? 0) as number;
+    },
+    enabled: role === 'student',
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
+  });
+
+  // New notifications count for admin/branch_admin (since last viewed)
+  const { data: adminUnreadCount = 0 } = useQuery({
+    queryKey: [...adminQueryKeys.all, 'notifications-count'],
+    queryFn: async () => {
+      if (typeof window === 'undefined') return 0;
+      const since = localStorage.getItem(ADMIN_NOTIF_VIEWED_AT_KEY);
+      if (!since) {
+        localStorage.setItem(ADMIN_NOTIF_VIEWED_AT_KEY, new Date().toISOString());
+        return 0;
+      }
+      const r = await apiClient.get(
+        `/admin/notifications/count?since=${encodeURIComponent(since)}`
+      );
+      const d = (r.data as any)?.success ? (r.data as any).data : r.data;
+      return (d?.count ?? 0) as number;
+    },
+    enabled: role === 'admin' || role === 'branch_admin',
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
+  });
+
+  // New notifications count for super_admin (since last viewed)
+  const { data: superAdminUnreadCount = 0 } = useQuery({
+    queryKey: [...superAdminQueryKeys.all, 'notifications-count'],
+    queryFn: async () => {
+      if (typeof window === 'undefined') return 0;
+      const since = localStorage.getItem(SUPER_ADMIN_NOTIF_VIEWED_AT_KEY);
+      if (!since) {
+        localStorage.setItem(SUPER_ADMIN_NOTIF_VIEWED_AT_KEY, new Date().toISOString());
+        return 0;
+      }
+      const r = await apiClient.get(
+        `/super-admin/notifications/count?since=${encodeURIComponent(since)}`
+      );
+      const d = (r.data as any)?.success ? (r.data as any).data : r.data;
+      return (d?.count ?? 0) as number;
+    },
+    enabled: role === 'super_admin',
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
+  });
+
+  const notifBadgeCount =
+    role === 'student'
+      ? studentUnreadCount
+      : role === 'super_admin'
+      ? superAdminUnreadCount
+      : adminUnreadCount;
+
   const roleLabel =
     user?.role === 'super_admin'
       ? 'Super Admin'
@@ -112,14 +188,20 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
           </button>
 
           {/* Notification bell */}
-          <button
+          <Link
+            href={notifPath}
             className="relative p-1.5 rounded-lg text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors dark:bg-slate-700"
             aria-label="Notifications"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
-          </button>
+            {notifBadgeCount > 0 && (
+              <span className="absolute top-0.5 right-0.5 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 leading-none">
+                {notifBadgeCount > 99 ? '99+' : notifBadgeCount}
+              </span>
+            )}
+          </Link>
 
           <div className="w-px h-6 bg-gray-200 dark:bg-slate-700 mx-1" />
 

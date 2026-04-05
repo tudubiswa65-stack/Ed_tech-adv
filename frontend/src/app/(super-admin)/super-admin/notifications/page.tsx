@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { DataTable } from '@/components/super-admin/DataTable';
 import { Modal } from '@/components/ui';
+import { queryClient } from '@/lib/queryClient';
+import { superAdminQueryKeys, SUPER_ADMIN_NOTIF_VIEWED_AT_KEY } from '@/hooks/queries/useSuperAdminQueries';
 
 interface Notification {
   id: string;
@@ -45,6 +47,11 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     fetchAll();
+    // Clear notification badge when this page is opened
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(SUPER_ADMIN_NOTIF_VIEWED_AT_KEY, new Date().toISOString());
+      queryClient.setQueryData([...superAdminQueryKeys.all, 'notifications-count'], 0);
+    }
   }, []);
 
   const fetchAll = async () => {
