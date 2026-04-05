@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useAuth } from '@/hooks/useAuth';
 import { useSuperAdminDashboard } from '@/hooks/queries/useSuperAdminQueries';
 import { DashboardSkeleton } from '@/components/super-admin/SuperAdminPageSkeletons';
 
@@ -222,10 +221,7 @@ function fmtRevenue(val: number) {
 
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function SuperAdminDashboard() {
-  const { user } = useAuth();
-
   const {
-    stats,
     studentGrowth,
     revenue,
     attendance,
@@ -233,16 +229,6 @@ export default function SuperAdminDashboard() {
     isLoading: loading,
     isError: statsError,
   } = useSuperAdminDashboard();
-
-  // ── Derived user display values ──────────────────────────────────────────────
-  const initials = user?.name
-    ?.split(' ')
-    .filter(Boolean)
-    .map(n => n[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase() ?? '?';
-  const roleLabel = user?.role === 'super_admin' ? 'Super Admin' : 'Admin';
 
   if (loading) {
     return <DashboardSkeleton />;
@@ -305,49 +291,8 @@ export default function SuperAdminDashboard() {
   return (
     <div style={{ background: '#0f172a', minHeight: '100vh', paddingBottom: 24 }}>
 
-      {/* ── Mobile-only header bar ─────────────────────────────────────────────── */}
-      <div className="lg:hidden" style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.9)' }}>Dashboard</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {/* Notification bell */}
-          <div style={{
-            width: 28, height: 28, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.07)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <svg width="14" height="14" fill="none" stroke="rgba(255,255,255,0.7)" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-          </div>
-          {/* User pill */}
-          <div style={{
-            background: '#1e293b', borderRadius: 20,
-            padding: '4px 10px 4px 4px',
-            border: '0.5px solid rgba(255,255,255,0.08)',
-            display: 'flex', alignItems: 'center', gap: 6,
-          }}>
-            <div style={{
-              width: 26, height: 26, borderRadius: '50%', background: '#6366f1',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 10, fontWeight: 700, color: '#fff', flexShrink: 0,
-            }}>
-              {initials}
-            </div>
-            <div style={{ lineHeight: 1.2 }}>
-              <div style={{ fontSize: 11, fontWeight: 500, color: '#fff', maxWidth: 72, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {user?.name ?? 'Admin'}
-              </div>
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>{roleLabel}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* ── Page content ────────────────────────────────────────────────────────── */}
-      <div style={{ padding: '0 16px' }} className="lg:pt-4 lg:px-0">
-
-        {/* Divider (mobile only) */}
-        <div className="lg:hidden" style={{ height: 1, background: 'rgba(255,255,255,0.06)', marginBottom: 16 }} />
+      <div style={{ padding: '0 16px' }} className="lg:px-0">
 
         {/* Page title block */}
         <div style={{ marginBottom: 20 }}>

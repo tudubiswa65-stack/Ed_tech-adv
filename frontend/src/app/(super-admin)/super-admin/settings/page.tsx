@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
 import {
   useSuperAdminSettings,
   useUpdateSettings,
@@ -178,7 +177,6 @@ function ToggleSwitch({
 }
 
 export default function SettingsPage() {
-  const { user } = useAuth();
   const [settings, setSettings] = useState<Settings>({});
   const [features, setFeatures] = useState<Features>({});
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -231,14 +229,6 @@ export default function SettingsPage() {
     setFeatures({ ...features, [key]: !features[key] });
   };
 
-  // Derive initials for avatar
-  const initials = user?.name
-    ?.split(' ')
-    .map(n => n[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase() ?? 'SA';
-
   const primaryColor = settings.primary_color || '#6366f1';
   const maxUpload = settings.max_upload_size_mb || 10;
   const MAX_UPLOAD_CAP = 100;
@@ -279,41 +269,6 @@ export default function SettingsPage() {
           {toast.message}
         </div>
       )}
-
-      {/* ── Mobile header (hidden on desktop where Navbar shows) ── */}
-      <div className="flex lg:hidden" style={{
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '14px 16px',
-        background: '#0f172a',
-        borderBottom: '0.5px solid rgba(255,255,255,0.06)',
-      }}>
-        <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.9)' }}>
-          Global Settings
-        </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {/* Notification bell */}
-          <div style={{
-            width: 28, height: 28, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.07)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth={1.8}
-              strokeLinecap="round" strokeLinejoin="round" style={{ width: 14, height: 14 }}>
-              <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-          </div>
-          {/* Avatar */}
-          <div style={{
-            width: 32, height: 32, borderRadius: '50%',
-            background: '#6366f1',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 12, fontWeight: 600, color: '#fff',
-          }}>
-            {initials}
-          </div>
-        </div>
-      </div>
 
       {/* ── Page content ── */}
       <div style={{ padding: '20px 16px 0' }}>
