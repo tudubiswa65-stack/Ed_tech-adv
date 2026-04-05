@@ -91,7 +91,7 @@ export interface StudentProfile extends Student {
   created_at?: string;
 }
 
-
+export interface Settings {
   platform_name?: string;
   tagline?: string;
   primary_color?: string;
