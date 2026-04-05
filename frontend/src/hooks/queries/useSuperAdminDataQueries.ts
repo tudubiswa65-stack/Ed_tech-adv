@@ -86,7 +86,7 @@ export interface StudentProfile extends Student {
   course_id?: string;
   phone?: string;
   branches?: { id: string; name: string; location?: string; contact_number?: string };
-  courses?: { id: string; name: string; level?: string; duration?: number; duration_unit?: string };
+  courses?: { id: string; name: string; level?: string; duration_value?: number; duration_unit?: string };
   enrollments?: Enrollment[];
   created_at?: string;
 }

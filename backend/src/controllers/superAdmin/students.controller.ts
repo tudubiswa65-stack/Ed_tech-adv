@@ -92,7 +92,7 @@ export const getStudentProfile = async (req: AuthRequest, res: Response): Promis
           id,
           name,
           level,
-          duration,
+          duration_value,
           duration_unit
         )
       `)
