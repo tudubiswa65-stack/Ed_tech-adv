@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Button, Spinner, Modal, Input } from '@/components/ui';
+import { Button, Modal, Input } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/context/ToastContext';
@@ -212,8 +212,37 @@ export default function StudentProfileDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Spinner size="lg" />
+      <div style={{ background: '#0f172a', minHeight: '100vh' }} className="animate-pulse">
+        {/* Profile header skeleton */}
+        <div style={{ background: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)', padding: '20px 16px 24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#334155', flexShrink: 0 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ height: 14, background: '#334155', borderRadius: 6, width: '50%', marginBottom: 8 }} />
+              <div style={{ height: 11, background: '#1e293b', borderRadius: 6, width: '65%', marginBottom: 10 }} />
+              <div style={{ height: 20, background: '#1e3a5f', borderRadius: 9999, width: 60 }} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0 }}>
+              <div style={{ height: 30, background: '#1e3a5f', borderRadius: 8, width: 60 }} />
+              <div style={{ height: 30, background: '#1e293b', borderRadius: 8, width: 72 }} />
+            </div>
+          </div>
+        </div>
+        {/* Sections skeleton */}
+        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Course card */}
+          <div style={{ height: 90, background: '#1e293b', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)', borderLeft: '3px solid #334155' }} />
+          {/* Stats row */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+            {[...Array(4)].map((_, i) => (
+              <div key={i} style={{ height: 70, background: '#1e293b', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)' }} />
+            ))}
+          </div>
+          {/* Three section cards */}
+          {[120, 160, 140].map((h, i) => (
+            <div key={i} style={{ height: h, background: '#1e293b', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)' }} />
+          ))}
+        </div>
       </div>
     );
   }

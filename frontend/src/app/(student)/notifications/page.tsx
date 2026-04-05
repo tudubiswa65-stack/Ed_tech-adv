@@ -5,7 +5,6 @@ import apiClient from '@/lib/apiClient';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
-import Spinner from '@/components/ui/Spinner';
 import PageWrapper from '@/components/layout/PageWrapper';
 import {
   useStudentNotifications,
@@ -144,8 +143,20 @@ export default function NotificationsPage() {
         {/* Notifications List */}
         <Card>
           {loading ? (
-            <div className="flex justify-center py-12">
-              <Spinner />
+            <div className="animate-pulse divide-y divide-gray-100 dark:divide-slate-700">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="p-4 flex gap-3">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex gap-2">
+                      <div className="h-5 bg-gray-200 dark:bg-slate-600 rounded w-14" />
+                    </div>
+                    <div className="h-4 bg-gray-200 dark:bg-slate-600 rounded w-2/3" />
+                    <div className="h-3 bg-gray-200 dark:bg-slate-600 rounded w-full" />
+                    <div className="h-3 bg-gray-200 dark:bg-slate-600 rounded w-1/4" />
+                  </div>
+                  <div className="h-8 bg-gray-200 dark:bg-slate-600 rounded w-20 self-start" />
+                </div>
+              ))}
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center text-gray-500 dark:text-slate-400">

@@ -7,7 +7,6 @@ import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
-import Spinner from '@/components/ui/Spinner';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { useStudentFeedback, studentQueryKeys } from '@/hooks/queries/useStudentQueries';
 import { queryClient } from '@/lib/queryClient';
@@ -128,8 +127,19 @@ export default function FeedbackPage() {
           <div className="p-6">
             <h3 className="text-lg font-semibold mb-4">Your Feedback History</h3>
             {loading ? (
-              <div className="flex justify-center py-8">
-                <Spinner />
+              <div className="animate-pulse space-y-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className={`flex items-center justify-between py-3 ${i < 3 ? 'border-b border-gray-100 dark:border-slate-700' : ''}`}>
+                    <div className="flex items-center gap-4">
+                      <div className="h-5 bg-gray-200 dark:bg-slate-600 rounded w-16" />
+                      <div className="space-y-1">
+                        <div className="h-4 bg-gray-200 dark:bg-slate-600 rounded w-32" />
+                        <div className="h-3 bg-gray-200 dark:bg-slate-600 rounded w-24" />
+                      </div>
+                    </div>
+                    <div className="h-4 bg-gray-200 dark:bg-slate-600 rounded w-20" />
+                  </div>
+                ))}
               </div>
             ) : feedbackHistory.length === 0 ? (
               <div className="text-center text-gray-500 py-8 dark:text-slate-400">

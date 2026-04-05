@@ -7,7 +7,6 @@ import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
 import Modal from '@/components/ui/Modal';
-import Spinner from '@/components/ui/Spinner';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { useStudentMaterials, useStudentRecentMaterials } from '@/hooks/queries/useStudentQueries';
 
@@ -160,8 +159,22 @@ export default function StudyMaterialsPage() {
 
         {/* Materials Grid */}
         {loading ? (
-          <div className="flex justify-center py-12">
-            <Spinner />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="animate-pulse bg-white dark:bg-slate-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-slate-700">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="h-8 w-8 bg-gray-200 dark:bg-slate-600 rounded" />
+                  <div className="h-5 bg-gray-200 dark:bg-slate-600 rounded w-16" />
+                </div>
+                <div className="h-4 bg-gray-200 dark:bg-slate-600 rounded w-3/4 mb-2" />
+                <div className="h-3 bg-gray-200 dark:bg-slate-600 rounded w-full mb-1" />
+                <div className="h-3 bg-gray-200 dark:bg-slate-600 rounded w-2/3 mb-4" />
+                <div className="flex justify-between">
+                  <div className="h-3 bg-gray-200 dark:bg-slate-600 rounded w-20" />
+                  <div className="h-3 bg-gray-200 dark:bg-slate-600 rounded w-14" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : materials.length === 0 ? (
           <Card>
