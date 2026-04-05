@@ -129,7 +129,7 @@ export default function FeedbackPage() {
             {loading ? (
               <div className="animate-pulse space-y-4">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="flex items-center justify-between py-3 border-b last:border-0">
+                  <div key={i} className={`flex items-center justify-between py-3 ${i < 3 ? 'border-b border-gray-100 dark:border-slate-700' : ''}`}>
                     <div className="flex items-center gap-4">
                       <div className="h-5 bg-gray-200 dark:bg-slate-600 rounded w-16" />
                       <div className="space-y-1">
