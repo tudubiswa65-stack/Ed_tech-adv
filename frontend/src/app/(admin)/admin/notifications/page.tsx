@@ -8,6 +8,7 @@ import Card from '@/components/ui/Card';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Spinner from '@/components/ui/Spinner';
+import { AdminListSkeleton } from '@/components/admin/AdminPageSkeletons';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useAdminNotifications, adminQueryKeys, ADMIN_NOTIF_VIEWED_AT_KEY } from '@/hooks/queries/useAdminQueries';
@@ -207,9 +208,7 @@ export default function NotificationsPage() {
         <Card>
           <div className="divide-y divide-gray-200 dark:divide-slate-700">
             {loading ? (
-              <div className="flex justify-center py-12">
-                <Spinner />
-              </div>
+              <AdminListSkeleton count={5} />
             ) : notifications.length === 0 ? (
               <div className="p-8 text-center text-gray-500 dark:text-slate-400">
                 No notifications found. Click &quot;Create Notification&quot; to add one.

@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Card, Button, Input, Spinner } from '@/components/ui';
+import { AdminFormSkeleton } from '@/components/admin/AdminPageSkeletons';
 import { apiClient } from '@/lib/apiClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/context/ToastContext';
@@ -98,9 +99,9 @@ export default function AdminProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Spinner size="lg" />
-      </div>
+      <PageWrapper title="My Profile">
+        <AdminFormSkeleton fields={4} />
+      </PageWrapper>
     );
   }
 

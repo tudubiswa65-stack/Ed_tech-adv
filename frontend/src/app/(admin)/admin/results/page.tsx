@@ -8,6 +8,7 @@ import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
 import Table from '@/components/ui/Table';
 import Spinner from '@/components/ui/Spinner';
+import { AdminTableSkeleton } from '@/components/admin/AdminPageSkeletons';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { useAdminResults, useAdminTestsList } from '@/hooks/queries/useAdminQueries';
 
@@ -195,9 +196,7 @@ export default function ResultsPage() {
           <div className="p-4">
             <h3 className="text-lg font-semibold mb-4">Test Results</h3>
             {loading ? (
-              <div className="flex justify-center py-8">
-                <Spinner />
-              </div>
+              <AdminTableSkeleton rows={6} cols={6} />
             ) : results.length === 0 ? (
               <p className="text-center text-gray-500 py-8 dark:text-slate-400">No results found</p>
             ) : (

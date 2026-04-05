@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Card, Spinner, Badge } from '@/components/ui';
+import { AdminDashboardSkeleton } from '@/components/admin/AdminPageSkeletons';
 import { useAuth } from '@/hooks/useAuth';
 import { AdminDashboardStats, useAggregatedDashboard } from '@/hooks/queries/useAdminQueries';
 
@@ -230,21 +231,7 @@ export default function AdminDashboard() {
   const avgScore = stats?.avgScore ?? 0;
 
   if (loading) {
-    return (
-      <>
-        {/* Mobile loading */}
-        <div
-          className="lg:hidden min-h-screen flex items-center justify-center"
-          style={{ background: TOKEN.pageBg }}
-        >
-          <Spinner size="lg" />
-        </div>
-        {/* Desktop loading */}
-        <div className="hidden lg:flex items-center justify-center min-h-[400px]">
-          <Spinner size="lg" />
-        </div>
-      </>
-    );
+    return <AdminDashboardSkeleton />;
   }
 
   // ── Mobile layout ────────────────────────────────────────────────────────

@@ -8,6 +8,7 @@ import Card from '@/components/ui/Card';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Spinner from '@/components/ui/Spinner';
+import { AdminTableSkeleton } from '@/components/admin/AdminPageSkeletons';
 import PageWrapper from '@/components/layout/PageWrapper';
 import Switch from '@/components/ui/Switch';
 import { useAdminCourses, useAdminTestsList, adminQueryKeys } from '@/hooks/queries/useAdminQueries';
@@ -335,9 +336,9 @@ export default function TestsPage() {
 
         {/* Tests Table */}
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Spinner />
-          </div>
+          <Card>
+            <AdminTableSkeleton rows={6} cols={6} />
+          </Card>
         ) : tests.length === 0 ? (
           <Card>
             <div className="p-8 text-center text-gray-500 dark:text-slate-400">

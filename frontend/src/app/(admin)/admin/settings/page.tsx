@@ -6,6 +6,7 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Spinner from '@/components/ui/Spinner';
+import { AdminFormSkeleton } from '@/components/admin/AdminPageSkeletons';
 import PageWrapper from '@/components/layout/PageWrapper';
 import Switch from '@/components/ui/Switch';
 import { useAuth } from '@/hooks/useAuth';
@@ -191,9 +192,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <PageWrapper title="Settings">
-        <div className="flex justify-center py-12">
-          <Spinner />
-        </div>
+        <AdminFormSkeleton fields={5} />
       </PageWrapper>
     );
   }
