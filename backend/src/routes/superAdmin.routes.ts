@@ -39,6 +39,7 @@ import {
   getStudentProfile,
   getStudentPayments,
   getStudentAttendance,
+  updateStudent,
   updateStudentStatus,
   createStudent,
   deleteStudent
@@ -157,6 +158,7 @@ router.get('/students', requireSuperAdmin, getAllStudents);
 router.get('/students/:id/profile', requireSuperAdmin, getStudentProfile);
 router.get('/students/:id/payments', requireSuperAdmin, getStudentPayments);
 router.get('/students/:id/attendance', requireSuperAdmin, getStudentAttendance);
+router.put('/students/:id', requireSuperAdmin, updateStudent);
 router.put('/students/:id/status', requireSuperAdmin, updateStudentStatus);
 router.post('/students', requireSuperAdmin, createStudent);
 router.delete('/students/:id', requireSuperAdmin, deleteStudent);

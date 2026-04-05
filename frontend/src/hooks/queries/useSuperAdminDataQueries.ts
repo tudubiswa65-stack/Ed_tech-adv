@@ -252,6 +252,34 @@ export function useSuperAdminStudent(id: string) {
   });
 }
 
+export function useUpdateStudent() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: {
+        name?: string;
+        email?: string;
+        course_id?: string;
+        branch_id?: string;
+        status?: string;
+        password?: string;
+      };
+    }) => {
+      const response = await apiClient.put(`/super-admin/students/${id}`, data);
+      return response.data.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: superAdminDataQueryKeys.students() });
+      queryClient.invalidateQueries({ queryKey: superAdminDataQueryKeys.student(variables.id) });
+    },
+  });
+}
+
 export function useCreateStudent() {
   const queryClient = useQueryClient();
   

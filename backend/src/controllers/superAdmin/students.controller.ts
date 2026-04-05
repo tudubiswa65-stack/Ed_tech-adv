@@ -233,6 +233,45 @@ export const getStudentAttendance = async (req: AuthRequest, res: Response): Pro
   }
 };
 
+export const updateStudent = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { name, email, course_id, branch_id, status, password } = req.body;
+
+    const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (name !== undefined) updateData.name = name;
+    if (email !== undefined) updateData.email = email;
+    if (course_id !== undefined) updateData.course_id = course_id || null;
+    if (branch_id !== undefined) updateData.branch_id = branch_id || null;
+    if (status !== undefined) updateData.status = status;
+    if (password && password.trim()) {
+      updateData.password_hash = await bcrypt.hash(password, 12);
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('students')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating student:', error);
+      if (error.code === '23505') {
+        res.status(400).json({ success: false, error: 'Email already in use' });
+        return;
+      }
+      res.status(500).json({ success: false, error: 'Failed to update student' });
+      return;
+    }
+
+    res.json({ success: true, data, message: 'Student updated successfully' });
+  } catch (error) {
+    console.error('Error updating student:', error);
+    res.status(500).json({ success: false, error: 'Failed to update student' });
+  }
+};
+
 export const updateStudentStatus = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
