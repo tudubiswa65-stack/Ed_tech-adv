@@ -223,7 +223,7 @@ export default function StudentsPage() {
           </div>
           <div className="w-full sm:w-48">
             <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] dark:border-slate-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
               value={branchFilter}
               onChange={(e) => setBranchFilter(e.target.value)}
             >
@@ -237,7 +237,7 @@ export default function StudentsPage() {
           </div>
           <div className="w-full sm:w-48">
             <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] dark:border-slate-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
               value={courseFilter}
               onChange={(e) => setCourseFilter(e.target.value)}
             >
@@ -321,7 +321,7 @@ export default function StudentsPage() {
                     Branch <span className="text-red-500">*</span>
                   </label>
                   <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] dark:border-slate-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
                     value={formData.branch_id}
                     onChange={(e) => setFormData({ ...formData, branch_id: e.target.value })}
                     required
@@ -339,7 +339,7 @@ export default function StudentsPage() {
                     Course <span className="text-red-500">*</span>
                   </label>
                   <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] dark:border-slate-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
                     value={formData.course_id}
                     onChange={(e) => setFormData({ ...formData, course_id: e.target.value })}
                     required

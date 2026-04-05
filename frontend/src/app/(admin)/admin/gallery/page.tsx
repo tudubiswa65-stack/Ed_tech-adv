@@ -114,7 +114,7 @@ function GalleryLabelTab({ toast }: { toast: ReturnType<typeof useToast> }) {
           required
           value={current.title}
           onChange={(e) => setForm({ ...current, title: e.target.value })}
-          className="w-full bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+          className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:placeholder-slate-400"
         />
       </div>
 
@@ -129,7 +129,7 @@ function GalleryLabelTab({ toast }: { toast: ReturnType<typeof useToast> }) {
           required
           value={current.subtitle}
           onChange={(e) => setForm({ ...current, subtitle: e.target.value })}
-          className="w-full bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+          className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:placeholder-slate-400"
         />
       </div>
 
@@ -145,7 +145,7 @@ function GalleryLabelTab({ toast }: { toast: ReturnType<typeof useToast> }) {
           onChange={(e) =>
             setForm({ ...current, season_tag: e.target.value.trim() || null })
           }
-          className="w-full bg-[#1e293b] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+          className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:placeholder-slate-400"
           placeholder="e.g. April 2026 Edition"
         />
       </div>
@@ -231,7 +231,7 @@ function UploadForm({
             required
             value={form.student_id}
             onChange={(e) => setForm({ ...form, student_id: e.target.value })}
-            className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+            className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600"
           >
             <option value="">Select student…</option>
             {students.map((s: { id: string; name: string }) => (
@@ -253,7 +253,7 @@ function UploadForm({
             maxLength={200}
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
-            className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+            className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600"
             placeholder="e.g. Achievement Highlight"
           />
         </div>
@@ -269,7 +269,7 @@ function UploadForm({
           maxLength={500}
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
-          className="w-full bg-[#0f172a] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none"
+          className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:placeholder-slate-400"
           placeholder="Optional description…"
         />
       </div>

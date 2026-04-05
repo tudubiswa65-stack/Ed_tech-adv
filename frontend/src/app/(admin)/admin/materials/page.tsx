@@ -254,7 +254,7 @@ export default function MaterialsPage() {
                   value={filters.search}
                   onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
                   placeholder="Search materials..."
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
                 />
               </div>
               <div>
@@ -264,7 +264,7 @@ export default function MaterialsPage() {
                 <select
                   value={filters.type}
                   onChange={(e) => setFilters(f => ({ ...f, type: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
                 >
                   <option value="">All Types</option>
                   <option value="pdf">PDF</option>
@@ -281,7 +281,7 @@ export default function MaterialsPage() {
                 <select
                   value={filters.subjectId}
                   onChange={(e) => setFilters(f => ({ ...f, subjectId: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
                 >
                   <option value="">All Subjects</option>
                   {courses.map(course => 
@@ -420,7 +420,7 @@ export default function MaterialsPage() {
               value={formData.description}
               onChange={(e) => setFormData(f => ({ ...f, description: e.target.value }))}
               rows={3}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
             />
           </div>
 
@@ -429,7 +429,7 @@ export default function MaterialsPage() {
             <select
               value={formData.type}
               onChange={(e) => setFormData(f => ({ ...f, type: e.target.value }))}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
             >
               <option value="pdf">PDF</option>
               <option value="video">Video</option>
@@ -443,7 +443,7 @@ export default function MaterialsPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Course</label>
             <select
               onChange={(e) => handleSubjectChange(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
             >
               <option value="">Select Course</option>
               {courses.map(course => (
@@ -458,7 +458,7 @@ export default function MaterialsPage() {
               value={formData.subjectId}
               onChange={(e) => setFormData(f => ({ ...f, subjectId: e.target.value }))}
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
             >
               <option value="">Select Subject</option>
               {subjects.map(subject => (
@@ -484,7 +484,7 @@ export default function MaterialsPage() {
                 value={formData.content}
                 onChange={(e) => setFormData(f => ({ ...f, content: e.target.value }))}
                 rows={6}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
               />
             </div>
           )}

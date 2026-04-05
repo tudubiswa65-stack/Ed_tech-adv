@@ -174,7 +174,7 @@ export default function EditStudentPage() {
                 name="course_id"
                 value={formData.course_id}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
                 required
               >
                 <option value="">Select a course</option>
@@ -195,7 +195,7 @@ export default function EditStudentPage() {
                 name="branch_id"
                 value={formData.branch_id}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
               >
                 <option value="">No branch</option>
                 {branches.map((b) => (
@@ -215,7 +215,7 @@ export default function EditStudentPage() {
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
                 required
               >
                 <option value="ACTIVE">ACTIVE – Student can log in and use the platform</option>

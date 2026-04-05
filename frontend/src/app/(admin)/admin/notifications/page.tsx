@@ -169,7 +169,7 @@ export default function NotificationsPage() {
                 <select
                   value={filters.type}
                   onChange={(e) => setFilters(f => ({ ...f, type: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
                 >
                   <option value="">All Types</option>
                   <option value="info">Info</option>
@@ -183,7 +183,7 @@ export default function NotificationsPage() {
                 <select
                   value={filters.targetAudience}
                   onChange={(e) => setFilters(f => ({ ...f, targetAudience: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
                 >
                   <option value="">All Audiences</option>
                   <option value="all">All Users</option>
@@ -280,7 +280,7 @@ export default function NotificationsPage() {
               onChange={(e) => setFormData(f => ({ ...f, message: e.target.value }))}
               rows={4}
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
             />
           </div>
 
@@ -290,7 +290,7 @@ export default function NotificationsPage() {
               <select
                 value={formData.type}
                 onChange={(e) => setFormData(f => ({ ...f, type: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
               >
                 <option value="info">Info</option>
                 <option value="warning">Warning</option>
@@ -303,7 +303,7 @@ export default function NotificationsPage() {
               <select
                 value={formData.targetAudience}
                 onChange={(e) => setFormData(f => ({ ...f, targetAudience: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
               >
                 <option value="all">All Users</option>
                 <option value="students">Students Only</option>

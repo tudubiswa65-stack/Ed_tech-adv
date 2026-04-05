@@ -201,7 +201,7 @@ export default function ComplaintsPage() {
                 <select
                   value={filters.status}
                   onChange={(e) => setFilters(f => ({ ...f, status: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
                 >
                   <option value="">All Status</option>
                   <option value="open">Open</option>
@@ -215,7 +215,7 @@ export default function ComplaintsPage() {
                 <select
                   value={filters.category}
                   onChange={(e) => setFilters(f => ({ ...f, category: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
                 >
                   <option value="">All Categories</option>
                   <option value="academic">Academic</option>
@@ -332,7 +332,7 @@ export default function ComplaintsPage() {
                 <select
                   value={replyStatus}
                   onChange={(e) => setReplyStatus(e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
                 >
                   <option value="open">Open</option>
                   <option value="in_progress">In Progress</option>
@@ -347,7 +347,7 @@ export default function ComplaintsPage() {
                   onChange={(e) => setReplyMessage(e.target.value)}
                   rows={3}
                   placeholder="Type your response..."
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
                 />
               </div>
               <div className="flex justify-end gap-3 mt-4">

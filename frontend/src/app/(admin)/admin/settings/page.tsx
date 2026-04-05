@@ -266,7 +266,7 @@ export default function SettingsPage() {
                   value={instituteConfig.address || ''}
                   onChange={(e) => setInstituteConfig({ ...instituteConfig, address: e.target.value })}
                   rows={3}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
                 />
               </div>
 
@@ -495,7 +495,7 @@ export default function SettingsPage() {
                   <select
                     value={newAdmin.role}
                     onChange={(e) => setNewAdmin({ ...newAdmin, role: e.target.value })}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
                   >
                     <option value="admin">Admin</option>
                     <option value="superadmin">Super Admin</option>

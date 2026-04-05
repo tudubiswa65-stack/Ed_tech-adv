@@ -185,7 +185,7 @@ export default function AdminAttendancePage() {
         <div className="w-56">
           <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Branch</label>
           <select
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:border-slate-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
             value={selectedBranch}
             onChange={(e) => setSelectedBranch(e.target.value)}
           >
@@ -199,7 +199,7 @@ export default function AdminAttendancePage() {
         <div className="w-56">
           <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Course</label>
           <select
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:border-slate-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
             value={selectedCourse}
             onChange={(e) => setSelectedCourse(e.target.value)}
           >
@@ -214,7 +214,7 @@ export default function AdminAttendancePage() {
           <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Date</label>
           <input
             type="date"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:border-slate-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
             value={selectedDate}
             max={today}
             onChange={(e) => setSelectedDate(e.target.value)}
@@ -304,7 +304,7 @@ export default function AdminAttendancePage() {
                           </select>
                         ) : (
                           <select
-                            className="border border-gray-300 rounded-lg px-2 py-1 text-sm dark:border-slate-500"
+                            className="border border-gray-300 rounded-lg px-2 py-1 text-sm dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
                             value={markData[student.id] || 'present'}
                             onChange={(e) => setMarkData({ ...markData, [student.id]: e.target.value })}
                           >
