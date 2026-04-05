@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/apiClient';
 import PageWrapper from '@/components/layout/PageWrapper';
+import { AdminGallerySkeleton, AdminGallerySubmissionsSkeleton } from '@/components/admin/AdminPageSkeletons';
 import {
   useGalleryLabel,
   useGallerySubmissions,
@@ -85,7 +86,7 @@ function GalleryLabelTab({ toast }: { toast: ReturnType<typeof useToast> }) {
   });
 
   if (isLoading) {
-    return <p className="text-slate-400 py-8 text-center">Loading…</p>;
+    return <AdminGallerySkeleton />;
   }
 
   const current = form ?? {
@@ -353,7 +354,7 @@ function SubmissionsTab({ toast }: { toast: ReturnType<typeof useToast> }) {
       </div>
 
       {isLoading ? (
-        <p className="text-slate-400 py-8 text-center">Loading submissions…</p>
+        <AdminGallerySubmissionsSkeleton count={4} />
       ) : submissions.length === 0 ? (
         <p className="text-slate-500 text-sm py-8 text-center">No submissions found.</p>
       ) : (

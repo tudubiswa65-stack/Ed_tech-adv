@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Card, Button, Modal, Input, Badge, Spinner } from '@/components/ui';
+import { AdminCardGridSkeleton } from '@/components/admin/AdminPageSkeletons';
 import { apiClient } from '@/lib/apiClient';
 import { useToast } from '@/context/ToastContext';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -337,9 +338,7 @@ export default function CoursesPage() {
       }
     >
       {loading ? (
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Spinner size="lg" />
-        </div>
+        <AdminCardGridSkeleton count={6} />
       ) : courses.length === 0 ? (
         <Card>
           <div className="text-center py-12">

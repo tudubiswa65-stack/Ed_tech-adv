@@ -6,6 +6,7 @@ import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
 import Spinner from '@/components/ui/Spinner';
+import { AdminListSkeleton } from '@/components/admin/AdminPageSkeletons';
 import PageWrapper from '@/components/layout/PageWrapper';
 
 interface Student {
@@ -233,9 +234,7 @@ export default function FeedbackPage() {
         <Card>
           <div className="divide-y divide-gray-200 dark:divide-slate-700">
             {loading ? (
-              <div className="flex justify-center py-12">
-                <Spinner />
-              </div>
+              <AdminListSkeleton count={5} />
             ) : feedback.length === 0 ? (
               <div className="p-8 text-center text-gray-500 dark:text-slate-400">No feedback found.</div>
             ) : (
