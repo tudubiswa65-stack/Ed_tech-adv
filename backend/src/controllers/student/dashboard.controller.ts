@@ -41,11 +41,11 @@ export const getStudentDashboard = async (req: AuthRequest, res: Response): Prom
         return q.single();
       })(),
 
-      // 2. All results for performance stats
+      // 2. All results for performance stats (include test course_id for course-specific progress)
       (() => {
         let q = supabaseAdmin
           .from('results')
-          .select('score, total_marks, percentage, status, time_taken_seconds')
+          .select('score, total_marks, percentage, status, time_taken_seconds, tests(course_id)')
           .eq('student_id', studentId);
         if (instituteId) q = q.eq('institute_id', instituteId);
         return q;
@@ -109,10 +109,10 @@ export const getStudentDashboard = async (req: AuthRequest, res: Response): Prom
         .limit(1)
         .maybeSingle(),
 
-      // 8. Total test assignments count for course progress
+      // 8. All test assignments with course_id for course-specific progress
       supabaseAdmin
         .from('test_assignments')
-        .select('id', { count: 'exact', head: true })
+        .select('id, tests(course_id)')
         .eq('student_id', studentId),
     ]);
 
@@ -123,12 +123,20 @@ export const getStudentDashboard = async (req: AuthRequest, res: Response): Prom
     const upcomingTests = upcomingTestsResult.data || [];
     const leaderboardRaw = leaderboardResult.data || [];
     const enrollmentRaw = enrollmentResult.data;
-    const totalAssignments = totalAssignmentsResult.count ?? 0;
+    const allAssignments = totalAssignmentsResult.data || [];
 
-    // --- Course progress ---
-    const completedTests = allResults.length;
+    // --- Course progress (filtered to enrolled course) ---
+    const enrolledCourseId = (enrollmentRaw?.courses as any)?.id ?? null;
+    const courseCompletedTests = enrolledCourseId
+      ? allResults.filter((r: any) => r.tests?.course_id === enrolledCourseId).length
+      : 0;
+    const courseTotalAssignments = enrolledCourseId
+      ? allAssignments.filter((a: any) => a.tests?.course_id === enrolledCourseId).length
+      : 0;
     const courseProgress =
-      totalAssignments > 0 ? Math.min(Math.round((completedTests / totalAssignments) * 100), 100) : 0;
+      courseTotalAssignments > 0
+        ? Math.min(Math.round((courseCompletedTests / courseTotalAssignments) * 100), 100)
+        : 0;
 
     const enrollment = enrollmentRaw
       ? {

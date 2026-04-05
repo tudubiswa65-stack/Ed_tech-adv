@@ -81,6 +81,9 @@ interface DashboardData {
   enrollment: EnrollmentInfo | null;
 }
 
+const PROGRESS_HIGH_THRESHOLD = 80;
+const PROGRESS_MEDIUM_THRESHOLD = 50;
+
 function formatSeconds(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
@@ -428,7 +431,7 @@ export default function StudentProfileDashboard() {
                   <div style={{
                     width: `${enrollment.progress}%`,
                     height: '100%',
-                    background: enrollment.progress >= 80 ? '#34d399' : enrollment.progress >= 50 ? '#60a5fa' : '#fbbf24',
+                    background: enrollment.progress >= PROGRESS_HIGH_THRESHOLD ? '#34d399' : enrollment.progress >= PROGRESS_MEDIUM_THRESHOLD ? '#60a5fa' : '#fbbf24',
                     borderRadius: 6,
                     transition: 'width 0.4s ease',
                   }} />

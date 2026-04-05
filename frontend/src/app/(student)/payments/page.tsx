@@ -132,9 +132,11 @@ export default function StudentPaymentsPage() {
             {summary?.nextPaymentAmount != null ? `PKR ${Number(summary.nextPaymentAmount).toLocaleString()}` : '—'}
           </div>
           <div className="text-xs text-gray-400 dark:text-slate-500">
-            {summary?.nextPaymentDate
+            {summary?.nextPaymentAmount == null
+              ? 'No upcoming payment'
+              : summary.nextPaymentDate
               ? `Due ${new Date(summary.nextPaymentDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-              : 'No upcoming payment'}
+              : 'Payment pending'}
           </div>
         </Card>
       </div>

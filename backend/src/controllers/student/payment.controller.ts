@@ -43,15 +43,17 @@ export const getMyPayments = async (req: AuthRequest, res: Response): Promise<vo
       })
       .reduce((sum, p) => sum + Number(p.amount), 0);
 
-    // Upcoming payment: first pending payment, or estimated 30 days after last completed
+    // Upcoming payment: pending payment amount (no due_date column — date shown as null),
+    // or an estimated next payment 30 days after the last completed one (approximation for monthly plans).
     const pendingPayment = payments.find((p) => p.status === 'pending');
     const completedPayments = payments.filter((p) => p.status === 'completed');
     let nextPaymentDate: string | null = null;
     let nextPaymentAmount: number | null = null;
     if (pendingPayment) {
-      nextPaymentDate = pendingPayment.created_at;
+      // No due_date column; surface amount only — UI will show "Pending" for the date
       nextPaymentAmount = Number(pendingPayment.amount);
     } else if (completedPayments.length > 0) {
+      // Estimate next monthly payment as 30 days after last completed payment
       const lastDate = new Date(completedPayments[0].created_at);
       lastDate.setDate(lastDate.getDate() + 30);
       nextPaymentDate = lastDate.toISOString();
