@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { DataTable } from '@/components/super-admin/DataTable';
 import { Modal } from '@/components/ui';
 import {
@@ -36,6 +36,114 @@ const EMPTY_FORM = {
 
 type CourseForm = typeof EMPTY_FORM;
 
+const inputCls = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100';
+
+interface CourseFormFieldsProps {
+  formData: CourseForm;
+  branches: { id: string; name: string }[];
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+}
+
+const CourseFormFields = memo(function CourseFormFields({ formData, branches, onChange }: CourseFormFieldsProps) {
+  return (
+    <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Course Title <span className="text-red-500">*</span></label>
+          <input name="title" value={formData.title} onChange={onChange} className={inputCls} placeholder="e.g. Full Stack Web Development" required />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Instructor</label>
+          <input name="instructor" value={formData.instructor} onChange={onChange} className={inputCls} placeholder="Instructor name" />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Description</label>
+        <textarea name="description" value={formData.description} onChange={onChange} rows={3} className={inputCls} placeholder="Course description..." />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Branch <span className="text-red-500">*</span></label>
+        <select name="branch_id" value={formData.branch_id} onChange={onChange} className={inputCls} required>
+          <option value="">Select Branch</option>
+          {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+        </select>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Price</label>
+          <input name="price" type="number" min="0" value={formData.price} onChange={onChange} className={inputCls} placeholder="0" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Duration</label>
+          <input name="duration_value" type="number" min="0" value={formData.duration_value} onChange={onChange} className={inputCls} placeholder="e.g. 6" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Unit</label>
+          <select name="duration_unit" value={formData.duration_unit} onChange={onChange} className={inputCls}>
+            <option value="days">Days</option>
+            <option value="weeks">Weeks</option>
+            <option value="months">Months</option>
+            <option value="years">Years</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Start Date</label>
+          <input name="start_date" type="date" value={formData.start_date} onChange={onChange} className={inputCls} />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">End Date</label>
+          <input name="end_date" type="date" value={formData.end_date} onChange={onChange} className={inputCls} />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Last Enrollment Date</label>
+          <input name="last_enrollment_date" type="date" value={formData.last_enrollment_date} onChange={onChange} className={inputCls} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Category</label>
+          <input name="category" value={formData.category} onChange={onChange} className={inputCls} placeholder="e.g. Programming" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Level</label>
+          <select name="level" value={formData.level} onChange={onChange} className={inputCls}>
+            <option value="">Any level</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+            <option value="expert">Expert</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Status</label>
+          <select name="status" value={formData.status} onChange={onChange} className={inputCls}>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="draft">Draft</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Thumbnail URL</label>
+        <input name="thumbnail" value={formData.thumbnail} onChange={onChange} className={inputCls} placeholder="https://example.com/image.png" />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Terms &amp; Conditions</label>
+        <textarea name="terms_and_conditions" value={formData.terms_and_conditions} onChange={onChange} rows={4} className={inputCls} placeholder="Enter course terms and conditions..." />
+      </div>
+    </div>
+  );
+});
+
 export default function CoursesPage() {
   const [branchFilter, setBranchFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -60,10 +168,10 @@ export default function CoursesPage() {
   const deleteCourse = useDeleteCourse();
   const toggleCourseStatus = useToggleCourseStatus();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
   const buildPayload = () => ({
     ...formData,
@@ -145,106 +253,6 @@ export default function CoursesPage() {
       </span>
     );
   };
-
-  const inputCls = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100';
-
-  const CourseFormFields = () => (
-    <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Course Title <span className="text-red-500">*</span></label>
-          <input name="title" value={formData.title} onChange={handleChange} className={inputCls} placeholder="e.g. Full Stack Web Development" required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Instructor</label>
-          <input name="instructor" value={formData.instructor} onChange={handleChange} className={inputCls} placeholder="Instructor name" />
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Description</label>
-        <textarea name="description" value={formData.description} onChange={handleChange} rows={3} className={inputCls} placeholder="Course description..." />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Branch <span className="text-red-500">*</span></label>
-        <select name="branch_id" value={formData.branch_id} onChange={handleChange} className={inputCls} required>
-          <option value="">Select Branch</option>
-          {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-        </select>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Price</label>
-          <input name="price" type="number" min="0" value={formData.price} onChange={handleChange} className={inputCls} placeholder="0" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Duration</label>
-          <input name="duration_value" type="number" min="0" value={formData.duration_value} onChange={handleChange} className={inputCls} placeholder="e.g. 6" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Unit</label>
-          <select name="duration_unit" value={formData.duration_unit} onChange={handleChange} className={inputCls}>
-            <option value="days">Days</option>
-            <option value="weeks">Weeks</option>
-            <option value="months">Months</option>
-            <option value="years">Years</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Start Date</label>
-          <input name="start_date" type="date" value={formData.start_date} onChange={handleChange} className={inputCls} />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">End Date</label>
-          <input name="end_date" type="date" value={formData.end_date} onChange={handleChange} className={inputCls} />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Last Enrollment Date</label>
-          <input name="last_enrollment_date" type="date" value={formData.last_enrollment_date} onChange={handleChange} className={inputCls} />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Category</label>
-          <input name="category" value={formData.category} onChange={handleChange} className={inputCls} placeholder="e.g. Programming" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Level</label>
-          <select name="level" value={formData.level} onChange={handleChange} className={inputCls}>
-            <option value="">Any level</option>
-            <option value="beginner">Beginner</option>
-            <option value="intermediate">Intermediate</option>
-            <option value="advanced">Advanced</option>
-            <option value="expert">Expert</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Status</label>
-          <select name="status" value={formData.status} onChange={handleChange} className={inputCls}>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="draft">Draft</option>
-          </select>
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Thumbnail URL</label>
-        <input name="thumbnail" value={formData.thumbnail} onChange={handleChange} className={inputCls} placeholder="https://example.com/image.png" />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Terms &amp; Conditions</label>
-        <textarea name="terms_and_conditions" value={formData.terms_and_conditions} onChange={handleChange} rows={4} className={inputCls} placeholder="Enter course terms and conditions..." />
-      </div>
-    </div>
-  );
 
   const columns = [
     {
@@ -381,7 +389,7 @@ export default function CoursesPage() {
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={selectedCourse ? 'Edit Course' : 'Add New Course'} size="lg">
         <form onSubmit={handleSubmit}>
           {formError && <p className="text-sm text-red-600 mb-3">{formError}</p>}
-          <CourseFormFields />
+          <CourseFormFields formData={formData} branches={branches} onChange={handleChange} />
           <div className="flex justify-end space-x-3 pt-4">
             <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:border-slate-500 dark:hover:bg-slate-700">Cancel</button>
             <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">{selectedCourse ? 'Update' : 'Create'} Course</button>
