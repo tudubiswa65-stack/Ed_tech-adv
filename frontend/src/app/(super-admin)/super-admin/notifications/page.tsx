@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import { DataTable } from '@/components/super-admin/DataTable';
 import { Modal } from '@/components/ui';
@@ -45,16 +45,7 @@ export default function NotificationsPage() {
   const [formData, setFormData] = useState<NotifForm>(defaultForm);
   const [formError, setFormError] = useState('');
 
-  useEffect(() => {
-    fetchAll();
-    // Clear notification badge when this page is opened
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(SUPER_ADMIN_NOTIF_VIEWED_AT_KEY, new Date().toISOString());
-      queryClient.setQueryData([...superAdminQueryKeys.all, 'notifications-count'], 0);
-    }
-  }, []);
-
-  const fetchAll = async () => {
+  const fetchAll = useCallback(async () => {
     try {
       const [notifRes, branchRes] = await Promise.all([
         apiClient.get('/super-admin/notifications'),
@@ -67,7 +58,16 @@ export default function NotificationsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchAll();
+    // Clear notification badge when this page is opened
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(SUPER_ADMIN_NOTIF_VIEWED_AT_KEY, new Date().toISOString());
+      queryClient.setQueryData([...superAdminQueryKeys.all, 'notifications-count'], 0);
+    }
+  }, [fetchAll]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
