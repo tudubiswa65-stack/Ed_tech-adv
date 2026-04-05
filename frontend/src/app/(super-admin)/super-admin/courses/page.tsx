@@ -13,7 +13,7 @@ import {
   type CoursesFilters,
   type Course,
 } from '@/hooks/queries/useSuperAdminDataQueries';
-import { Spinner } from '@/components/ui';
+import { TableOnlySkeleton } from '@/components/super-admin/SuperAdminPageSkeletons';
 
 const EMPTY_FORM = {
   title: '',
@@ -319,11 +319,7 @@ export default function CoursesPage() {
   ];
 
   if (coursesLoading && courses.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Spinner size="lg" />
-      </div>
-    );
+    return <TableOnlySkeleton />;
   }
 
   if (coursesError) {

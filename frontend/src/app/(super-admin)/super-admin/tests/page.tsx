@@ -7,9 +7,9 @@ import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
-import Spinner from '@/components/ui/Spinner';
 import PageWrapper from '@/components/layout/PageWrapper';
 import Switch from '@/components/ui/Switch';
+import { TestsTableSkeleton } from '@/components/super-admin/SuperAdminPageSkeletons';
 
 interface Test {
   id: string;
@@ -358,9 +358,7 @@ export default function SuperAdminTestsPage() {
 
         {/* Tests Table */}
         {loading ? (
-          <div className="flex justify-center py-12">
-            <Spinner />
-          </div>
+          <TestsTableSkeleton />
         ) : tests.length === 0 ? (
           <Card>
             <div className="p-8 text-center text-gray-500 dark:text-slate-400">

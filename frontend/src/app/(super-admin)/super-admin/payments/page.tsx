@@ -6,6 +6,7 @@ import { DataTable } from '@/components/super-admin/DataTable';
 import { StatCard } from '@/components/super-admin/StatCard';
 import { PieChart, BarChart } from '@/components/super-admin/charts';
 import { Modal } from '@/components/ui';
+import { StatsTableSkeleton } from '@/components/super-admin/SuperAdminPageSkeletons';
 
 interface Payment {
   id: string;
@@ -204,7 +205,7 @@ export default function PaymentsPage() {
   ];
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64 text-gray-500 dark:text-slate-400">Loading payments...</div>;
+    return <StatsTableSkeleton statCount={4} showButton={false} />;
   }
 
   if (error) {

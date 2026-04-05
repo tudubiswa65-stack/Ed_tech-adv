@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Spinner } from '@/components/ui';
 import { useToast } from '@/context/ToastContext';
 import {
   useSuperAdminStudent,
@@ -11,6 +10,7 @@ import {
   useUpdateStudent,
   type StudentProfile,
 } from '@/hooks/queries/useSuperAdminDataQueries';
+import { StudentDetailSkeleton } from '@/components/super-admin/SuperAdminPageSkeletons';
 
 interface Course {
   id: string;
@@ -86,11 +86,7 @@ export default function SuperAdminStudentDetailPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Spinner size="lg" />
-      </div>
-    );
+    return <StudentDetailSkeleton />;
   }
 
   if (error || !student) {

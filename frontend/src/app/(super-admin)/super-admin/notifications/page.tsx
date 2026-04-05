@@ -7,7 +7,6 @@ import Badge from '@/components/ui/Badge';
 import Card from '@/components/ui/Card';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
-import Spinner from '@/components/ui/Spinner';
 import PageWrapper from '@/components/layout/PageWrapper';
 import {
   useSuperAdminNotifications,
@@ -16,6 +15,7 @@ import {
   SUPER_ADMIN_NOTIF_VIEWED_AT_KEY,
 } from '@/hooks/queries/useSuperAdminQueries';
 import { queryClient } from '@/lib/queryClient';
+import { NotificationsListSkeleton } from '@/components/super-admin/SuperAdminPageSkeletons';
 
 const defaultForm = {
   title: '',
@@ -172,9 +172,7 @@ export default function SuperAdminNotificationsPage() {
         <Card>
           <div className="divide-y divide-gray-200 dark:divide-slate-700">
             {loading ? (
-              <div className="flex justify-center py-12">
-                <Spinner />
-              </div>
+              <NotificationsListSkeleton />
             ) : notifications.length === 0 ? (
               <div className="p-8 text-center text-gray-500 dark:text-slate-400">
                 No notifications found. Click &quot;Create Notification&quot; to add one.

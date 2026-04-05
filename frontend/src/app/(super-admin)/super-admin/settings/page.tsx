@@ -9,7 +9,7 @@ import {
   type Settings,
   type Features,
 } from '@/hooks/queries/useSuperAdminDataQueries';
-import { Spinner } from '@/components/ui';
+import { SettingsSkeleton } from '@/components/super-admin/SuperAdminPageSkeletons';
 
 const TIMEZONES = ['UTC', 'America/New_York', 'America/Los_Angeles', 'Europe/London', 'Asia/Kolkata', 'Asia/Karachi', 'Asia/Dubai'];
 const FILE_TYPES = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'mp4', 'mp3', 'doc', 'docx', 'xls', 'xlsx'];
@@ -254,11 +254,7 @@ export default function SettingsPage() {
   ];
 
   if (isLoading) {
-    return (
-      <div style={{ background: '#0f172a', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Spinner size="lg" />
-      </div>
-    );
+    return <SettingsSkeleton />;
   }
 
   if (error) {

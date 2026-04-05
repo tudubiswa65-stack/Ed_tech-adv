@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { DataTable } from '@/components/super-admin/DataTable';
-import { Modal, Spinner } from '@/components/ui';
+import { Modal } from '@/components/ui';
 import {
   useSuperAdminBranches,
   useCreateBranch,
@@ -10,6 +10,7 @@ import {
   useDeleteBranch,
   useToggleBranchStatus,
 } from '@/hooks/queries/useSuperAdminDataQueries';
+import { TableOnlySkeleton } from '@/components/super-admin/SuperAdminPageSkeletons';
 
 interface Branch {
   id: string;
@@ -184,11 +185,7 @@ export default function BranchesPage() {
   );
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Spinner size="lg" />
-      </div>
-    );
+    return <TableOnlySkeleton />;
   }
 
   if (error) {
