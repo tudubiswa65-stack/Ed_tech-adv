@@ -222,6 +222,7 @@ function fmtRevenue(val: number) {
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function SuperAdminDashboard() {
   const {
+    stats,
     studentGrowth,
     revenue,
     attendance,
