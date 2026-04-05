@@ -237,7 +237,12 @@ export function useStudentLeaderboard() {
         branch_name?: string;
         avatar_url?: string | null;
         total_score: number;
+        final_rank_score: number;
         rank: number;
+        rank_change: number | null;
+        trend_score: number;
+        avg_time_per_question: number;
+        is_fastest: boolean;
         [key: string]: unknown;
       }[];
     },

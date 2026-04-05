@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
 import { JWTPayload } from '../../types';
+import { recalculateRankHistory } from '../../utils/rankingUtils';
 
 interface StudentRequest extends Request {
   user?: JWTPayload;
@@ -348,6 +349,9 @@ export const submitTest = async (req: StudentRequest, res: Response): Promise<vo
       })
       .eq('test_id', id)
       .eq('student_id', studentId);
+
+    // Recalculate and persist rank history in the background (fire-and-forget)
+    if (instituteId) recalculateRankHistory(instituteId);
 
     res.json({
       success: true,

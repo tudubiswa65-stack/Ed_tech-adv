@@ -12,7 +12,12 @@ interface LeaderboardEntry {
   branch_name?: string;
   avatar_url?: string | null;
   total_score: number;
+  final_rank_score?: number;
   rank: number;
+  rank_change?: number | null;
+  trend_score?: number;
+  avg_time_per_question?: number;
+  is_fastest?: boolean;
 }
 
 const RANK_STYLES = {
@@ -56,6 +61,24 @@ function getInitials(name: string): string {
 
 function levelFromScore(score: number): number {
   return Math.floor(score / 200) + 1;
+}
+
+/** Render ⬆️ +2 / ➡️ / ⬇️ -1 rank-change indicator. */
+function RankChange({ change }: { change: number | null | undefined }) {
+  if (change == null) return null;
+  if (change > 0)
+    return (
+      <span className="text-xs font-bold text-green-400 shrink-0">
+        ⬆️ +{change}
+      </span>
+    );
+  if (change < 0)
+    return (
+      <span className="text-xs font-bold text-red-400 shrink-0">
+        ⬇️ {change}
+      </span>
+    );
+  return <span className="text-xs font-bold text-slate-400 shrink-0">➡️</span>;
 }
 
 function PlayerAvatar({
@@ -122,7 +145,12 @@ function PodiumCard({ entry }: { entry: LeaderboardEntry }) {
         {entry.total_score.toLocaleString()} pts
       </p>
 
-      <div className={`${s.platform} ${s.podiumH} w-20 mt-3 rounded-t-xl flex items-start justify-center pt-1`}>
+      {/* Rank change badge on podium */}
+      <div className="mt-1 h-4">
+        <RankChange change={entry.rank_change} />
+      </div>
+
+      <div className={`${s.platform} ${s.podiumH} w-20 mt-2 rounded-t-xl flex items-start justify-center pt-1`}>
         <span className="text-white/80 font-bold text-base">{rank}</span>
       </div>
     </div>
@@ -132,7 +160,7 @@ function PodiumCard({ entry }: { entry: LeaderboardEntry }) {
 export default function LeaderboardPage() {
   const { user } = useAuth();
 
-  // React Query hook — leaderboard cached 2 min
+  // React Query hook — leaderboard cached 5 min
   const { data: leaderboard = [], isLoading: loading } = useStudentLeaderboard();
 
   const top3 = leaderboard
@@ -201,11 +229,25 @@ export default function LeaderboardPage() {
                     <span className="text-xs bg-violet-600 text-white px-2 py-0.5 rounded-full font-semibold shrink-0">
                       LVL {levelFromScore(entry.total_score)}
                     </span>
+                    {/* trend_score 100 = student's last 3 tests beat their previous 3 */}
+                    {entry.trend_score === 100 && (
+                      <span className="text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2 py-0.5 rounded-full font-semibold shrink-0">
+                        🔥 Trending
+                      </span>
+                    )}
+                    {entry.is_fastest && (
+                      <span className="text-xs bg-sky-500/20 text-sky-400 border border-sky-500/30 px-2 py-0.5 rounded-full font-semibold shrink-0">
+                        ⚡ Fastest
+                      </span>
+                    )}
                   </div>
 
-                  <span className="text-white text-xs font-bold uppercase tracking-wide shrink-0">
-                    SCORE: {entry.total_score.toLocaleString()}
-                  </span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <RankChange change={entry.rank_change} />
+                    <span className="text-white text-xs font-bold uppercase tracking-wide">
+                      SCORE: {entry.total_score.toLocaleString()}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -230,9 +272,12 @@ export default function LeaderboardPage() {
               {currentUserEntry.student_name}
             </p>
           </div>
-          <span className="text-white text-xs font-bold uppercase tracking-wide shrink-0">
-            {currentUserEntry.total_score.toLocaleString()} pts
-          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            <RankChange change={currentUserEntry.rank_change} />
+            <span className="text-white text-xs font-bold uppercase tracking-wide">
+              {currentUserEntry.total_score.toLocaleString()} pts
+            </span>
+          </div>
         </div>
       )}
     </div>
