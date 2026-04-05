@@ -109,6 +109,28 @@ export const updateGalleryLabel = async (req: AuthRequest, res: Response): Promi
   }
 };
 
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface GalleryUser {
+  name: string;
+  branch_id: string | null;
+}
+
+interface GallerySubmissionRow {
+  id: string;
+  title: string;
+  description: string | null;
+  thumbnail_url: string;
+  medium_url: string;
+  status: string;
+  is_pinned: boolean;
+  slot_order: number | null;
+  submitted_at: string;
+  approved_at: string | null;
+  student_id: string;
+  users: GalleryUser[] | null;
+}
+
 // ── GET /api/admin/gallery/submissions ───────────────────────────────────────
 
 export const listGallerySubmissions = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -131,23 +153,28 @@ export const listGallerySubmissions = async (req: AuthRequest, res: Response): P
     if (error) throw error;
 
     // Apply branch filtering in memory (branch_admin sees only their branch's students)
-    let rows = (data ?? []) as Array<{
-      id: string;
-      title: string;
-      description: string | null;
-      thumbnail_url: string;
-      medium_url: string;
-      status: string;
-      is_pinned: boolean;
-      slot_order: number | null;
-      submitted_at: string;
-      approved_at: string | null;
-      student_id: string;
-      users: { name: string; branch_id: string | null } | null;
-    }>;
+    let rows: GallerySubmissionRow[] = (data ?? []).map((item) => ({
+      id: String(item.id),
+      title: String(item.title),
+      description: item.description ?? null,
+      thumbnail_url: String(item.thumbnail_url),
+      medium_url: String(item.medium_url),
+      status: String(item.status),
+      is_pinned: Boolean(item.is_pinned),
+      slot_order: item.slot_order ?? null,
+      submitted_at: String(item.submitted_at),
+      approved_at: item.approved_at ?? null,
+      student_id: String(item.student_id),
+      users: Array.isArray(item.users)
+        ? item.users.map((u: { name: unknown; branch_id: unknown }) => ({
+            name: String(u.name),
+            branch_id: u.branch_id != null ? String(u.branch_id) : null,
+          }))
+        : null,
+    }));
 
     if (branchId) {
-      rows = rows.filter((r) => r.users?.branch_id === branchId);
+      rows = rows.filter((r) => r.users?.[0]?.branch_id === branchId);
     }
 
     const submissions = rows.map((r) => ({
@@ -160,7 +187,7 @@ export const listGallerySubmissions = async (req: AuthRequest, res: Response): P
       slot_order: r.slot_order,
       submitted_at: r.submitted_at,
       approved_at: r.approved_at,
-      student_first_name: r.users?.name?.split(' ')[0] ?? 'Unknown',
+      student_first_name: r.users?.[0]?.name?.split(' ')[0] ?? 'Unknown',
     }));
 
     res.json({ success: true, data: submissions });
