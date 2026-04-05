@@ -7,15 +7,20 @@ import { getUserBranchId } from '../../utils/branchFilter';
  * Resolve the list of student IDs that a branch_admin is allowed to access.
  * Returns null when there is no branch restriction (super_admin / admin).
  * Returns an empty array when the branch has no students (results should be empty).
+ * Throws an Error if the database query fails.
  */
 async function getBranchStudentIds(req: AuthRequest): Promise<string[] | null> {
   const branchId = getUserBranchId(req.user);
   if (!branchId) return null;
 
-  const { data } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin
     .from('students')
     .select('id')
     .eq('branch_id', branchId);
+
+  if (error) {
+    throw new Error(`Failed to fetch branch students: ${error.message}`);
+  }
 
   return (data || []).map((s: { id: string }) => s.id);
 }
@@ -476,9 +481,33 @@ export const getStudentPerformance = async (req: AuthRequest, res: Response) => 
 };
 
 // Export results to CSV
+const CSV_RESULT_HEADERS = [
+  'Student Name',
+  'Roll Number',
+  'Email',
+  'Test Title',
+  'Score',
+  'Total Marks',
+  'Percentage',
+  'Status',
+  'Time Taken (minutes)',
+  'Submitted At'
+];
+
+const csvFilename = () => `results-${new Date().toISOString().split('T')[0]}.csv`;
+
 export const exportResultsCSV = async (req: AuthRequest, res: Response) => {
   try {
     const { testId, status } = req.query;
+
+    // Restrict to branch students for branch_admin
+    const branchStudentIds = await getBranchStudentIds(req);
+    if (branchStudentIds !== null && branchStudentIds.length === 0) {
+      // Branch has no students — return empty CSV with headers only
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename=${csvFilename()}`);
+      return res.send(CSV_RESULT_HEADERS.join(','));
+    }
 
     let query = supabaseAdmin
       .from('results')
@@ -501,6 +530,9 @@ export const exportResultsCSV = async (req: AuthRequest, res: Response) => {
     if (status) {
       query = query.eq('status', status);
     }
+    if (branchStudentIds !== null) {
+      query = query.in('student_id', branchStudentIds);
+    }
 
     const { data, error } = await query.order('submitted_at', { ascending: false });
 
@@ -509,19 +541,6 @@ export const exportResultsCSV = async (req: AuthRequest, res: Response) => {
     }
 
     // Generate CSV
-    const headers = [
-      'Student Name',
-      'Roll Number',
-      'Email',
-      'Test Title',
-      'Score',
-      'Total Marks',
-      'Percentage',
-      'Status',
-      'Time Taken (minutes)',
-      'Submitted At'
-    ];
-
     const rows = data?.map(r => [
       (r.students as any)?.name || '',
       (r.students as any)?.roll_number || '',
@@ -536,12 +555,12 @@ export const exportResultsCSV = async (req: AuthRequest, res: Response) => {
     ]) || [];
 
     const csv = [
-      headers.join(','),
+      CSV_RESULT_HEADERS.join(','),
       ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
     ].join('\n');
 
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename=results-${new Date().toISOString().split('T')[0]}.csv`);
+    res.setHeader('Content-Disposition', `attachment; filename=${csvFilename()}`);
     res.send(csv);
   } catch (error) {
     console.error('Export results error:', error);
