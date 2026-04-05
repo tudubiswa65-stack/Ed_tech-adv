@@ -8,10 +8,9 @@ import { useTheme } from '@/context/ThemeContext';
 import { useToast } from '@/context/ToastContext';
 import { apiClient } from '@/lib/apiClient';
 import { validateAvatarFile } from '@/lib/avatarValidation';
-import { useQuery } from '@tanstack/react-query';
-import { studentQueryKeys } from '@/hooks/queries/useStudentQueries';
-import { adminQueryKeys, ADMIN_NOTIF_VIEWED_AT_KEY } from '@/hooks/queries/useAdminQueries';
-import { superAdminQueryKeys, SUPER_ADMIN_NOTIF_VIEWED_AT_KEY } from '@/hooks/queries/useSuperAdminQueries';
+import { useStudentUnreadCount } from '@/hooks/queries/useStudentQueries';
+import { useAdminNotificationsCount } from '@/hooks/queries/useAdminQueries';
+import { useSuperAdminNotificationsCount } from '@/hooks/queries/useSuperAdminQueries';
 
 interface NavbarProps {
   title: string;
@@ -88,59 +87,13 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
       ? '/admin/notifications'
       : '/notifications';
 
-  // Unread count for students (actual unread from backend)
-  const { data: studentUnreadCount = 0 } = useQuery({
-    queryKey: studentQueryKeys.unreadCount(),
-    queryFn: async () => {
-      const r = await apiClient.get('/student/notifications/unread-count');
-      const d = (r.data as any)?.success ? (r.data as any).data : r.data;
-      return (d?.unreadCount ?? 0) as number;
-    },
-    enabled: role === 'student',
-    staleTime: 30 * 1000,
-    refetchInterval: 30 * 1000,
-  });
-
-  // New notifications count for admin/branch_admin (since last viewed)
-  const { data: adminUnreadCount = 0 } = useQuery({
-    queryKey: [...adminQueryKeys.all, 'notifications-count'],
-    queryFn: async () => {
-      if (typeof window === 'undefined') return 0;
-      const since = localStorage.getItem(ADMIN_NOTIF_VIEWED_AT_KEY);
-      if (!since) {
-        localStorage.setItem(ADMIN_NOTIF_VIEWED_AT_KEY, new Date().toISOString());
-        return 0;
-      }
-      const r = await apiClient.get(
-        `/admin/notifications/count?since=${encodeURIComponent(since)}`
-      );
-      const d = (r.data as any)?.success ? (r.data as any).data : r.data;
-      return (d?.count ?? 0) as number;
-    },
+  // Notification badge counts — only one will fetch based on enabled flag
+  const { data: studentUnreadCount = 0 } = useStudentUnreadCount({ enabled: role === 'student' });
+  const { data: adminUnreadCount = 0 } = useAdminNotificationsCount({
     enabled: role === 'admin' || role === 'branch_admin',
-    staleTime: 30 * 1000,
-    refetchInterval: 30 * 1000,
   });
-
-  // New notifications count for super_admin (since last viewed)
-  const { data: superAdminUnreadCount = 0 } = useQuery({
-    queryKey: [...superAdminQueryKeys.all, 'notifications-count'],
-    queryFn: async () => {
-      if (typeof window === 'undefined') return 0;
-      const since = localStorage.getItem(SUPER_ADMIN_NOTIF_VIEWED_AT_KEY);
-      if (!since) {
-        localStorage.setItem(SUPER_ADMIN_NOTIF_VIEWED_AT_KEY, new Date().toISOString());
-        return 0;
-      }
-      const r = await apiClient.get(
-        `/super-admin/notifications/count?since=${encodeURIComponent(since)}`
-      );
-      const d = (r.data as any)?.success ? (r.data as any).data : r.data;
-      return (d?.count ?? 0) as number;
-    },
+  const { data: superAdminUnreadCount = 0 } = useSuperAdminNotificationsCount({
     enabled: role === 'super_admin',
-    staleTime: 30 * 1000,
-    refetchInterval: 30 * 1000,
   });
 
   const notifBadgeCount =

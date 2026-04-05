@@ -6,10 +6,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useInstitute } from '@/hooks/useInstitute';
 import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
-import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/lib/apiClient';
-import { studentQueryKeys } from '@/hooks/queries/useStudentQueries';
-import { adminQueryKeys, ADMIN_NOTIF_VIEWED_AT_KEY } from '@/hooks/queries/useAdminQueries';
+import { useStudentUnreadCount } from '@/hooks/queries/useStudentQueries';
+import { useAdminNotificationsCount } from '@/hooks/queries/useAdminQueries';
 
 interface NavItem {
   label: string;
@@ -88,32 +86,10 @@ export default function Sidebar({ role, isOpen = false, onClose = () => {} }: Si
 
   const isStudent = role === 'student';
 
-  // Notification badge count — shares the same React Query cache with Navbar
-  const { data: notifBadgeCount = 0 } = useQuery({
-    queryKey: isStudent
-      ? studentQueryKeys.unreadCount()
-      : [...adminQueryKeys.all, 'notifications-count'],
-    queryFn: async () => {
-      if (isStudent) {
-        const r = await apiClient.get('/student/notifications/unread-count');
-        const d = (r.data as any)?.success ? (r.data as any).data : r.data;
-        return (d?.unreadCount ?? 0) as number;
-      }
-      if (typeof window === 'undefined') return 0;
-      const since = localStorage.getItem(ADMIN_NOTIF_VIEWED_AT_KEY);
-      if (!since) {
-        localStorage.setItem(ADMIN_NOTIF_VIEWED_AT_KEY, new Date().toISOString());
-        return 0;
-      }
-      const r = await apiClient.get(
-        `/admin/notifications/count?since=${encodeURIComponent(since)}`
-      );
-      const d = (r.data as any)?.success ? (r.data as any).data : r.data;
-      return (d?.count ?? 0) as number;
-    },
-    staleTime: 30 * 1000,
-    refetchInterval: 30 * 1000,
-  });
+  // Notification badge count — use existing hooks (enabled per role), shares React Query cache with Navbar
+  const { data: studentCount = 0 } = useStudentUnreadCount({ enabled: isStudent });
+  const { data: adminCount = 0 } = useAdminNotificationsCount({ enabled: !isStudent });
+  const notifBadgeCount = isStudent ? studentCount : adminCount;
 
   const getIcon = (icon: string) => {
     const icons: Record<string, JSX.Element> = {

@@ -18,7 +18,7 @@ export const superAdminQueryKeys = {
 export const SUPER_ADMIN_NOTIF_VIEWED_AT_KEY = 'super_admin_notif_viewed_at';
 
 // Count of new notifications since the super-admin last viewed the notifications page
-export function useSuperAdminNotificationsCount() {
+export function useSuperAdminNotificationsCount(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: [...superAdminQueryKeys.all, 'notifications-count'],
     queryFn: async () => {
@@ -35,6 +35,7 @@ export function useSuperAdminNotificationsCount() {
       const data = (response.data as any)?.success ? (response.data as any).data : response.data;
       return (data?.count ?? 0) as number;
     },
+    enabled: options?.enabled ?? true,
     staleTime: 30 * 1000,
     refetchInterval: 30 * 1000,
   });
