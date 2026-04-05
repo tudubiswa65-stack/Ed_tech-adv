@@ -296,9 +296,10 @@ export const getTestAnalytics = async (req: AuthRequest, res: Response) => {
       const responses = results?.map(r => {
         const answers = r.answers as any[];
         const answer = answers?.[index];
+        const selectedOption = answer?.selected_option ?? answer?.selected;
         return {
-          selected: answer?.selected_option ?? answer?.selected,
-          isCorrect: (answer?.selected_option ?? answer?.selected) === (q.correct_option ?? q.correctAnswer)
+          selected: selectedOption,
+          isCorrect: selectedOption === (q.correct_option ?? q.correctAnswer)
         };
       }) || [];
 
