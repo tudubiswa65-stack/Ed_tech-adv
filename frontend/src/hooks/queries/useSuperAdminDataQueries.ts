@@ -75,6 +75,22 @@ export interface Student {
   branch_id?: string;
 }
 
+export interface Enrollment {
+  id: string;
+  status: string;
+  created_at?: string;
+  courses?: { id: string; name: string };
+}
+
+export interface StudentProfile extends Student {
+  course_id?: string;
+  phone?: string;
+  branches?: { id: string; name: string; location?: string; contact_number?: string };
+  courses?: { id: string; name: string; level?: string; duration?: number; duration_unit?: string };
+  enrollments?: Enrollment[];
+  created_at?: string;
+}
+
 export interface Settings {
   platform_name?: string;
   tagline?: string;
@@ -242,13 +258,41 @@ export function useSuperAdminStudents(filters?: StudentsFilters) {
 }
 
 export function useSuperAdminStudent(id: string) {
-  return useQuery<Student>({
+  return useQuery<StudentProfile>({
     queryKey: superAdminDataQueryKeys.student(id),
     queryFn: async () => {
       const response = await apiClient.get(`/super-admin/students/${id}/profile`);
       return response.data.data;
     },
     enabled: !!id,
+  });
+}
+
+export function useUpdateStudent() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: {
+        name?: string;
+        email?: string;
+        course_id?: string;
+        branch_id?: string;
+        status?: string;
+        password?: string;
+      };
+    }) => {
+      const response = await apiClient.put(`/super-admin/students/${id}`, data);
+      return response.data.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: superAdminDataQueryKeys.students() });
+      queryClient.invalidateQueries({ queryKey: superAdminDataQueryKeys.student(variables.id) });
+    },
   });
 }
 
