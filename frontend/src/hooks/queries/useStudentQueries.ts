@@ -134,7 +134,7 @@ export function useStudentUnreadCount(options?: { enabled?: boolean }) {
     },
     enabled: options?.enabled ?? true,
     staleTime: 60 * 1000,
-    refetchInterval: 30 * 1000,
+    refetchInterval: 10 * 1000,
   });
 }
 

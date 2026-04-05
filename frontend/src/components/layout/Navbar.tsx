@@ -11,6 +11,7 @@ import { validateAvatarFile } from '@/lib/avatarValidation';
 import { useStudentUnreadCount } from '@/hooks/queries/useStudentQueries';
 import { useAdminNotificationsCount } from '@/hooks/queries/useAdminQueries';
 import { useSuperAdminNotificationsCount } from '@/hooks/queries/useSuperAdminQueries';
+import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 
 interface NavbarProps {
   title: string;
@@ -79,6 +80,9 @@ export default function Navbar({ title, onMenuClick }: NavbarProps) {
     .toUpperCase() ?? '?';
 
   const role = user?.role;
+
+  // Real-time badge updates via Supabase Realtime — supplements the polling fallback
+  useRealtimeNotifications(role);
 
   const notifPath =
     role === 'super_admin'
