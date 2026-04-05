@@ -159,6 +159,11 @@ export function DashboardSkeleton() {
 //    Used for: students, complaints, audit-logs, payments, feedback
 // ─────────────────────────────────────────────────────────────────────────────
 export function StatsTableSkeleton({ statCount = 4, showButton = true }: { statCount?: number; showButton?: boolean }) {
+  const gridCols =
+    statCount === 3
+      ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
+      : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4';
+
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -171,7 +176,7 @@ export function StatsTableSkeleton({ statCount = 4, showButton = true }: { statC
       </div>
 
       {/* Stat cards */}
-      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${Math.min(statCount, 4)} gap-4`}>
+      <div className={gridCols}>
         {[...Array(statCount)].map((_, i) => (
           <div key={i} className="animate-pulse bg-white dark:bg-slate-800 rounded-xl shadow-sm p-5 border border-gray-100 dark:border-slate-700">
             <div className="flex items-center justify-between mb-3">
