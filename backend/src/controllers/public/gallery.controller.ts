@@ -28,7 +28,7 @@ interface SubmissionRow {
   slot_order: number | null;
   approved_at: string | null;
   student_id: string;
-  users: { name: string } | null;
+  users: { name: string }[] | null;
 }
 
 interface ResultRow {
@@ -84,7 +84,19 @@ export const getPublicGallery = async (_req: Request, res: Response): Promise<vo
 
     if (submissionsError) throw submissionsError;
 
-    const typedSubmissions = (submissions ?? []) as SubmissionRow[];
+    const typedSubmissions: SubmissionRow[] = (submissions ?? []).map((item) => ({
+      id: String(item.id),
+      title: String(item.title),
+      thumbnail_url: String(item.thumbnail_url),
+      medium_url: String(item.medium_url),
+      is_pinned: Boolean(item.is_pinned),
+      slot_order: item.slot_order ?? null,
+      approved_at: item.approved_at ?? null,
+      student_id: String(item.student_id),
+      users: Array.isArray(item.users)
+        ? item.users.map((u: { name: unknown }) => ({ name: String(u.name) }))
+        : null,
+    }));
 
     if (typedSubmissions.length === 0) {
       res.setHeader('Cache-Control', 'public, max-age=1800, stale-while-revalidate=60');
@@ -150,7 +162,7 @@ export const getPublicGallery = async (_req: Request, res: Response): Promise<vo
 
       if (!thumbnailUrl || !mediumUrl) return null;
 
-      const rawName = s.users?.name ?? 'Student';
+      const rawName = s.users?.[0]?.name ?? 'Student';
       const firstName = rawName.split(' ')[0] ?? rawName;
 
       return {
