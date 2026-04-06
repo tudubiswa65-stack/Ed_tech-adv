@@ -16,6 +16,8 @@ function extFromMime(mimeType: string): string {
     'application/pdf': 'pdf',
     'application/msword': 'doc',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+    'application/vnd.ms-powerpoint': 'ppt',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
     'text/csv': 'csv',
     'text/plain': 'txt',
   };

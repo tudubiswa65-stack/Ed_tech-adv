@@ -1,88 +1,99 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
 import multer from 'multer';
-import { uploadFileToB2, getSignedDownloadUrl, isLegacySupabaseUrl } from '../../lib/fileService';
+import { uploadFileToB2, getSignedDownloadUrl, deleteFileFromB2, isLegacySupabaseUrl } from '../../lib/fileService';
+import { AuthRequest } from '../../types';
+import { getUserBranchId } from '../../utils/branchFilter';
 
-interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    role: string;
-    instituteId: string;
-  };
-}
+const ALLOWED_MATERIAL_MIMES = new Set([
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+]);
 
-// Get all study materials with filtering
-export const getMaterials = async (req: AuthRequest, res: Response) => {
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+
+// Multer instance for material file uploads (server-side only)
+const materialUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_FILE_SIZE },
+});
+
+export const materialUploadMiddleware = materialUpload.single('file');
+
+// Upload a course material file to B2 and return its object key
+export const uploadMaterialFile = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const instituteId = req.user?.instituteId;
-    const {
-      page = 1,
-      limit = 20,
-      subjectId,
-      courseId,
-      type,
-      search
-    } = req.query;
+    if (!req.file) {
+      res.status(400).json({ error: 'File is required' });
+      return;
+    }
 
+    if (!ALLOWED_MATERIAL_MIMES.has(req.file.mimetype)) {
+      res.status(400).json({ error: 'Unsupported file type. Allowed: PDF, DOC, DOCX, PPT, PPTX, and images.' });
+      return;
+    }
+
+    if (req.file.size > MAX_FILE_SIZE) {
+      res.status(400).json({ error: 'File size exceeds 50 MB limit.' });
+      return;
+    }
+
+    const key = await uploadFileToB2(
+      req.file.buffer,
+      req.file.originalname,
+      req.file.mimetype,
+      'materials'
+    );
+
+    res.status(201).json({ key, fileSize: req.file.size, fileName: req.file.originalname, fileType: req.file.mimetype });
+  } catch (error) {
+    console.error('Upload material file error:', error);
+    res.status(500).json({ error: 'Failed to upload file' });
+  }
+};
+
+// Get all study materials — role-based access
+export const getMaterials = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const adminBranchId = getUserBranchId(req.user);
+    const { page = 1, limit = 20, courseId, branchId } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
 
     let query = supabaseAdmin
       .from('study_materials')
       .select(`
-        id,
-        title,
-        description,
-        type,
-        url,
-        file_size,
-        is_published,
-        created_at,
-        updated_at,
-        subjects (
-          id,
-          name,
-          modules (
-            id,
-            name,
-            courses (
-              id,
-              name
-            )
-          )
-        ),
-        created_by_admin (
-          id,
-          name
-        )
+        id, title, description, url, file_name, file_type, file_size, is_active,
+        is_published, created_at, updated_at, course_id, branch_id,
+        courses ( id, name ),
+        branches ( id, name ),
+        uploaded_by_admin:users!study_materials_uploaded_by_fkey ( id, name )
       `, { count: 'exact' });
 
-    // Only filter by institute_id when available (single-tenant setups omit it)
-    if (instituteId) {
-      query = query.eq('institute_id', instituteId);
+    // Branch admin: restrict to own branch
+    if (adminBranchId) {
+      query = query.eq('branch_id', adminBranchId);
     }
 
-    // Apply filters
-    if (subjectId) {
-      query = query.eq('subject_id', subjectId);
-    }
-    if (courseId) {
-      query = query.eq('course_id', courseId);
-    }
-    if (type) {
-      query = query.eq('type', type);
-    }
-    if (search) {
-      query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
-    }
+    // Optional filters
+    if (courseId) query = query.eq('course_id', courseId as string);
+    if (branchId && !adminBranchId) query = query.eq('branch_id', branchId as string);
 
-    // Apply pagination
-    query = query.range(offset, offset + Number(limit) - 1);
-    query = query.order('created_at', { ascending: false });
+    query = query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + Number(limit) - 1);
 
     const { data, error, count } = await query;
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error.message });
+      return;
     }
 
     res.json({
@@ -91,8 +102,8 @@ export const getMaterials = async (req: AuthRequest, res: Response) => {
         total: count || 0,
         page: Number(page),
         limit: Number(limit),
-        totalPages: Math.ceil((count || 0) / Number(limit))
-      }
+        totalPages: Math.ceil((count || 0) / Number(limit)),
+      },
     });
   } catch (error) {
     console.error('Get materials error:', error);
@@ -100,127 +111,154 @@ export const getMaterials = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Get material by ID
-export const getMaterialById = async (req: AuthRequest, res: Response) => {
+// Get single material + signed URL
+export const getMaterialById = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const instituteId = req.user?.instituteId;
+    const adminBranchId = getUserBranchId(req.user);
 
-    let materialQuery = supabaseAdmin
+    let query = supabaseAdmin
       .from('study_materials')
       .select(`
-        id,
-        title,
-        description,
-        type,
-        url,
-        file_size,
-        content,
-        is_published,
-        created_at,
-        updated_at,
-        subject_id,
-        subjects (
-          id,
-          name,
-          modules (
-            id,
-            name,
-            courses (
-              id,
-              name
-            )
-          )
-        ),
-        created_by_admin (
-          id,
-          name
-        )
+        id, title, description, url, file_name, file_type, file_size, is_active,
+        is_published, created_at, updated_at, course_id, branch_id,
+        courses ( id, name ),
+        branches ( id, name ),
+        uploaded_by_admin:users!study_materials_uploaded_by_fkey ( id, name )
       `)
       .eq('id', id);
-    if (instituteId) {
-      materialQuery = materialQuery.eq('institute_id', instituteId);
-    }
-    const { data, error } = await materialQuery.single();
 
-    if (error) {
-      return res.status(404).json({ error: 'Material not found' });
+    if (adminBranchId) {
+      query = query.eq('branch_id', adminBranchId);
     }
 
-    res.json(data);
+    const { data, error } = await query.single();
+
+    if (error || !data) {
+      res.status(404).json({ error: 'Material not found' });
+      return;
+    }
+
+    let signedUrl: string | null = null;
+    if (data.url) {
+      try {
+        if (isLegacySupabaseUrl(data.url)) {
+          const rawMatch = (data.url as string).match(/\/storage\/v1\/object\/(?:public|sign)\/materials\/(.+)$/);
+          const filePath = rawMatch ? rawMatch[1].split('?')[0] : null;
+          if (filePath) {
+            const { data: sd } = await supabaseAdmin.storage.from('materials').createSignedUrl(filePath, 3600);
+            signedUrl = sd?.signedUrl ?? null;
+          }
+        } else {
+          signedUrl = await getSignedDownloadUrl(data.url, 3600);
+        }
+      } catch {
+        // signed URL generation failures are non-fatal
+      }
+    }
+
+    res.json({ ...data, signedUrl, expiresAt: signedUrl ? new Date(Date.now() + 3600 * 1000).toISOString() : null });
   } catch (error) {
     console.error('Get material error:', error);
     res.status(500).json({ error: 'Failed to fetch material' });
   }
 };
 
-// Create new study material
-export const createMaterial = async (req: AuthRequest, res: Response) => {
+// Create new study material — Branch Admin only (super_admin/admin can view but this is upload)
+export const createMaterial = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const instituteId = req.user?.instituteId;
+    const adminBranchId = getUserBranchId(req.user);
     const adminId = req.user?.id;
-    const {
-      title,
-      description,
-      type,
-      subjectId,
-      url,
-      fileUrl,
-      fileSize,
-      content,
-      isPublished = false
-    } = req.body;
+    const instituteId = req.user?.instituteId;
+    const { title, description, courseId, fileKey, fileName, fileType, fileSize } = req.body;
 
-    if (!title || !subjectId || !type) {
-      return res.status(400).json({ error: 'Title, subject, and type are required' });
+    if (!title || !courseId || !fileKey) {
+      res.status(400).json({ error: 'Title, course, and file are required' });
+      return;
     }
 
-    // Support both url and fileUrl field names
-    const fileUrlValue = url || fileUrl;
+    // Determine branch_id: branch_admin uses own branch; super_admin/admin must provide it
+    const branchId = adminBranchId ?? (req.body.branchId || null);
 
-    // Resolve course_id from the subject → module → course chain so that
-    // material_count on the courses page stays accurate and student RLS works.
-    let courseId: string | null = null;
-    const { data: subjectRow } = await supabaseAdmin
-      .from('subjects')
-      .select('module_id, modules(course_id)')
-      .eq('id', subjectId)
+    // Verify the course belongs to this branch (for branch_admin)
+    if (adminBranchId) {
+      const { data: course, error: courseErr } = await supabaseAdmin
+        .from('courses')
+        .select('id, branch_id')
+        .eq('id', courseId)
+        .single();
+      if (courseErr || !course) {
+        res.status(404).json({ error: 'Course not found' });
+        return;
+      }
+      if (course.branch_id && course.branch_id !== adminBranchId) {
+        res.status(403).json({ error: 'You can only upload materials for your own branch courses' });
+        return;
+      }
+    }
+
+    // Fetch the course name for the notification message
+    const { data: courseRow } = await supabaseAdmin
+      .from('courses')
+      .select('name')
+      .eq('id', courseId)
       .single();
-    if (subjectRow?.modules) {
-      const mod = subjectRow.modules as { course_id?: string } | null;
-      courseId = mod?.course_id ?? null;
-    }
+    const courseName = courseRow?.name ?? 'the course';
 
+    // Insert material
     const { data, error } = await supabaseAdmin
       .from('study_materials')
       .insert({
-        institute_id: instituteId || null,
         title,
-        description,
-        type,
-        subject_id: subjectId,
+        description: description || null,
         course_id: courseId,
-        url: fileUrlValue,
-        file_size: fileSize,
-        content,
-        is_published: isPublished,
-        created_by: adminId
+        branch_id: branchId,
+        url: fileKey,
+        file_name: fileName || null,
+        file_type: fileType || null,
+        file_size: fileSize ? Number(fileSize) : null,
+        uploaded_by: adminId,
+        is_active: true,
+        is_published: true,
+        created_by: adminId,
+        institute_id: instituteId || null,
       })
       .select()
       .single();
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error.message });
+      return;
     }
 
-    // Log activity
-    await supabaseAdmin.from('activity_log').insert({
-      institute_id: instituteId,
-      user_id: adminId,
-      user_type: 'admin',
-      action: 'create_material',
-      details: { material_id: data.id, title }
-    });
+    // Trigger notifications to enrolled students
+    try {
+      const { data: enrollments } = await supabaseAdmin
+        .from('enrollments')
+        .select('user_id')
+        .eq('course_id', courseId)
+        .eq('status', 'active');
+
+      if (enrollments && enrollments.length > 0) {
+        // Insert one notification per enrolled student using per-student targeting
+        const notifRows = enrollments.map((e: { user_id: string }) => ({
+          title: 'New Study Material Available',
+          message: `${title} has been added to ${courseName}.`,
+          type: 'study_material',
+          target_audience: 'student',
+          target_id: e.user_id,
+          action_url: `/materials?courseId=${courseId}`,
+          branch_id: branchId,
+          institute_id: instituteId || null,
+          sent_at: new Date().toISOString(),
+          created_by: adminId,
+        }));
+        await supabaseAdmin.from('notifications').insert(notifRows);
+      }
+    } catch (notifErr) {
+      // Notification failures are non-fatal
+      console.warn('[materials] Failed to send notifications:', notifErr);
+    }
 
     res.status(201).json(data);
   } catch (error) {
@@ -229,46 +267,36 @@ export const createMaterial = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Update study material
-export const updateMaterial = async (req: AuthRequest, res: Response) => {
+// Update study material — Branch Admin only; title, description, is_active only
+export const updateMaterial = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const instituteId = req.user?.instituteId;
-    const {
-      title,
-      description,
-      type,
-      subjectId,
-      url,
-      fileUrl,
-      fileSize,
-      content,
-      isPublished
-    } = req.body;
+    const adminBranchId = getUserBranchId(req.user);
+    const { title, description, isActive, is_active } = req.body;
 
-    const updateData: Record<string, any> = { updated_at: new Date().toISOString() };
+    const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
-    if (type !== undefined) updateData.type = type;
-    if (subjectId !== undefined) updateData.subject_id = subjectId;
-    // Support both url and fileUrl field names
-    const fileUrlValue = url !== undefined ? url : fileUrl;
-    if (fileUrlValue !== undefined) updateData.url = fileUrlValue;
-    if (fileSize !== undefined) updateData.file_size = fileSize;
-    if (content !== undefined) updateData.content = content;
-    if (isPublished !== undefined) updateData.is_published = isPublished;
+    const activeValue = isActive !== undefined ? isActive : is_active;
+    if (activeValue !== undefined) {
+      updateData.is_active = activeValue;
+      updateData.is_published = activeValue; // keep in sync
+    }
 
-    let updateQuery = supabaseAdmin
+    let query = supabaseAdmin
       .from('study_materials')
       .update(updateData)
       .eq('id', id);
-    if (instituteId) {
-      updateQuery = updateQuery.eq('institute_id', instituteId);
+
+    if (adminBranchId) {
+      query = query.eq('branch_id', adminBranchId);
     }
-    const { data, error } = await updateQuery.select().single();
+
+    const { data, error } = await query.select().single();
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error.message });
+      return;
     }
 
     res.json(data);
@@ -278,23 +306,43 @@ export const updateMaterial = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Delete study material
-export const deleteMaterial = async (req: AuthRequest, res: Response) => {
+// Delete study material — Branch Admin (own branch) or super_admin
+export const deleteMaterial = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const instituteId = req.user?.instituteId;
+    const adminBranchId = getUserBranchId(req.user);
 
-    let deleteQuery = supabaseAdmin
+    // Fetch the material first to get its B2 key
+    let fetchQuery = supabaseAdmin
+      .from('study_materials')
+      .select('id, url')
+      .eq('id', id);
+
+    if (adminBranchId) {
+      fetchQuery = fetchQuery.eq('branch_id', adminBranchId);
+    }
+
+    const { data: material, error: fetchErr } = await fetchQuery.single();
+
+    if (fetchErr || !material) {
+      res.status(404).json({ error: 'Material not found' });
+      return;
+    }
+
+    // Delete from B2 first (non-fatal)
+    if (material.url && !isLegacySupabaseUrl(material.url)) {
+      await deleteFileFromB2(material.url);
+    }
+
+    // Delete the row
+    const { error } = await supabaseAdmin
       .from('study_materials')
       .delete()
       .eq('id', id);
-    if (instituteId) {
-      deleteQuery = deleteQuery.eq('institute_id', instituteId);
-    }
-    const { error } = await deleteQuery;
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error.message });
+      return;
     }
 
     res.json({ message: 'Material deleted successfully' });
@@ -304,132 +352,50 @@ export const deleteMaterial = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Toggle publish status
-export const togglePublish = async (req: AuthRequest, res: Response) => {
-  try {
-    const { id } = req.params;
-    const instituteId = req.user?.instituteId;
-
-    // Get current status
-    let fetchQuery = supabaseAdmin
-      .from('study_materials')
-      .select('is_published')
-      .eq('id', id);
-    if (instituteId) {
-      fetchQuery = fetchQuery.eq('institute_id', instituteId);
-    }
-    const { data: material, error: fetchError } = await fetchQuery.single();
-
-    if (fetchError || !material) {
-      return res.status(404).json({ error: 'Material not found' });
-    }
-
-    // Toggle status
-    let toggleQuery = supabaseAdmin
-      .from('study_materials')
-      .update({ is_published: !material.is_published, updated_at: new Date().toISOString() })
-      .eq('id', id);
-    if (instituteId) {
-      toggleQuery = toggleQuery.eq('institute_id', instituteId);
-    }
-    const { data, error } = await toggleQuery.select().single();
-
-    if (error) {
-      return res.status(400).json({ error: error.message });
-    }
-
-    res.json(data);
-  } catch (error) {
-    console.error('Toggle publish error:', error);
-    res.status(500).json({ error: 'Failed to toggle publish status' });
-  }
-};
-
-// Get materials by subject
-export const getMaterialsBySubject = async (req: AuthRequest, res: Response) => {
-  try {
-    const { subjectId } = req.params;
-    const instituteId = req.user?.instituteId;
-
-    let subjectQuery = supabaseAdmin
-      .from('study_materials')
-      .select(`
-        id,
-        title,
-        type,
-        url,
-        file_size,
-        is_published
-      `)
-      .eq('subject_id', subjectId)
-      .eq('is_published', true);
-    if (instituteId) {
-      subjectQuery = subjectQuery.eq('institute_id', instituteId);
-    }
-    subjectQuery = subjectQuery.order('created_at', { ascending: false });
-    const { data, error } = await subjectQuery;
-
-    if (error) {
-      return res.status(400).json({ error: error.message });
-    }
-
-    res.json(data);
-  } catch (error) {
-    console.error('Get materials by subject error:', error);
-    res.status(500).json({ error: 'Failed to fetch materials' });
-  }
-};
-
 // Generate a signed URL for a material's file
-export const getSignedMaterialUrl = async (req: AuthRequest, res: Response) => {
+export const getSignedMaterialUrl = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const instituteId = req.user?.instituteId;
+    const adminBranchId = getUserBranchId(req.user);
 
-    // Get the material to find its URL / key
-    let materialQuery = supabaseAdmin
+    let query = supabaseAdmin
       .from('study_materials')
       .select('url, title')
       .eq('id', id);
-    if (instituteId) {
-      materialQuery = materialQuery.eq('institute_id', instituteId);
+
+    if (adminBranchId) {
+      query = query.eq('branch_id', adminBranchId);
     }
-    const { data: material, error: fetchError } = await materialQuery.single();
+
+    const { data: material, error: fetchError } = await query.single();
 
     if (fetchError || !material) {
-      return res.status(404).json({ error: 'Material not found' });
+      res.status(404).json({ error: 'Material not found' });
+      return;
     }
 
     if (!material.url) {
-      return res.status(400).json({ error: 'Material has no file URL' });
+      res.status(400).json({ error: 'Material has no file' });
+      return;
     }
 
-    let signedUrl: string | null = null;
+    let signedUrl: string;
 
     if (isLegacySupabaseUrl(material.url)) {
-      // Legacy Supabase storage URL — extract path and sign via Supabase
       const rawMatch = (material.url as string).match(/\/storage\/v1\/object\/(?:public|sign)\/materials\/(.+)$/);
-      const rawPath = rawMatch ? rawMatch[1] : null;
-      // Strip any query-string parameters (e.g. signed token) from the extracted path
-      const filePath = rawPath ? rawPath.split('?')[0] : null;
-
-      if (filePath) {
-        const { data: signedData, error: signedError } = await supabaseAdmin.storage
-          .from('materials')
-          .createSignedUrl(filePath, 3600);
-
-        if (signedError || !signedData?.signedUrl) {
-          console.error('Supabase signed URL generation error:', signedError);
-          return res.status(500).json({ error: 'Failed to generate signed URL' });
-        }
-        signedUrl = signedData.signedUrl;
-      } else {
-        // URL doesn't match expected Supabase pattern — return as-is
-        signedUrl = material.url as string;
+      const filePath = rawMatch ? rawMatch[1].split('?')[0] : null;
+      if (!filePath) {
+        res.status(400).json({ error: 'Cannot parse legacy URL' });
+        return;
       }
+      const { data: sd, error: sdErr } = await supabaseAdmin.storage.from('materials').createSignedUrl(filePath, 3600);
+      if (sdErr || !sd?.signedUrl) {
+        res.status(500).json({ error: 'Failed to generate signed URL' });
+        return;
+      }
+      signedUrl = sd.signedUrl;
     } else {
-      // B2 object key — generate presigned URL
-      signedUrl = await getSignedDownloadUrl(material.url as string, 3600);
+      signedUrl = await getSignedDownloadUrl(material.url, 3600);
     }
 
     res.json({
@@ -443,45 +409,66 @@ export const getSignedMaterialUrl = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Multer instance for material file uploads (server-side only)
-const materialUpload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB
-});
-
-export const materialUploadMiddleware = materialUpload.single('file');
-
-// Upload a course material file to B2 and return its object key
-export const uploadMaterialFile = async (req: AuthRequest, res: Response) => {
+// Toggle active/published status
+export const togglePublish = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'File is required' });
+    const { id } = req.params;
+    const adminBranchId = getUserBranchId(req.user);
+
+    let fetchQ = supabaseAdmin.from('study_materials').select('is_active, is_published').eq('id', id);
+    if (adminBranchId) fetchQ = fetchQ.eq('branch_id', adminBranchId);
+    const { data: m, error: fe } = await fetchQ.single();
+
+    if (fe || !m) {
+      res.status(404).json({ error: 'Material not found' });
+      return;
     }
 
-    const ALLOWED_MATERIAL_MIMES = new Set([
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'text/csv',
-      'text/plain',
-      'image/jpeg',
-      'image/png',
-    ]);
+    const newActive = !(m.is_active ?? m.is_published);
+    let updQ = supabaseAdmin
+      .from('study_materials')
+      .update({ is_active: newActive, is_published: newActive, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    if (adminBranchId) updQ = updQ.eq('branch_id', adminBranchId);
+    const { data, error } = await updQ.select().single();
 
-    if (!ALLOWED_MATERIAL_MIMES.has(req.file.mimetype)) {
-      return res.status(400).json({ error: 'Unsupported file type' });
+    if (error) {
+      res.status(400).json({ error: error.message });
+      return;
     }
 
-    const key = await uploadFileToB2(
-      req.file.buffer,
-      req.file.originalname,
-      req.file.mimetype,
-      'materials'
-    );
-
-    res.status(201).json({ key, fileSize: req.file.size });
+    res.json(data);
   } catch (error) {
-    console.error('Upload material file error:', error);
-    res.status(500).json({ error: 'Failed to upload file' });
+    console.error('Toggle publish error:', error);
+    res.status(500).json({ error: 'Failed to toggle status' });
+  }
+};
+
+// Get materials by subject (legacy compatibility)
+export const getMaterialsBySubject = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { subjectId } = req.params;
+    const adminBranchId = getUserBranchId(req.user);
+
+    let query = supabaseAdmin
+      .from('study_materials')
+      .select('id, title, url, file_size, is_active, is_published')
+      .eq('subject_id', subjectId)
+      .eq('is_published', true);
+
+    if (adminBranchId) query = query.eq('branch_id', adminBranchId);
+    query = query.order('created_at', { ascending: false });
+
+    const { data, error } = await query;
+
+    if (error) {
+      res.status(400).json({ error: error.message });
+      return;
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error('Get materials by subject error:', error);
+    res.status(500).json({ error: 'Failed to fetch materials' });
   }
 };

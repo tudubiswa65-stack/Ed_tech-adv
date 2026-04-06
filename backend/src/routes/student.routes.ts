@@ -18,6 +18,7 @@ import {
   getMaterialsBySubject,
   getRecentlyViewed,
   getMySubjects,
+  getStudentMaterialSignedUrl,
 } from '../controllers/student/materials.controller';
 import {
   getNotifications,
@@ -91,8 +92,9 @@ router.get('/performance', getMyPerformance);
 router.get('/materials', getStudyMaterials);
 router.get('/materials/recent', getRecentlyViewed);
 router.get('/materials/subjects', getMySubjects);
-router.get('/materials/:id', getMaterialById);
 router.get('/materials/subject/:subjectId', getMaterialsBySubject);
+router.get('/materials/:id/signed-url', getStudentMaterialSignedUrl);
+router.get('/materials/:id', getMaterialById);
 
 // Notifications
 router.get('/notifications', getNotifications);
