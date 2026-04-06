@@ -124,7 +124,7 @@ export default function StudentsPage() {
       key: 'name',
       label: 'Name',
       render: (student: Student) => (
-        <span className="font-medium" style={{ color: '#f1f5f9' }}>{student.name}</span>
+        <span className="font-medium" style={{ color: '#000000' }}>{student.name}</span>
       ),
     },
     {
