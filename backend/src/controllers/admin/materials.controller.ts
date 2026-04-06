@@ -267,6 +267,14 @@ export const createMaterial = async (req: AuthRequest, res: Response): Promise<v
   }
 };
 
+interface MaterialUpdatePayload {
+  title?: string;
+  description?: string | null;
+  is_active?: boolean;
+  is_published?: boolean;
+  updated_at: string;
+}
+
 // Update study material — Branch Admin only; title, description, is_active only
 export const updateMaterial = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -274,7 +282,7 @@ export const updateMaterial = async (req: AuthRequest, res: Response): Promise<v
     const adminBranchId = getUserBranchId(req.user);
     const { title, description, isActive, is_active } = req.body;
 
-    const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    const updateData: MaterialUpdatePayload = { updated_at: new Date().toISOString() };
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
     const activeValue = isActive !== undefined ? isActive : is_active;

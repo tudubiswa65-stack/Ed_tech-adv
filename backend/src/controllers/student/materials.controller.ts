@@ -250,10 +250,11 @@ export const getRecentlyViewed = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ success: false, error: error.message });
     }
 
-    const formattedData = data?.map(v => ({
-      ...(v.study_materials as object),
-      viewedAt: v.viewed_at
-    })) || [];
+    const formattedData = data?.map(v => {
+      const mat = v.study_materials as { id: string; title: string; url?: string; file_type?: string; courses?: { name: string } } | null;
+      if (!mat) return null;
+      return { ...mat, viewedAt: v.viewed_at };
+    }).filter(Boolean) || [];
 
     res.json({ success: true, data: formattedData });
   } catch (error) {
