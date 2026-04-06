@@ -22,7 +22,7 @@ export const getStudyMaterials = async (req: AuthRequest, res: Response) => {
     const enrollQ = supabaseAdmin
       .from('enrollments')
       .select('course_id')
-      .eq('user_id', studentId)
+      .eq('student_id', studentId)
       .eq('status', 'active');
     const { data: enrollments } = await enrollQ;
     enrolledCourseIds = enrollments?.map((e) => e.course_id).filter(Boolean) ?? [];
@@ -86,7 +86,7 @@ export const getMaterialById = async (req: AuthRequest, res: Response) => {
     const { data: enrollments } = await supabaseAdmin
       .from('enrollments')
       .select('course_id')
-      .eq('user_id', studentId)
+      .eq('student_id', studentId)
       .eq('status', 'active');
     const enrolledCourseIds = enrollments?.map((e) => e.course_id).filter(Boolean) ?? [];
 
@@ -139,7 +139,7 @@ export const getStudentMaterialSignedUrl = async (req: AuthRequest, res: Respons
     const { data: enrollments } = await supabaseAdmin
       .from('enrollments')
       .select('course_id')
-      .eq('user_id', studentId)
+      .eq('student_id', studentId)
       .eq('status', 'active');
     const enrolledCourseIds = enrollments?.map((e) => e.course_id).filter(Boolean) ?? [];
 
@@ -270,7 +270,7 @@ export const getMySubjects = async (req: AuthRequest, res: Response) => {
     const { data, error } = await supabaseAdmin
       .from('enrollments')
       .select('course_id, courses ( id, name )')
-      .eq('user_id', studentId)
+      .eq('student_id', studentId)
       .eq('status', 'active');
 
     if (error) {
