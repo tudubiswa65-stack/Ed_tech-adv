@@ -72,7 +72,7 @@ export default function AdminRootLayout({ children }: { children: React.ReactNod
     (pathname.startsWith('/admin/results/') ? 'Result Details' : 'Admin Dashboard');
 
   return (
-    <div className="min-h-screen flex bg-gray-50/80 dark:bg-slate-900">
+    <div className="min-h-screen flex" style={{ background: '#0a0f1e' }}>
       {/* Sidebar — visible only on desktop (lg+) */}
       <div className="hidden lg:block shrink-0">
         <Sidebar role="admin" />
@@ -87,7 +87,7 @@ export default function AdminRootLayout({ children }: { children: React.ReactNod
         {pathname !== '/admin' && (
           <div
             className="lg:hidden flex items-center justify-between px-4 py-3 shrink-0"
-            style={{ background: '#0b1120', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}
+            style={{ background: '#0d1527', borderBottom: '0.5px solid rgba(255,255,255,0.07)' }}
           >
             <span style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.9)' }}>
               {title}

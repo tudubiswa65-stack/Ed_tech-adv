@@ -3,11 +3,8 @@
 import { useState, useRef } from 'react';
 import apiClient from '@/lib/apiClient';
 import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
-import Card from '@/components/ui/Card';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
-import Spinner from '@/components/ui/Spinner';
 import { AdminTableSkeleton } from '@/components/admin/AdminPageSkeletons';
 import PageWrapper from '@/components/layout/PageWrapper';
 import Switch from '@/components/ui/Switch';
@@ -267,39 +264,52 @@ export default function TestsPage() {
 
   const getStatusBadge = (test: Test) => {
     if (test.scheduled_at && new Date(test.scheduled_at) > new Date()) {
-      return <Badge variant="info">Scheduled</Badge>;
+      return <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24' }}>Scheduled</span>;
     }
-    return <Badge variant={test.is_active ? 'success' : 'warning'}>
-      {test.is_active ? 'Active' : 'Inactive'}
-    </Badge>;
+    return test.is_active
+      ? <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.35)', color: '#34d399' }}>Active</span>
+      : <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24' }}>Inactive</span>;
   };
 
   return (
     <PageWrapper title="Tests">
-      <div className="space-y-6">
+      {/* Ambient orbs */}
+      <div style={{ position: 'fixed', top: 80, right: 40, width: 320, height: 320, borderRadius: '50%', background: 'rgba(99,102,241,0.06)', filter: 'blur(40px)', pointerEvents: 'none', zIndex: 0 }} />
+      <div style={{ position: 'fixed', bottom: 80, left: 40, width: 280, height: 280, borderRadius: '50%', background: 'rgba(52,211,153,0.05)', filter: 'blur(40px)', pointerEvents: 'none', zIndex: 0 }} />
+
+      <div className="space-y-6" style={{ position: 'relative', zIndex: 1 }}>
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Tests</h1>
-            <p className="text-gray-500 dark:text-slate-400">Create and manage tests for students</p>
+            <h1 className="text-2xl font-bold" style={{ color: '#f1f5f9' }}>Tests</h1>
+            <p style={{ color: '#94a3b8' }}>Create and manage tests for students</p>
           </div>
-          <Button onClick={() => { resetForm(); setShowModal(true); }}>
+          <button
+            onClick={() => { resetForm(); setShowModal(true); }}
+            className="px-4 py-2 text-sm font-medium"
+            style={{ background: 'linear-gradient(135deg,#3b82f6,#6366f1)', color: '#fff', border: 'none', borderRadius: 20 }}
+          >
             + Create Test
-          </Button>
+          </button>
         </div>
 
         {/* Filters */}
-        <Card>
+        <div
+          className="relative overflow-hidden"
+          style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)', border: '0.5px solid rgba(255,255,255,0.10)', borderRadius: 18 }}
+        >
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent,rgba(99,102,241,0.4),transparent)' }} />
           <div className="p-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
+                <label className="block text-sm font-medium mb-1" style={{ color: '#94a3b8' }}>
                   Course
                 </label>
                 <select
                   value={filters.courseId}
                   onChange={(e) => setFilters(f => ({ ...f, courseId: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
+                  className="w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
+                  style={{ background: '#0d1b36', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
                 >
                   <option value="">All Courses</option>
                   {courses.map(course => (
@@ -308,13 +318,14 @@ export default function TestsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
+                <label className="block text-sm font-medium mb-1" style={{ color: '#94a3b8' }}>
                   Type
                 </label>
                 <select
                   value={filters.type}
                   onChange={(e) => setFilters(f => ({ ...f, type: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
+                  className="w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
+                  style={{ background: '#0d1b36', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
                 >
                   <option value="">All Types</option>
                   <option value="graded">Graded</option>
@@ -322,93 +333,106 @@ export default function TestsPage() {
                 </select>
               </div>
               <div className="flex items-end">
-                <Button
-                  variant="outline"
+                <button
                   onClick={() => setFilters({ courseId: '', type: '' })}
-                  className="w-full"
+                  className="w-full px-3 py-2 rounded-[10px] text-sm"
+                  style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}
                 >
                   Clear Filters
-                </Button>
+                </button>
               </div>
             </div>
           </div>
-        </Card>
+        </div>
 
         {/* Tests Table */}
         {isLoading ? (
-          <Card>
+          <div
+            className="relative overflow-hidden"
+            style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)', border: '0.5px solid rgba(255,255,255,0.10)', borderRadius: 18 }}
+          >
             <AdminTableSkeleton rows={6} cols={6} />
-          </Card>
+          </div>
         ) : tests.length === 0 ? (
-          <Card>
-            <div className="p-8 text-center text-gray-500 dark:text-slate-400">
+          <div
+            className="relative overflow-hidden"
+            style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)', border: '0.5px solid rgba(255,255,255,0.10)', borderRadius: 18 }}
+          >
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent,rgba(99,102,241,0.4),transparent)' }} />
+            <div className="p-8 text-center" style={{ color: '#94a3b8' }}>
               No tests found. Click &quot;Create Test&quot; to add one.
             </div>
-          </Card>
+          </div>
         ) : (
-          <Card>
+          <div
+            className="relative overflow-hidden"
+            style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)', border: '0.5px solid rgba(255,255,255,0.10)', borderRadius: 18 }}
+          >
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent,rgba(99,102,241,0.4),transparent)' }} />
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b dark:bg-slate-800">
+                <thead style={{ borderBottom: '0.5px solid rgba(255,255,255,0.07)' }}>
                   <tr>
-                    <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-slate-400">Title</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-slate-400">Course</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-slate-400">Type</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-slate-400">Time</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-slate-400">Questions</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-slate-400">Submissions</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-slate-400">Status</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-slate-400">Actions</th>
+                    <th className="text-left py-3 px-4 font-medium" style={{ color: '#94a3b8' }}>Title</th>
+                    <th className="text-left py-3 px-4 font-medium" style={{ color: '#94a3b8' }}>Course</th>
+                    <th className="text-left py-3 px-4 font-medium" style={{ color: '#94a3b8' }}>Type</th>
+                    <th className="text-left py-3 px-4 font-medium" style={{ color: '#94a3b8' }}>Time</th>
+                    <th className="text-left py-3 px-4 font-medium" style={{ color: '#94a3b8' }}>Questions</th>
+                    <th className="text-left py-3 px-4 font-medium" style={{ color: '#94a3b8' }}>Submissions</th>
+                    <th className="text-left py-3 px-4 font-medium" style={{ color: '#94a3b8' }}>Status</th>
+                    <th className="text-left py-3 px-4 font-medium" style={{ color: '#94a3b8' }}>Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
+                <tbody>
                   {tests.map(test => (
-                    <tr key={test.id} className="hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700">
+                    <tr key={test.id} style={{ borderTop: '0.5px solid rgba(255,255,255,0.07)' }}>
                       <td className="py-3 px-4">
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-slate-100">{test.title}</p>
+                          <p className="font-medium" style={{ color: '#f1f5f9' }}>{test.title}</p>
                           {test.description && (
-                            <p className="text-xs text-gray-500 line-clamp-1 dark:text-slate-400">{test.description}</p>
+                            <p className="text-xs line-clamp-1" style={{ color: '#94a3b8' }}>{test.description}</p>
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-sm">{test.courses?.name || 'N/A'}</td>
+                      <td className="py-3 px-4 text-sm" style={{ color: '#94a3b8' }}>{test.courses?.name || 'N/A'}</td>
                       <td className="py-3 px-4">
-                        <Badge variant={test.type === 'graded' ? 'info' : 'success'}>
-                          {test.type}
-                        </Badge>
+                        {test.type === 'graded' ? (
+                          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.35)', color: '#818cf8' }}>{test.type}</span>
+                        ) : (
+                          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.35)', color: '#34d399' }}>{test.type}</span>
+                        )}
                       </td>
-                      <td className="py-3 px-4 text-sm">{test.time_limit_mins} min</td>
-                      <td className="py-3 px-4 text-sm">{test.question_count}</td>
-                      <td className="py-3 px-4 text-sm">{test.submission_count}</td>
+                      <td className="py-3 px-4 text-sm" style={{ color: '#94a3b8' }}>{test.time_limit_mins} min</td>
+                      <td className="py-3 px-4 text-sm" style={{ color: '#94a3b8' }}>{test.question_count}</td>
+                      <td className="py-3 px-4 text-sm" style={{ color: '#94a3b8' }}>{test.submission_count}</td>
                       <td className="py-3 px-4">{getStatusBadge(test)}</td>
                       <td className="py-3 px-4">
-                        <div className="flex gap-1">
-                          <Button size="sm" variant="outline" onClick={() => handleEdit(test)}>
+                        <div className="flex gap-1 flex-wrap">
+                          <button onClick={() => handleEdit(test)} className="text-xs px-2 py-1 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#94a3b8' }}>
                             Edit
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => openQuestionsModal(test.id)}>
+                          </button>
+                          <button onClick={() => openQuestionsModal(test.id)} className="text-xs px-2 py-1 rounded-lg" style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}>
                             Questions
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => openAssignModal(test.id)}>
+                          </button>
+                          <button onClick={() => openAssignModal(test.id)} className="text-xs px-2 py-1 rounded-lg" style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}>
                             Assign
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
+                          </button>
+                          <button
                             onClick={() => handleToggleActive(test)}
-                            className={test.is_active ? 'text-orange-600' : 'text-green-600'}
+                            className="text-xs px-2 py-1 rounded-lg"
+                            style={test.is_active
+                              ? { background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24' }
+                              : { background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.35)', color: '#34d399' }}
                           >
                             {test.is_active ? 'Deactivate' : 'Activate'}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
+                          </button>
+                          <button
                             onClick={() => handleDelete(test.id)}
-                            className="text-red-600 hover:text-red-700"
+                            className="text-xs px-2 py-1 rounded-lg"
+                            style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}
                           >
                             Delete
-                          </Button>
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -416,7 +440,7 @@ export default function TestsPage() {
                 </tbody>
               </table>
             </div>
-          </Card>
+          </div>
         )}
       </div>
 
@@ -435,22 +459,24 @@ export default function TestsPage() {
           />
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Description</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: '#94a3b8' }}>Description</label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData(f => ({ ...f, description: e.target.value }))}
               rows={3}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
+              className="w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Course</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: '#94a3b8' }}>Course</label>
             <select
               value={formData.courseId}
               onChange={(e) => setFormData(f => ({ ...f, courseId: e.target.value }))}
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
+              className="w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
+              style={{ background: '#0d1b36', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
             >
               <option value="">Select Course</option>
               {courses.map(course => (
@@ -461,7 +487,7 @@ export default function TestsPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Time Limit (minutes)</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: '#94a3b8' }}>Time Limit (minutes)</label>
               <Input
                 type="number"
                 value={formData.timeLimit}
@@ -470,11 +496,12 @@ export default function TestsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Type</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: '#94a3b8' }}>Type</label>
               <select
                 value={formData.type}
                 onChange={(e) => setFormData(f => ({ ...f, type: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
+                className="w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
+                style={{ background: '#0d1b36', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
               >
                 <option value="graded">Graded</option>
                 <option value="practice">Practice</option>
@@ -483,7 +510,7 @@ export default function TestsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Schedule (optional)</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: '#94a3b8' }}>Schedule (optional)</label>
             <Input
               type="datetime-local"
               value={formData.scheduledAt}
@@ -497,20 +524,21 @@ export default function TestsPage() {
               id="isActive"
               checked={formData.isActive}
               onChange={(e) => setFormData(f => ({ ...f, isActive: e.target.checked }))}
-              className="rounded border-gray-300 dark:border-slate-500"
+              className="rounded"
+              style={{ borderColor: 'rgba(255,255,255,0.15)', accentColor: '#6366f1' }}
             />
-            <label htmlFor="isActive" className="text-sm text-gray-700 dark:text-slate-200">
+            <label htmlFor="isActive" className="text-sm" style={{ color: '#94a3b8' }}>
               Activate immediately
             </label>
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => { setShowModal(false); resetForm(); }}>
+            <button type="button" onClick={() => { setShowModal(false); resetForm(); }} className="px-4 py-2 rounded-[10px] text-sm" style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}>
               Cancel
-            </Button>
-            <Button type="submit" disabled={saving}>
+            </button>
+            <button type="submit" disabled={saving} className="px-4 py-2 rounded-[20px] text-sm font-medium" style={{ background: 'linear-gradient(135deg,#3b82f6,#6366f1)', color: '#fff', border: 'none' }}>
               {saving ? 'Saving...' : editingTest ? 'Update' : 'Create'}
-            </Button>
+            </button>
           </div>
         </form>
       </Modal>
@@ -524,21 +552,22 @@ export default function TestsPage() {
       >
         <div className="space-y-4">
           {/* File Upload Section */}
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 className="text-sm font-semibold text-blue-800 mb-2">📂 Bulk Upload Questions</h4>
-            <p className="text-xs text-blue-600 mb-3">
+          <div className="p-4 rounded-lg" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(99,102,241,0.3)' }}>
+            <h4 className="text-sm font-semibold mb-2" style={{ color: '#818cf8' }}>📂 Bulk Upload Questions</h4>
+            <p className="text-xs mb-3" style={{ color: '#94a3b8' }}>
               Upload a <strong>CSV</strong> (columns: question_text, option_a, option_b, option_c, option_d, correct_option),{' '}
               <strong>PDF</strong>, or <strong>DOCX</strong> file with numbered MCQs.
             </p>
             <div className="flex items-center gap-3">
-              <Button
-                size="sm"
-                variant="outline"
+              <button
+                type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={saving}
+                className="text-sm px-3 py-1.5 rounded-[10px]"
+                style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}
               >
                 {saving ? 'Uploading…' : '⬆ Choose File (CSV / PDF / DOCX)'}
-              </Button>
+              </button>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -549,20 +578,21 @@ export default function TestsPage() {
             </div>
           </div>
 
-          <form onSubmit={handleQuestionSubmit} className="space-y-3 p-4 bg-gray-50 rounded-lg dark:bg-slate-800">
+          <form onSubmit={handleQuestionSubmit} className="space-y-3 p-4 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)' }}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Question Text</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: '#94a3b8' }}>Question Text</label>
               <textarea
                 value={questionForm.questionText}
                 onChange={(e) => setQuestionForm(f => ({ ...f, questionText: e.target.value }))}
                 rows={2}
                 required
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
+                className="w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-slate-200">Option A</label>
+                <label className="block text-xs font-medium mb-1" style={{ color: '#94a3b8' }}>Option A</label>
                 <Input
                   value={questionForm.optionA}
                   onChange={(e) => setQuestionForm(f => ({ ...f, optionA: e.target.value }))}
@@ -570,7 +600,7 @@ export default function TestsPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-slate-200">Option B</label>
+                <label className="block text-xs font-medium mb-1" style={{ color: '#94a3b8' }}>Option B</label>
                 <Input
                   value={questionForm.optionB}
                   onChange={(e) => setQuestionForm(f => ({ ...f, optionB: e.target.value }))}
@@ -578,7 +608,7 @@ export default function TestsPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-slate-200">Option C</label>
+                <label className="block text-xs font-medium mb-1" style={{ color: '#94a3b8' }}>Option C</label>
                 <Input
                   value={questionForm.optionC}
                   onChange={(e) => setQuestionForm(f => ({ ...f, optionC: e.target.value }))}
@@ -586,7 +616,7 @@ export default function TestsPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1 dark:text-slate-200">Option D</label>
+                <label className="block text-xs font-medium mb-1" style={{ color: '#94a3b8' }}>Option D</label>
                 <Input
                   value={questionForm.optionD}
                   onChange={(e) => setQuestionForm(f => ({ ...f, optionD: e.target.value }))}
@@ -595,11 +625,12 @@ export default function TestsPage() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Correct Option</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: '#94a3b8' }}>Correct Option</label>
               <select
                 value={questionForm.correctOption}
                 onChange={(e) => setQuestionForm(f => ({ ...f, correctOption: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
+                className="w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
+                style={{ background: '#0d1b36', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
               >
                 <option value="a">A</option>
                 <option value="b">B</option>
@@ -607,35 +638,36 @@ export default function TestsPage() {
                 <option value="d">D</option>
               </select>
             </div>
-            <Button type="submit" disabled={saving} size="sm">
+            <button type="submit" disabled={saving} className="text-sm px-4 py-1.5 rounded-[20px] font-medium" style={{ background: 'linear-gradient(135deg,#3b82f6,#6366f1)', color: '#fff', border: 'none' }}>
               {saving ? 'Adding...' : 'Add Question'}
-            </Button>
+            </button>
           </form>
 
-          <div className="divide-y divide-gray-100 dark:divide-slate-700">
+          <div>
             {questions.length === 0 ? (
-              <p className="text-center py-4 text-gray-500 dark:text-slate-400">No questions yet</p>
+              <p className="text-center py-4" style={{ color: '#94a3b8' }}>No questions yet</p>
             ) : (
               questions.map((q, idx) => (
-                <div key={q.id} className="py-3 flex justify-between items-start">
+                <div key={q.id} className="py-3 flex justify-between items-start" style={{ borderTop: '0.5px solid rgba(255,255,255,0.07)' }}>
                   <div>
-                    <p className="text-sm font-medium">{idx + 1}. {q.question_text}</p>
-                    <div className="text-xs text-gray-500 mt-1 space-x-2 dark:text-slate-400">
+                    <p className="text-sm font-medium" style={{ color: '#f1f5f9' }}>{idx + 1}. {q.question_text}</p>
+                    <div className="text-xs mt-1 space-x-2" style={{ color: '#94a3b8' }}>
                       <span>A: {q.option_a}</span>
                       <span>B: {q.option_b}</span>
                       <span>C: {q.option_c}</span>
                       <span>D: {q.option_d}</span>
                     </div>
-                    <Badge variant="success" className="mt-1">Correct: {q.correct_option.toUpperCase()}</Badge>
+                    <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.35)', color: '#34d399' }}>
+                      Correct: {q.correct_option.toUpperCase()}
+                    </span>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
+                  <button
                     onClick={() => handleDeleteQuestion(q.id)}
-                    className="text-red-600"
+                    className="text-xs px-3 py-1.5 rounded-lg ml-2 shrink-0"
+                    style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}
                   >
                     Delete
-                  </Button>
+                  </button>
                 </div>
               ))
             )}
@@ -650,7 +682,7 @@ export default function TestsPage() {
         title="Assign Test"
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-600 dark:text-slate-300">
+          <p className="text-sm" style={{ color: '#94a3b8' }}>
             Choose how to assign this test to students:
           </p>
           
@@ -662,12 +694,12 @@ export default function TestsPage() {
           />
 
           <div className="flex justify-end gap-3 pt-4">
-            <Button variant="outline" onClick={() => { setShowAssignModal(false); setSelectedTestId(null); }}>
+            <button type="button" onClick={() => { setShowAssignModal(false); setSelectedTestId(null); }} className="px-4 py-2 rounded-[10px] text-sm" style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}>
               Cancel
-            </Button>
-            <Button onClick={handleAssignTest} disabled={saving}>
+            </button>
+            <button onClick={handleAssignTest} disabled={saving} className="px-4 py-2 rounded-[20px] text-sm font-medium" style={{ background: 'linear-gradient(135deg,#3b82f6,#6366f1)', color: '#fff', border: 'none' }}>
               {saving ? 'Assigning...' : 'Assign Test'}
-            </Button>
+            </button>
           </div>
         </div>
       </Modal>

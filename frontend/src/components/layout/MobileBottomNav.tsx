@@ -174,7 +174,7 @@ export default function MobileBottomNav({ role }: { role: Role }) {
     <nav
       className={`fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t ${isStudentRole || isAdminRole ? '' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 shadow-[0_-4px_12px_rgba(0,0,0,0.08)]'}`}
       style={(isStudentRole || isAdminRole)
-        ? { background: '#0b1120', borderTopWidth: '0.5px', borderColor: 'rgba(255,255,255,0.06)', paddingBottom: 'env(safe-area-inset-bottom)' }
+        ? { background: '#0d1527', borderTopWidth: '0.5px', borderColor: 'rgba(255,255,255,0.07)', paddingBottom: 'env(safe-area-inset-bottom)' }
         : undefined}
       aria-label="Mobile navigation"
     >
@@ -191,9 +191,9 @@ export default function MobileBottomNav({ role }: { role: Role }) {
             : pathname === tab.href || pathname.startsWith(tab.href + '/');
 
           if (isStudentRole || isAdminRole) {
-            const activeColor = '#60a5fa';
-            const iconColor = isActive ? activeColor : 'rgba(255,255,255,0.3)';
-            const labelColor = isActive ? activeColor : 'rgba(255,255,255,0.3)';
+            const activeColor = '#6366f1';
+            const iconColor = isActive ? activeColor : '#475569';
+            const labelColor = isActive ? activeColor : '#475569';
             return (
               <Link
                 key={tab.href}
@@ -220,6 +220,9 @@ export default function MobileBottomNav({ role }: { role: Role }) {
                 >
                   {tab.label}
                 </span>
+                {isActive && (
+                  <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#6366f1', marginTop: 2 }} />
+                )}
               </Link>
             );
           }

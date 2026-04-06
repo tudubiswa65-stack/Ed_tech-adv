@@ -4,10 +4,7 @@ import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import apiClient from '@/lib/apiClient';
 import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
-import Card from '@/components/ui/Card';
 import Table from '@/components/ui/Table';
-import Spinner from '@/components/ui/Spinner';
 import { AdminTableSkeleton } from '@/components/admin/AdminPageSkeletons';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { useAdminResults, useAdminTestsList } from '@/hooks/queries/useAdminQueries';
@@ -127,19 +124,28 @@ export default function ResultsPage() {
 
   return (
     <PageWrapper title="Results & Analytics">
-      <div className="space-y-6">
+      {/* Ambient orbs */}
+      <div style={{ position: 'fixed', top: 80, right: 40, width: 320, height: 320, borderRadius: '50%', background: 'rgba(99,102,241,0.06)', filter: 'blur(40px)', pointerEvents: 'none', zIndex: 0 }} />
+      <div style={{ position: 'fixed', bottom: 80, left: 40, width: 280, height: 280, borderRadius: '50%', background: 'rgba(52,211,153,0.05)', filter: 'blur(40px)', pointerEvents: 'none', zIndex: 0 }} />
+
+      <div className="space-y-6" style={{ position: 'relative', zIndex: 1 }}>
         {/* Filters */}
-        <Card>
+        <div
+          className="relative overflow-hidden"
+          style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)', border: '0.5px solid rgba(255,255,255,0.10)', borderRadius: 18 }}
+        >
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent,rgba(99,102,241,0.4),transparent)' }} />
           <div className="p-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
+                <label className="block text-sm font-medium mb-1" style={{ color: '#94a3b8' }}>
                   Filter by Test
                 </label>
                 <select
                   value={filters.testId}
                   onChange={(e) => handleFilterChange('testId', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                  className="w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
+                  style={{ background: '#0d1b36', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
                 >
                   <option value="">All Tests</option>
                   {tests.map(test => (
@@ -150,13 +156,14 @@ export default function ResultsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
+                <label className="block text-sm font-medium mb-1" style={{ color: '#94a3b8' }}>
                   Status
                 </label>
                 <select
                   value={filters.status}
                   onChange={(e) => handleFilterChange('status', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                  className="w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
+                  style={{ background: '#0d1b36', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
                 >
                   <option value="">All Status</option>
                   <option value="passed">Passed</option>
@@ -164,13 +171,14 @@ export default function ResultsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
+                <label className="block text-sm font-medium mb-1" style={{ color: '#94a3b8' }}>
                   Sort By
                 </label>
                 <select
                   value={filters.sortBy}
                   onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                  className="w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
+                  style={{ background: '#0d1b36', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
                 >
                   <option value="submitted_at">Submitted Date</option>
                   <option value="score">Score</option>
@@ -178,37 +186,41 @@ export default function ResultsPage() {
                 </select>
               </div>
               <div className="flex items-end">
-                <Button
+                <button
                   onClick={exportToCSV}
-                  variant="outline"
                   disabled={exporting}
-                  className="w-full"
+                  className="w-full px-3 py-2 rounded-[10px] text-sm"
+                  style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}
                 >
                   {exporting ? 'Exporting...' : 'Export to CSV'}
-                </Button>
+                </button>
               </div>
             </div>
           </div>
-        </Card>
+        </div>
 
         {/* Results Table */}
-        <Card>
+        <div
+          className="relative overflow-hidden"
+          style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)', border: '0.5px solid rgba(255,255,255,0.10)', borderRadius: 18 }}
+        >
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent,rgba(99,102,241,0.4),transparent)' }} />
           <div className="p-4">
-            <h3 className="text-lg font-semibold mb-4">Test Results</h3>
+            <h3 className="text-lg font-semibold mb-4" style={{ color: '#f1f5f9' }}>Test Results</h3>
             {loading ? (
               <AdminTableSkeleton rows={6} cols={6} />
             ) : isError ? (
-              <p className="text-center text-red-500 py-8 dark:text-red-400">Failed to load results. Please try again.</p>
+              <p className="text-center py-8" style={{ color: '#f87171' }}>Failed to load results. Please try again.</p>
             ) : results.length === 0 ? (
-              <p className="text-center text-gray-500 py-8 dark:text-slate-400">No results found</p>
+              <p className="text-center py-8" style={{ color: '#94a3b8' }}>No results found</p>
             ) : (
               <>
                 <Table
                   columns={[
                     { key: 'student', label: 'Student', render: (result: Result) => (
                       <div>
-                        <div className="font-medium">{result.students?.name || 'N/A'}</div>
-                        <div className="text-sm text-gray-500 dark:text-slate-400">{result.students?.email}</div>
+                        <div className="font-medium" style={{ color: '#f1f5f9' }}>{result.students?.name || 'N/A'}</div>
+                        <div className="text-sm" style={{ color: '#94a3b8' }}>{result.students?.email}</div>
                       </div>
                     )},
                     { key: 'rollno', label: 'Roll No.', render: (result: Result) => result.students?.roll_number || 'N/A' },
@@ -216,29 +228,29 @@ export default function ResultsPage() {
                     { key: 'score', label: 'Score', render: (result: Result) => `${result.score} / ${result.total_marks}` },
                     { key: 'percentage', label: 'Percentage', render: (result: Result) => `${result.percentage?.toFixed(1)}%` },
                     { key: 'status', label: 'Status', render: (result: Result) => (
-                      <Badge variant={result.status === 'passed' ? 'success' : 'danger'}>
-                        {result.status}
-                      </Badge>
+                      result.status === 'passed'
+                        ? <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.35)', color: '#34d399' }}>passed</span>
+                        : <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}>failed</span>
                     )},
                     { key: 'timeTaken', label: 'Time Taken', render: (result: Result) => result.time_taken_seconds ? formatTime(result.time_taken_seconds) : 'N/A' },
                     { key: 'submitted', label: 'Submitted', render: (result: Result) => result.submitted_at ? formatDate(result.submitted_at) : 'N/A' },
                     { key: 'actions', label: 'Actions', render: (result: Result) => (
                       <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
+                        <button
                           onClick={() => router.push(`/admin/results/${result.id}`)}
+                          className="text-xs px-3 py-1.5 rounded-lg"
+                          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#94a3b8' }}
                         >
                           View
-                        </Button>
+                        </button>
                         {result.tests?.id && (
-                          <Button
-                            size="sm"
-                            variant="outline"
+                          <button
                             onClick={() => router.push(`/admin/results/analytics/test/${result.tests.id}`)}
+                            className="text-xs px-3 py-1.5 rounded-lg"
+                            style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}
                           >
                             Analytics
-                          </Button>
+                          </button>
                         )}
                       </div>
                     )}
@@ -260,7 +272,7 @@ export default function ResultsPage() {
                     >
                       Previous
                     </Button>
-                    <span className="px-4 py-2 text-sm">
+                    <span className="px-4 py-2 text-sm" style={{ color: '#94a3b8' }}>
                       Page {page} of {totalPages}
                     </span>
                     <Button
@@ -276,7 +288,7 @@ export default function ResultsPage() {
               </>
             )}
           </div>
-        </Card>
+        </div>
       </div>
     </PageWrapper>
   );
