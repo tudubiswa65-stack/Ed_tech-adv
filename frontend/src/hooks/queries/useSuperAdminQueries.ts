@@ -40,7 +40,9 @@ export function useSuperAdminNotificationsCount(options?: { enabled?: boolean })
     },
     enabled: options?.enabled ?? true,
     staleTime: 30 * 1000,
-    refetchInterval: 10 * 1000,
+    // Real-time updates are delivered via Supabase Realtime (useRealtimeNotifications).
+    // Poll only as a fallback for environments where Realtime is unavailable.
+    refetchInterval: 5 * 60 * 1000,
   });
 }
 
