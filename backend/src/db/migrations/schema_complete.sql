@@ -741,18 +741,23 @@ CREATE TABLE IF NOT EXISTS study_materials (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     institute_id    UUID        REFERENCES institute_config(id) ON DELETE SET NULL,
     course_id       UUID        REFERENCES courses(id) ON DELETE SET NULL,
+    branch_id       UUID        REFERENCES branches(id) ON DELETE SET NULL,
     module_id       UUID        REFERENCES modules(id) ON DELETE SET NULL,
     subject_id      UUID        REFERENCES subjects(id) ON DELETE SET NULL,
     created_by      UUID        REFERENCES users(id) ON DELETE SET NULL,
+    uploaded_by     UUID        REFERENCES users(id) ON DELETE SET NULL,
 
     title           VARCHAR(255) NOT NULL,
     description     TEXT,
-    type            material_type NOT NULL,
+    type            material_type,          -- nullable; set by legacy/PostgREST paths only
     url             TEXT         NOT NULL,
+    file_name       TEXT,                   -- original filename
+    file_type       TEXT,                   -- MIME type
     content         TEXT,
-    file_size       INTEGER,     -- bytes
+    file_size       INTEGER,                -- bytes
     order_index     INTEGER     DEFAULT 0,
     is_published    BOOLEAN     DEFAULT FALSE,
+    is_active       BOOLEAN     DEFAULT TRUE,
 
     created_at      TIMESTAMPTZ DEFAULT NOW(),
     updated_at      TIMESTAMPTZ DEFAULT NOW()
@@ -988,6 +993,7 @@ CREATE INDEX IF NOT EXISTS idx_subjects_order_index   ON subjects(order_index);
 
 -- study_materials
 CREATE INDEX IF NOT EXISTS idx_materials_course_id    ON study_materials(course_id);
+CREATE INDEX IF NOT EXISTS idx_materials_branch_id    ON study_materials(branch_id);
 CREATE INDEX IF NOT EXISTS idx_materials_module_id    ON study_materials(module_id);
 CREATE INDEX IF NOT EXISTS idx_materials_subject_id   ON study_materials(subject_id);
 CREATE INDEX IF NOT EXISTS idx_materials_type         ON study_materials(type);
