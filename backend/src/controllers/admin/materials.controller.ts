@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../../db/supabaseAdmin';
+import multer from 'multer';
+import { uploadFileToB2, getSignedDownloadUrl, isLegacySupabaseUrl } from '../../lib/fileService';
 
 interface AuthRequest extends Request {
   user?: {
@@ -384,7 +386,7 @@ export const getSignedMaterialUrl = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const instituteId = req.user?.instituteId;
 
-    // Get the material to find its URL
+    // Get the material to find its URL / key
     let materialQuery = supabaseAdmin
       .from('study_materials')
       .select('url, title')
@@ -402,24 +404,84 @@ export const getSignedMaterialUrl = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Material has no file URL' });
     }
 
-    // Generate signed URL (valid for 1 hour)
-    // Assumes URL is in format: https://[project].supabase.co/storage/v1/object/public/...
-    const { data: signedData, error: signedError } = await supabaseAdmin.storage
-      .from('materials')
-      .createSignedUrl(material.url.replace(/^.*\/storage\/v1\/object\/public\//, ''), 3600);
+    let signedUrl: string | null = null;
 
-    if (signedError) {
-      console.error('Signed URL generation error:', signedError);
-      return res.status(500).json({ error: 'Failed to generate signed URL' });
+    if (isLegacySupabaseUrl(material.url)) {
+      // Legacy Supabase storage URL — extract path and sign via Supabase
+      const rawMatch = (material.url as string).match(/\/storage\/v1\/object\/(?:public|sign)\/materials\/(.+)$/);
+      const rawPath = rawMatch ? rawMatch[1] : null;
+      // Strip any query-string parameters (e.g. signed token) from the extracted path
+      const filePath = rawPath ? rawPath.split('?')[0] : null;
+
+      if (filePath) {
+        const { data: signedData, error: signedError } = await supabaseAdmin.storage
+          .from('materials')
+          .createSignedUrl(filePath, 3600);
+
+        if (signedError || !signedData?.signedUrl) {
+          console.error('Supabase signed URL generation error:', signedError);
+          return res.status(500).json({ error: 'Failed to generate signed URL' });
+        }
+        signedUrl = signedData.signedUrl;
+      } else {
+        // URL doesn't match expected Supabase pattern — return as-is
+        signedUrl = material.url as string;
+      }
+    } else {
+      // B2 object key — generate presigned URL
+      signedUrl = await getSignedDownloadUrl(material.url as string, 3600);
     }
 
     res.json({
-      signedUrl: signedData?.signedUrl,
+      signedUrl,
       expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
       materialTitle: material.title,
     });
   } catch (error) {
     console.error('Get signed URL error:', error);
     res.status(500).json({ error: 'Failed to generate signed URL' });
+  }
+};
+
+// Multer instance for material file uploads (server-side only)
+const materialUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB
+});
+
+export const materialUploadMiddleware = materialUpload.single('file');
+
+// Upload a course material file to B2 and return its object key
+export const uploadMaterialFile = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'File is required' });
+    }
+
+    const ALLOWED_MATERIAL_MIMES = new Set([
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/csv',
+      'text/plain',
+      'image/jpeg',
+      'image/png',
+    ]);
+
+    if (!ALLOWED_MATERIAL_MIMES.has(req.file.mimetype)) {
+      return res.status(400).json({ error: 'Unsupported file type' });
+    }
+
+    const key = await uploadFileToB2(
+      req.file.buffer,
+      req.file.originalname,
+      req.file.mimetype,
+      'materials'
+    );
+
+    res.status(201).json({ key, fileSize: req.file.size });
+  } catch (error) {
+    console.error('Upload material file error:', error);
+    res.status(500).json({ error: 'Failed to upload file' });
   }
 };
