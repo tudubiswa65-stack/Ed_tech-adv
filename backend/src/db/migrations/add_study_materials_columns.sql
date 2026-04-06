@@ -22,7 +22,7 @@ ALTER TABLE study_materials
 ALTER TABLE study_materials
   ADD COLUMN IF NOT EXISTS file_type TEXT;
 
--- 5. Add is_active (visibility flag kept in sync with is_published)
+-- 5. Add is_active (visibility flag; kept in sync with is_published by the controller)
 ALTER TABLE study_materials
   ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;
 
