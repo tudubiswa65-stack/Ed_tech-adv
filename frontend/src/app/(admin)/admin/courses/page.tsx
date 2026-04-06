@@ -74,7 +74,6 @@ export default function CoursesPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
-  const [modules, setModules] = useState<Module[]>([]);
 
   const [formData, setFormData] = useState<CourseForm>(EMPTY_FORM);
   const [formLoading, setFormLoading] = useState(false);
@@ -97,15 +96,6 @@ export default function CoursesPage() {
   useEffect(() => {
     fetchCourses();
   }, []);
-
-  const fetchModules = async (courseId: string) => {
-    try {
-      const response = await apiClient.get(`/admin/courses/${courseId}/modules`);
-      setModules(response.data || []);
-    } catch {
-      console.error('Failed to fetch modules');
-    }
-  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -202,7 +192,6 @@ export default function CoursesPage() {
       setExpandedCourse(null);
     } else {
       setExpandedCourse(courseId);
-      fetchModules(courseId);
     }
   };
 
@@ -496,11 +485,11 @@ export default function CoursesPage() {
               {expandedCourse === course.id && (
                 <div className="mt-4 pt-4" style={{ borderTop: '0.5px solid rgba(255,255,255,0.07)' }}>
                   <h4 className="text-sm font-semibold mb-2" style={{ color: '#f1f5f9' }}>Modules</h4>
-                  {modules.length === 0 ? (
+                  {(course.modules ?? []).length === 0 ? (
                     <p className="text-sm" style={{ color: '#94a3b8' }}>No modules yet</p>
                   ) : (
                     <div className="space-y-2">
-                      {modules.map((module) => (
+                      {(course.modules ?? []).map((module) => (
                         <div key={module.id} className="p-2" style={{ background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: 8 }}>
                           <p className="font-medium text-sm" style={{ color: '#f1f5f9' }}>{module.name}</p>
                           {module.subjects && module.subjects.length > 0 && (
