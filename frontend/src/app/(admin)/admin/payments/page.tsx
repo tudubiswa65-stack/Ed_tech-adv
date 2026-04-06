@@ -170,7 +170,7 @@ export default function AdminPaymentsPage() {
                 Select Student <span className="text-red-500">*</span>
               </label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:border-slate-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
                 value={formData.student_id}
                 onChange={(e) => setFormData({ ...formData, student_id: e.target.value })}
                 required
@@ -194,7 +194,7 @@ export default function AdminPaymentsPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Payment Method</label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:border-slate-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
                 value={formData.payment_method}
                 onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
               >

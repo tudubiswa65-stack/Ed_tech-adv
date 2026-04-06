@@ -233,7 +233,7 @@ export default function CoursesPage() {
         <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Description</label>
         <textarea
           name="description"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
           rows={3}
           value={formData.description}
           onChange={handleChange}
@@ -254,7 +254,7 @@ export default function CoursesPage() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Unit</label>
           <select name="duration_unit" value={formData.duration_unit} onChange={handleChange}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500">
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400">
             <option value="days">Days</option>
             <option value="weeks">Weeks</option>
             <option value="months">Months</option>
@@ -288,7 +288,7 @@ export default function CoursesPage() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Level</label>
           <select name="level" value={formData.level} onChange={handleChange}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500">
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400">
             <option value="">Any level</option>
             <option value="beginner">Beginner</option>
             <option value="intermediate">Intermediate</option>
@@ -299,7 +299,7 @@ export default function CoursesPage() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Status</label>
           <select name="status" value={formData.status} onChange={handleChange}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500">
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400">
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
             <option value="draft">Draft</option>
@@ -318,7 +318,7 @@ export default function CoursesPage() {
         <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">Terms &amp; Conditions</label>
         <textarea
           name="terms_and_conditions"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
           rows={4}
           value={formData.terms_and_conditions}
           onChange={handleChange}

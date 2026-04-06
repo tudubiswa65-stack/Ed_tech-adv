@@ -299,7 +299,7 @@ export default function TestsPage() {
                 <select
                   value={filters.courseId}
                   onChange={(e) => setFilters(f => ({ ...f, courseId: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
                 >
                   <option value="">All Courses</option>
                   {courses.map(course => (
@@ -314,7 +314,7 @@ export default function TestsPage() {
                 <select
                   value={filters.type}
                   onChange={(e) => setFilters(f => ({ ...f, type: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
                 >
                   <option value="">All Types</option>
                   <option value="graded">Graded</option>
@@ -440,7 +440,7 @@ export default function TestsPage() {
               value={formData.description}
               onChange={(e) => setFormData(f => ({ ...f, description: e.target.value }))}
               rows={3}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
             />
           </div>
 
@@ -450,7 +450,7 @@ export default function TestsPage() {
               value={formData.courseId}
               onChange={(e) => setFormData(f => ({ ...f, courseId: e.target.value }))}
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
             >
               <option value="">Select Course</option>
               {courses.map(course => (
@@ -474,7 +474,7 @@ export default function TestsPage() {
               <select
                 value={formData.type}
                 onChange={(e) => setFormData(f => ({ ...f, type: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
               >
                 <option value="graded">Graded</option>
                 <option value="practice">Practice</option>
@@ -557,7 +557,7 @@ export default function TestsPage() {
                 onChange={(e) => setQuestionForm(f => ({ ...f, questionText: e.target.value }))}
                 rows={2}
                 required
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -599,7 +599,7 @@ export default function TestsPage() {
               <select
                 value={questionForm.correctOption}
                 onChange={(e) => setQuestionForm(f => ({ ...f, correctOption: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-400"
               >
                 <option value="a">A</option>
                 <option value="b">B</option>

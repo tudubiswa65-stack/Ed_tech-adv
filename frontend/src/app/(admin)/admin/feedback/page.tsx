@@ -197,7 +197,7 @@ export default function FeedbackPage() {
                 <select
                   value={filters.type}
                   onChange={(e) => setFilters(f => ({ ...f, type: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
                 >
                   <option value="">All Types</option>
                   <option value="course">Course</option>
@@ -211,7 +211,7 @@ export default function FeedbackPage() {
                 <select
                   value={filters.rating}
                   onChange={(e) => setFilters(f => ({ ...f, rating: e.target.value }))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[var(--primary-color)] focus:outline-none dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
                 >
                   <option value="">All Ratings</option>
                   <option value="5">5 Stars</option>
