@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PageWrapper from '@/components/layout/PageWrapper';
-import { Table, Button, Input, Modal, Badge, Spinner } from '@/components/ui';
+import { Table, Button, Input, Modal } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
 import { useToast } from '@/context/ToastContext';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -124,7 +124,7 @@ export default function StudentsPage() {
       key: 'name',
       label: 'Name',
       render: (student: Student) => (
-        <span className="font-medium text-gray-900 dark:text-slate-100">{student.name}</span>
+        <span className="font-medium" style={{ color: '#f1f5f9' }}>{student.name}</span>
       ),
     },
     {
@@ -146,16 +146,13 @@ export default function StudentsPage() {
       label: 'Status',
       render: (student: Student) => {
         const effectiveStatus = student.status ?? (student.is_active ? 'ACTIVE' : 'INACTIVE');
-        const variantMap: Record<string, 'success' | 'danger' | 'warning'> = {
-          ACTIVE: 'success',
-          INACTIVE: 'danger',
-          SUSPENDED: 'warning',
-        };
-        return (
-          <Badge variant={variantMap[effectiveStatus] ?? 'danger'}>
-            {effectiveStatus}
-          </Badge>
-        );
+        if (effectiveStatus === 'ACTIVE') {
+          return <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.35)', color: '#34d399' }}>ACTIVE</span>;
+        }
+        if (effectiveStatus === 'SUSPENDED') {
+          return <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24' }}>SUSPENDED</span>;
+        }
+        return <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}>INACTIVE</span>;
       },
     },
     {
@@ -170,29 +167,30 @@ export default function StudentsPage() {
       render: (student: Student) => (
         <div className="flex items-center space-x-2">
           {hasPermission('edit_student') && (
-            <Button
-              size="sm"
-              variant="outline"
+            <button
               onClick={() => router.push(`/admin/students/${student.id}/edit`)}
+              className="text-xs px-3 py-1.5 rounded-lg transition-colors"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#94a3b8' }}
             >
               Edit
-            </Button>
+            </button>
           )}
           {hasPermission('delete_student') && (
-            <Button
-              size="sm"
-              variant="danger"
+            <button
               onClick={() => {
                 setSelectedStudent(student);
                 setShowDeleteModal(true);
               }}
+              className="text-xs px-3 py-1.5 rounded-lg transition-colors"
+              style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}
             >
               Delete
-            </Button>
+            </button>
           )}
           {!hasPermission('edit_student') && !hasPermission('delete_student') && (
             <span
-              className="text-xs text-gray-400 italic dark:text-slate-500"
+              className="text-xs italic"
+              style={{ color: '#475569' }}
               aria-label="No actions available — contact your Super Admin to enable permissions"
             >
               No actions available
@@ -208,12 +206,21 @@ export default function StudentsPage() {
         title="Student Management"
         actions={
           hasPermission('add_student') ? (
-            <Button onClick={() => setShowAddModal(true)}>Add Student</Button>
+            <Button
+              onClick={() => setShowAddModal(true)}
+              style={{ background: 'linear-gradient(135deg,#3b82f6,#6366f1)', color: '#fff', border: 'none', borderRadius: 20 }}
+            >
+              Add Student
+            </Button>
           ) : undefined
         }
       >
+        {/* Ambient orbs */}
+        <div style={{ position: 'fixed', top: 80, right: 40, width: 320, height: 320, borderRadius: '50%', background: 'rgba(99,102,241,0.06)', filter: 'blur(40px)', pointerEvents: 'none', zIndex: 0 }} />
+        <div style={{ position: 'fixed', bottom: 80, left: 40, width: 280, height: 280, borderRadius: '50%', background: 'rgba(52,211,153,0.05)', filter: 'blur(40px)', pointerEvents: 'none', zIndex: 0 }} />
+
         {/* Filters */}
-        <div className="mb-6 flex flex-col sm:flex-row gap-4">
+        <div className="mb-6 flex flex-col sm:flex-row gap-4" style={{ position: 'relative', zIndex: 1 }}>
           <div className="flex-1">
             <Input
               placeholder="Search by name or email..."
@@ -223,7 +230,8 @@ export default function StudentsPage() {
           </div>
           <div className="w-full sm:w-48">
             <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
+              className="w-full px-3 py-2 rounded-[10px] text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
               value={branchFilter}
               onChange={(e) => setBranchFilter(e.target.value)}
             >
@@ -237,7 +245,8 @@ export default function StudentsPage() {
           </div>
           <div className="w-full sm:w-48">
             <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
+              className="w-full px-3 py-2 rounded-[10px] text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
               value={courseFilter}
               onChange={(e) => setCourseFilter(e.target.value)}
             >
@@ -262,7 +271,7 @@ export default function StudentsPage() {
         {/* Pagination */}
         {total > 20 && (
           <div className="mt-4 flex items-center justify-between">
-            <p className="text-sm text-gray-500 dark:text-slate-400">
+            <p className="text-sm" style={{ color: '#94a3b8' }}>
               Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, total)} of {total} students
             </p>
             <div className="flex items-center space-x-2">
@@ -317,11 +326,12 @@ export default function StudentsPage() {
               />
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
-                    Branch <span className="text-red-500">*</span>
+                  <label className="block text-sm font-medium mb-1" style={{ color: '#94a3b8' }}>
+                    Branch <span style={{ color: '#f87171' }}>*</span>
                   </label>
                   <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
+                    className="w-full px-3 py-2 rounded-[10px] text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
                     value={formData.branch_id}
                     onChange={(e) => setFormData({ ...formData, branch_id: e.target.value })}
                     required
@@ -335,11 +345,12 @@ export default function StudentsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-200">
-                    Course <span className="text-red-500">*</span>
+                  <label className="block text-sm font-medium mb-1" style={{ color: '#94a3b8' }}>
+                    Course <span style={{ color: '#f87171' }}>*</span>
                   </label>
                   <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-base focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100"
+                    className="w-full px-3 py-2 rounded-[10px] text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
                     value={formData.course_id}
                     onChange={(e) => setFormData({ ...formData, course_id: e.target.value })}
                     required
@@ -355,10 +366,10 @@ export default function StudentsPage() {
               </div>
             </div>
             <div className="mt-6 flex justify-end space-x-3">
-              <Button variant="outline" onClick={() => setShowAddModal(false)}>
+              <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 rounded-[10px] text-sm" style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}>
                 Cancel
-              </Button>
-              <Button type="submit" loading={formLoading}>
+              </button>
+              <Button type="submit" loading={formLoading} style={{ background: 'linear-gradient(135deg,#3b82f6,#6366f1)', color: '#fff', border: 'none', borderRadius: 20 }}>
                 Add Student
               </Button>
             </div>
@@ -372,13 +383,13 @@ export default function StudentsPage() {
           title="Confirm Deactivation"
           size="sm"
         >
-          <p className="text-gray-600 mb-4 dark:text-slate-300">
-            Are you sure you want to deactivate <strong>{selectedStudent?.name}</strong>? Their results will be preserved.
+          <p className="mb-4" style={{ color: '#94a3b8' }}>
+            Are you sure you want to deactivate <strong style={{ color: '#f1f5f9' }}>{selectedStudent?.name}</strong>? Their results will be preserved.
           </p>
           <div className="flex justify-end space-x-3">
-            <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
+            <button type="button" onClick={() => setShowDeleteModal(false)} className="px-4 py-2 rounded-[10px] text-sm" style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }}>
               Cancel
-            </Button>
+            </button>
             <Button variant="danger" onClick={handleDeleteStudent} loading={formLoading}>
               Deactivate
             </Button>
