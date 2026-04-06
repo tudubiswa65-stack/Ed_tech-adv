@@ -309,7 +309,7 @@ export default function TestsPage() {
                   value={filters.courseId}
                   onChange={(e) => setFilters(f => ({ ...f, courseId: e.target.value }))}
                   className="w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
+                  style={{ background: '#0d1b36', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
                 >
                   <option value="">All Courses</option>
                   {courses.map(course => (
@@ -325,7 +325,7 @@ export default function TestsPage() {
                   value={filters.type}
                   onChange={(e) => setFilters(f => ({ ...f, type: e.target.value }))}
                   className="w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
+                  style={{ background: '#0d1b36', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
                 >
                   <option value="">All Types</option>
                   <option value="graded">Graded</option>
@@ -476,7 +476,7 @@ export default function TestsPage() {
               onChange={(e) => setFormData(f => ({ ...f, courseId: e.target.value }))}
               required
               className="w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
+              style={{ background: '#0d1b36', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
             >
               <option value="">Select Course</option>
               {courses.map(course => (
@@ -501,7 +501,7 @@ export default function TestsPage() {
                 value={formData.type}
                 onChange={(e) => setFormData(f => ({ ...f, type: e.target.value }))}
                 className="w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
+                style={{ background: '#0d1b36', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
               >
                 <option value="graded">Graded</option>
                 <option value="practice">Practice</option>
@@ -630,7 +630,7 @@ export default function TestsPage() {
                 value={questionForm.correctOption}
                 onChange={(e) => setQuestionForm(f => ({ ...f, correctOption: e.target.value }))}
                 className="w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
+                style={{ background: '#0d1b36', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
               >
                 <option value="a">A</option>
                 <option value="b">B</option>

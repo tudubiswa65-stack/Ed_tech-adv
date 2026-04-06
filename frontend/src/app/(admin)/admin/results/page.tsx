@@ -145,7 +145,7 @@ export default function ResultsPage() {
                   value={filters.testId}
                   onChange={(e) => handleFilterChange('testId', e.target.value)}
                   className="w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
+                  style={{ background: '#0d1b36', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
                 >
                   <option value="">All Tests</option>
                   {tests.map(test => (
@@ -163,7 +163,7 @@ export default function ResultsPage() {
                   value={filters.status}
                   onChange={(e) => handleFilterChange('status', e.target.value)}
                   className="w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
+                  style={{ background: '#0d1b36', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
                 >
                   <option value="">All Status</option>
                   <option value="passed">Passed</option>
@@ -178,7 +178,7 @@ export default function ResultsPage() {
                   value={filters.sortBy}
                   onChange={(e) => handleFilterChange('sortBy', e.target.value)}
                   className="w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
+                  style={{ background: '#0d1b36', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' }}
                 >
                   <option value="submitted_at">Submitted Date</option>
                   <option value="score">Score</option>

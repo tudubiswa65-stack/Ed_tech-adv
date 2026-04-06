@@ -207,7 +207,7 @@ export default function CoursesPage() {
   };
 
   const glassSelect = "w-full rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]";
-  const glassSelectStyle = { background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' };
+  const glassSelectStyle = { background: '#0d1b36', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' };
   const glassTextarea = "w-full px-3 py-2 rounded-[10px] text-sm focus:outline-none focus:ring-1 focus:ring-[#6366f1]";
   const glassTextareaStyle = { background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.10)', color: '#f1f5f9' };
   const labelStyle = { color: '#94a3b8', fontSize: '0.875rem', fontWeight: 500, display: 'block', marginBottom: 4 };
