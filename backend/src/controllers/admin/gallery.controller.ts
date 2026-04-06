@@ -4,9 +4,9 @@ import { supabaseAdmin } from '../../db/supabaseAdmin';
 import { AuthRequest } from '../../types';
 import { getUserBranchId } from '../../utils/branchFilter';
 import { processAndWatermark } from '../../utils/imageProcessor';
+import { uploadFileToB2, deleteFileFromB2, getSignedDownloadUrl, isLegacySupabaseUrl } from '../../lib/fileService';
 
 const WATERMARK_TEXT = 'EduPro Platform';
-const GALLERY_BUCKET = 'gallery';
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_MIMETYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
@@ -177,18 +177,23 @@ export const listGallerySubmissions = async (req: AuthRequest, res: Response): P
       rows = rows.filter((r) => r.users?.[0]?.branch_id === branchId);
     }
 
-    const submissions = rows.map((r) => ({
-      id: r.id,
-      title: r.title,
-      description: r.description,
-      thumbnail_url: r.thumbnail_url,
-      status: r.status,
-      is_pinned: r.is_pinned,
-      slot_order: r.slot_order,
-      submitted_at: r.submitted_at,
-      approved_at: r.approved_at,
-      student_first_name: r.users?.[0]?.name?.split(' ')[0] ?? 'Unknown',
-    }));
+    // Generate presigned URLs for B2-stored images; pass through legacy Supabase URLs as-is
+    const submissions = await Promise.all(
+      rows.map(async (r) => ({
+        id: r.id,
+        title: r.title,
+        description: r.description,
+        thumbnail_url: isLegacySupabaseUrl(r.thumbnail_url)
+          ? r.thumbnail_url
+          : await getSignedDownloadUrl(r.thumbnail_url),
+        status: r.status,
+        is_pinned: r.is_pinned,
+        slot_order: r.slot_order,
+        submitted_at: r.submitted_at,
+        approved_at: r.approved_at,
+        student_first_name: r.users?.[0]?.name?.split(' ')[0] ?? 'Unknown',
+      }))
+    );
 
     res.json({ success: true, data: submissions });
   } catch (error: unknown) {
@@ -240,38 +245,21 @@ export const uploadGallerySubmission = async (req: AuthRequest, res: Response): 
       processAndWatermark(originalBuffer, 800, 600, WATERMARK_TEXT),
     ]);
 
-    // ── Upload to Supabase storage ─────────────────────────────────────────
-    const thumbnailPath = `thumbnails/${fileId}.webp`;
-    const mediumPath = `mediums/${fileId}.webp`;
-
-    const [thumbUpload, mediumUpload] = await Promise.all([
-      supabaseAdmin.storage
-        .from(GALLERY_BUCKET)
-        .upload(thumbnailPath, thumbnailBuffer, { contentType: 'image/webp', upsert: false }),
-      supabaseAdmin.storage
-        .from(GALLERY_BUCKET)
-        .upload(mediumPath, mediumBuffer, { contentType: 'image/webp', upsert: false }),
+    // ── Upload to B2 storage ───────────────────────────────────────────────
+    const [thumbnailKey, mediumKey] = await Promise.all([
+      uploadFileToB2(thumbnailBuffer, `${fileId}-thumb.webp`, 'image/webp', 'gallery/thumbnails'),
+      uploadFileToB2(mediumBuffer, `${fileId}-medium.webp`, 'image/webp', 'gallery/mediums'),
     ]);
 
-    if (thumbUpload.error) throw thumbUpload.error;
-    if (mediumUpload.error) throw mediumUpload.error;
-
-    const { data: thumbPublic } = supabaseAdmin.storage
-      .from(GALLERY_BUCKET)
-      .getPublicUrl(thumbnailPath);
-    const { data: mediumPublic } = supabaseAdmin.storage
-      .from(GALLERY_BUCKET)
-      .getPublicUrl(mediumPath);
-
-    // ── Insert DB record ───────────────────────────────────────────────────
+    // ── Insert DB record (store B2 object keys, not full URLs) ─────────────
     const { data: inserted, error: insertError } = await supabaseAdmin
       .from('gallery_submissions')
       .insert({
         student_id: student_id.trim(),
         title: title.trim(),
         description: typeof description === 'string' ? description.trim() || null : null,
-        thumbnail_url: thumbPublic.publicUrl,
-        medium_url: mediumPublic.publicUrl,
+        thumbnail_url: thumbnailKey,
+        medium_url: mediumKey,
         status: 'approved',
         approved_by: req.user?.id ?? null,
         approved_at: new Date().toISOString(),
@@ -376,24 +364,30 @@ export const deleteGallerySubmission = async (req: AuthRequest, res: Response): 
 
     // Best-effort storage cleanup — failures are logged but do not fail the request
     try {
-      const extractPath = (url: string): string | null => {
-        try {
-          const u = new URL(url);
-          // Supabase public URL format: /storage/v1/object/public/<bucket>/<path>
-          const match = u.pathname.match(/\/storage\/v1\/object\/public\/gallery\/(.+)$/);
-          return match ? match[1] : null;
-        } catch {
-          return null;
+      const extractB2Key = (value: string): string | null => {
+        if (!value) return null;
+        if (isLegacySupabaseUrl(value)) {
+          // Legacy Supabase URL — best-effort extract the path within the gallery bucket
+          try {
+            const u = new URL(value);
+            const match = u.pathname.match(/\/storage\/v1\/object\/(?:public|sign)\/gallery\/(.+)$/);
+            return match ? match[1].split('?')[0] : null;
+          } catch {
+            return null;
+          }
         }
+        // Already a B2 key
+        return value;
       };
 
-      const thumbPath = extractPath(row.thumbnail_url);
-      const mediumPath = extractPath(row.medium_url);
-      const paths = [thumbPath, mediumPath].filter((p): p is string => p !== null);
+      const thumbKey = extractB2Key(row.thumbnail_url);
+      const mediumKey = extractB2Key(row.medium_url);
 
-      if (paths.length > 0) {
-        await supabaseAdmin.storage.from(GALLERY_BUCKET).remove(paths);
-      }
+      await Promise.all(
+        [thumbKey, mediumKey]
+          .filter((k): k is string => k !== null)
+          .map((k) => deleteFileFromB2(k))
+      );
     } catch (storageErr) {
       console.warn('[AdminGallery] Storage cleanup failed for submission', id, storageErr);
     }
