@@ -119,8 +119,7 @@ export const getMaterialById = async (req: AuthRequest, res: Response) => {
     supabaseAdmin
       .from('material_views')
       .insert({ material_id: id, student_id: studentId })
-      .then(() => {})
-      .catch(() => {});
+      .then(() => {}, () => {});
 
     res.json({ success: true, data });
   } catch (error) {
@@ -251,7 +250,7 @@ export const getRecentlyViewed = async (req: AuthRequest, res: Response) => {
     }
 
     const formattedData = data?.map(v => {
-      const mat = v.study_materials as { id: string; title: string; url?: string; file_type?: string; courses?: { name: string } } | null;
+      const mat = v.study_materials as unknown as { id: string; title: string; url?: string; file_type?: string; courses?: { name: string }[] } | null;
       if (!mat) return null;
       return { ...mat, viewedAt: v.viewed_at };
     }).filter(Boolean) || [];
