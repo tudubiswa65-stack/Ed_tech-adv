@@ -21,9 +21,8 @@ export const getNotifications = async (req: AuthRequest, res: Response) => {
     let query = supabaseAdmin
       .from('notifications')
       .select('*', { count: 'exact' })
-      // Filter to notifications targeting students or all users.
-      // Use a single .or() so the conditions are OR-ed, not AND-ed.
-      .or('target_audience.eq.all,target_audience.eq.students');
+      // Filter to notifications targeting students, all users, or this specific student.
+      .or(`target_audience.eq.all,target_audience.eq.students,and(target_audience.eq.student,target_id.eq.${studentId})`);
 
     // Only filter by institute_id when available (single-tenant setups omit it)
     if (instituteId) {
@@ -122,7 +121,7 @@ export const markAllAsRead = async (req: AuthRequest, res: Response) => {
     let allQuery = supabaseAdmin
       .from('notifications')
       .select('id')
-      .or('target_audience.eq.all,target_audience.eq.students');
+      .or(`target_audience.eq.all,target_audience.eq.students,and(target_audience.eq.student,target_id.eq.${studentId})`);
     if (instituteId) {
       allQuery = allQuery.eq('institute_id', instituteId);
     }
@@ -162,7 +161,7 @@ export const getUnreadCount = async (req: AuthRequest, res: Response) => {
     let totalQuery = supabaseAdmin
       .from('notifications')
       .select('*', { count: 'exact', head: true })
-      .or('target_audience.eq.all,target_audience.eq.students');
+      .or(`target_audience.eq.all,target_audience.eq.students,and(target_audience.eq.student,target_id.eq.${studentId})`);
     if (instituteId) {
       totalQuery = totalQuery.eq('institute_id', instituteId);
     }

@@ -183,11 +183,13 @@ export function useStudentPayments() {
 
 export function useStudentMaterials(filters: {
   subjectId?: string;
+  courseId?: string;
   type?: string;
   search?: string;
 } = {}) {
   const filterKey = {
     subjectId: filters.subjectId ?? '',
+    courseId: filters.courseId ?? '',
     type: filters.type ?? '',
     search: filters.search ?? '',
   };
@@ -196,6 +198,7 @@ export function useStudentMaterials(filters: {
     queryFn: async () => {
       const params = new URLSearchParams();
       if (filters.subjectId) params.set('subjectId', filters.subjectId);
+      if (filters.courseId) params.set('courseId', filters.courseId);
       if (filters.type) params.set('type', filters.type);
       if (filters.search) params.set('search', filters.search);
       const response = await apiClient.get(`/student/materials?${params}`);

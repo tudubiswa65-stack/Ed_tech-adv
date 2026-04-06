@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware, requireSuperAdmin } from '../middleware/authMiddleware';
+import { getAllMaterials, getMaterialSignedUrl } from '../controllers/superAdmin/materials.controller';
 
 // Dashboard controllers
 import {
@@ -236,5 +237,11 @@ router.get('/branches/:branchId/admin-permissions', requireSuperAdmin, getBranch
 router.put('/branches/:branchId/admin-permissions', requireSuperAdmin, updateBranchPermissions);
 router.post('/branches/:branchId/admin-permissions/enable-all', requireSuperAdmin, enableBranchPermissions);
 router.post('/branches/:branchId/admin-permissions/disable-all', requireSuperAdmin, disableBranchPermissions);
+
+// ═══════════════════════════════════════════════════════════
+// STUDY MATERIALS ENDPOINTS (read-only)
+// ═══════════════════════════════════════════════════════════
+router.get('/materials', requireSuperAdmin, getAllMaterials);
+router.get('/materials/:id/signed-url', requireSuperAdmin, getMaterialSignedUrl);
 
 export default router;

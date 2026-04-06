@@ -20,6 +20,7 @@ const pageTitles: Record<string, string> = {
   '/super-admin/feedback': 'Feedback',
   '/super-admin/settings': 'Global Settings',
   '/super-admin/audit-logs': 'Audit Logs',
+  '/super-admin/materials': 'Study Materials',
 };
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
