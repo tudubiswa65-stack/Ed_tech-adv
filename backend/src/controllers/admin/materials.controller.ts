@@ -235,18 +235,18 @@ export const createMaterial = async (req: AuthRequest, res: Response): Promise<v
     try {
       const { data: enrollments } = await supabaseAdmin
         .from('enrollments')
-        .select('user_id')
+        .select('student_id')
         .eq('course_id', courseId)
         .eq('status', 'active');
 
       if (enrollments && enrollments.length > 0) {
         // Insert one notification per enrolled student using per-student targeting
-        const notifRows = enrollments.map((e: { user_id: string }) => ({
+        const notifRows = enrollments.map((e: { student_id: string }) => ({
           title: 'New Study Material Available',
           message: `${title} has been added to ${courseName}.`,
           type: 'study_material',
           target_audience: 'student',
-          target_id: e.user_id,
+          target_id: e.student_id,
           action_url: `/materials?courseId=${courseId}`,
           branch_id: branchId,
           institute_id: instituteId || null,
